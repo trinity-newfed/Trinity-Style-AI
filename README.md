@@ -1,5 +1,3 @@
-# FOR REQUIREMENT PLEASE READ requirement.txt
-
 #REQUIRE#
 first time download (>5.4G)
 python ver 3.10.x
