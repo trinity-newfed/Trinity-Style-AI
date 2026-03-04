@@ -1,10 +1,8 @@
 upload/
 picture-uploads/
-static/
-static/outputs/
 vendor/
 node_modules/
-AI/sd15/
+AI/static/
 sd15/
 .env
 .DS_Store
