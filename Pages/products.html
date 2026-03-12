@@ -330,7 +330,7 @@
         visibility: hidden;
         transition: all 0.4s;
       }
-      .details-overlay.active {
+      .active {
         opacity: 1;
         visibility: visible;
       }
@@ -338,18 +338,13 @@
         width: 800px;
         height: 500px;
         background-color: #fff;
-        border-radius: 12px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         z-index: 1000;
-        scale: 0.8;
         transition: all 0.4s;
-      }
-      .details-overlay.active .details {
-        scale: 1;
       }
     </style>
   </head>
@@ -521,17 +516,15 @@
       allDetailBtns.forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          mainOverlay.style.display = "flex";
-          mainDetails.style.display = "flex";
           mainOverlay.classList.add('active');
+          mainDetails.classList.add('active');
         });
       });
 
       mainOverlay.addEventListener("click", (e) => {
         if (e.target === mainOverlay) {
-          mainOverlay.style.display = "none";
-          mainDetails.style.display = "none";
           mainOverlay.classList.remove('active');
+          mainDetails.classList.remove('active');
         }
       });
     </script>
