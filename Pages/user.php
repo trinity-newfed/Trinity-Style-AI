@@ -276,14 +276,16 @@ foreach ($data as $d) {
             <div class="line2"></div>
             <div id="try-on-container">
             <?php if(!empty($tryonData)): ?>
+            <?php foreach($tryonData as $to): ?>
               <div class="line3">
-                <img src="../AI/static/outputs/user_<?=$_SESSION['username']?>/<?=$tryonData['result_img']?>" alt="">
-                <?=$tryonData['created_at']?>
+                <img src="../AI/static/outputs/user_<?=$_SESSION['username']?>/<?=$to['result_img']?>" alt="">
+                <?=$to['created_at']?>
                 <form action="../Database/detele_user_tryon.php" method="POST">
-                  <input type="text" name="id" value="<?=$tryonData['id']?>" hidden>
+                  <input type="text" name="id" value="<?=$to['id']?>" hidden>
                   <button type="submit">Delete</button>
                 </form>
               </div>
+            <?php endforeach; ?>
             <?php else: ?>
                 <h3 class="h3-alert">Nothing here...</h3>
             <?php endif; ?>
