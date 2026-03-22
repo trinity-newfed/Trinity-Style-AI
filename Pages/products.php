@@ -76,7 +76,7 @@ $product = $conn
           <div class="product-container">
           <?php foreach($product as $p): ?>
             <?php if($p['product_category'] == "collections"): ?>
-            <div id="product-<?=$p['id']?>" class="product-card" data-img="../<?=$p['product_img']?>" 
+            <div id="product-<?=$p['id']?>" class="product-card fixed" data-img="../<?=$p['product_img']?>" 
                                       data-name="<?=$p['product_name']?>" 
                                       data-price="<?=$p['product_price']?>"
                                       data-id="<?=$p['id']?>"
@@ -110,9 +110,16 @@ $product = $conn
         </div>
         <div class="product-header" id="product-header">
           <p class="product-subtitle">Shop Wardrobe</p>
-          <h2 class="product-title">ALL</h2>
-          <div class="line"></div>
-        <div class="product-container">
+            <h2 class="product-title">ALL</h2>
+            <div class="line"></div>
+            <select name="" id="sort" style="width: fit-content; height: 30px; margin-top: 5px;">
+              <option value="">--Sort--</option>
+              <option value="price_desc">Highest</option>
+              <option value="price_asc">Lowest</option>
+              <option value="name_asc">A to Z</option>
+              <option value="name_desc">Z to A</option>
+            </select>
+        <div class="product-container" id="normal">
           <?php foreach($product as $p): ?>
             <?php if($p['product_category'] != "collections"): ?>
             <div id="product-<?=$p['id']?>" class="product-card" data-img="../<?=$p['product_img']?>" 
@@ -367,6 +374,7 @@ setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
       const category = params.get("category");
       const name = params.get("name");
+      const sortSelect = document.getElementById("sort");
       
       if(userWelcome){
             userWelcome.textContent = "Hi, " + username1;
@@ -649,6 +657,30 @@ setTimeout(() => {
         }, 10000);
       }
 
+
+
+
+const container = document.getElementById("normal");
+
+sortSelect.addEventListener("change", () => {
+  let normalProducts = Array.from(container.querySelectorAll(".product-card"));
+  let value = sortSelect.value;
+  normalProducts.sort((a, b) => {
+    let priceA = parseFloat(a.dataset.price || 0);
+    let priceB = parseFloat(b.dataset.price || 0);
+    let nameA = (a.dataset.name || "").toLowerCase();
+    let nameB = (b.dataset.name || "").toLowerCase();
+    switch(value){
+      case "price_asc": return priceA - priceB;
+      case "price_desc": return priceB - priceA;
+      case "name_asc": return nameA.localeCompare(nameB);
+      case "name_desc": return nameB.localeCompare(nameA);
+      default: return 0;
+    }
+  });
+  container.innerHTML = "";
+  normalProducts.forEach(p => container.appendChild(p));
+});
     </script>
   </body>
 </html>
