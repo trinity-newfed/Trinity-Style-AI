@@ -98,11 +98,11 @@ $used_voucher->close();
                 <div class="voucher-condition">Max discount $<?=$v['voucher_max']?></div>
                 <div class="voucher-footer">
                 <?php if(in_array($v['id'], $claimed)): ?>
-                    <button disabled>✔ Claimed</button>
+                    <button disabled class="claim">✔ Claimed</button>
                 <?php elseif((int)$users['user_tier'] >= (int)$v['voucher_min_tier']): ?>
                     <form action="../Database/user_voucher.php" method="POST">
                     <input type="hidden" name="voucher_id" value="<?=$v['id']?>">
-                    <button type="submit">Claim</button>
+                    <button type="submit" class="unclaim">Claim</button>
                     </form>
                 <?php endif; ?>
                 </div>
@@ -132,11 +132,11 @@ $used_voucher->close();
                 <div class="voucher-condition">On orders over $<?=$v['voucher_condition']?></div>
                 <div class="voucher-footer">
                 <?php if(in_array($v['id'], $claimed)): ?>
-                    <button disabled>✔ Claimed</button>
+                    <button disabled class="claim">✔ Claimed</button>
                 <?php elseif((int)$users['user_tier'] >= (int)$v['voucher_min_tier']): ?>
                     <form action="../Database/user_voucher.php" method="POST">
                     <input type="hidden" name="voucher_id" value="<?=$v['id']?>">
-                    <button type="submit">Claim</button>
+                    <button type="submit" class="unclaim">Claim</button>
                     </form>
                 <?php endif; ?>
                 </div>
@@ -162,11 +162,11 @@ $used_voucher->close();
                 <div class="voucher-condition">Max discount $<?=$v['voucher_max']?></div>
                 <div class="voucher-footer">
                 <?php if(in_array($v['id'], $claimed)): ?>
-                    <button disabled>✔ Claimed</button>
+                    <button disabled class="claim">✔ Claimed</button>
                 <?php elseif((int)$users['user_tier'] >= (int)$v['voucher_min_tier']): ?>
                     <form action="../Database/user_voucher.php" method="POST">
                     <input type="hidden" name="voucher_id" value="<?=$v['id']?>">
-                    <button type="submit">Claim</button>
+                    <button type="submit" class="unclaim">Claim</button>
                     </form>
                 <?php endif; ?>
                 </div>
@@ -196,11 +196,11 @@ $used_voucher->close();
                 <div class="voucher-condition">On orders over $<?=$v['voucher_condition']?></div>
                 <div class="voucher-footer">
                 <?php if(in_array($v['id'], $claimed)): ?>
-                    <button disabled>✔ Claimed</button>
+                    <button disabled class="claim">✔ Claimed</button>
                 <?php elseif((int)$users['user_tier'] >= (int)$v['voucher_min_tier']): ?>
                     <form action="../Database/user_voucher.php" method="POST">
                     <input type="hidden" name="voucher_id" value="<?=$v['id']?>">
-                    <button type="submit">Claim</button>
+                    <button type="submit" class="unclaim">Claim</button>
                     </form>
                 <?php endif; ?>
                 </div>

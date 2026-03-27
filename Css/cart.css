@@ -427,6 +427,7 @@ html,body{
     flex-direction: column;
     justify-content: space-around;
     align-items: start;
+    overflow-x: hidden;
 }
 .info-total-order-span-container{
     width: 90%;
@@ -434,8 +435,7 @@ html,body{
     display: flex;
     position: relative;
     margin: 0 auto;
-    justify-content: start;
-    gap: 50%;
+    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.199);
 }
@@ -448,7 +448,7 @@ html,body{
     font-size: clamp(.8rem, 1vw, 2rem);
 }
 #voucher-select{
-    width: 40%;
+    width: fit-content;
     height: 30px;
     border: none;
     color: white;
