@@ -162,16 +162,26 @@ if($userAddress->num_rows > 0){
                                                         data-max="<?=$v['voucher_max']?>"
                                                         data-id="<?=$v['id']?>"
                                                         data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="0"><?=$v['voucher_discount']?>%
+                                                        data-ship="0">SALE <?=$v['voucher_discount']?>% (MAX <?=$v['voucher_max']?>$)
                                 </option>
                                 <?php elseif($v['voucher_type'] == "shipping"): ?>
-                                <option class="voucher" value="<?=$v['id']?>"
+                                    <?php if($v['voucher_discount'] == 25): ?>
+                                        <option class="voucher" value="<?=$v['id']?>"
                                                         data-condition="<?=$v['voucher_condition']?>"
                                                         data-max="<?=$v['voucher_max']?>"
                                                         data-id="<?=$v['id']?>"
                                                         data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="1">$<?=$v['voucher_discount']?> OFF
-                                </option>
+                                                        data-ship="1">Free Ship
+                                        </option>
+                                    <?php else: ?>
+                                        <option class="voucher" value="<?=$v['id']?>"
+                                                        data-condition="<?=$v['voucher_condition']?>"
+                                                        data-max="<?=$v['voucher_max']?>"
+                                                        data-id="<?=$v['id']?>"
+                                                        data-discount="<?=$v['voucher_discount']?>"
+                                                        data-ship="1">$<?=$v['voucher_discount']?> Ship OFF
+                                        </option>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </select>

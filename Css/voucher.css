@@ -313,16 +313,22 @@ justify-content: space-between;
 align-items: center;
 }
 
-.voucher-footer button{
+.unclaim{
 border: 1px solid black;
 background: none;
 padding: 6px 16px;
 cursor: pointer;
 }
-.voucher-footer button:hover{
+.unclaim:hover{
 border: 1px solid white;
 background: black;
 color: white;
+padding: 6px 16px;
+cursor: pointer;
+}
+.claim{
+border: 1px solid black;
+background: none;
 padding: 6px 16px;
 cursor: pointer;
 }
@@ -368,7 +374,6 @@ cursor: pointer;
   align-items: center;
   gap: 5px;
 }
-
 
 
 .footer-2 {
