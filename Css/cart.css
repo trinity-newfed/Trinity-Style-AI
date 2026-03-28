@@ -448,8 +448,8 @@ html,body{
     font-size: clamp(.8rem, 1vw, 2rem);
 }
 #voucher-select{
-    width: fit-content;
-    height: 30px;
+    width: 40%;
+    height: 20px;
     border: none;
     color: white;
     background: rgb(0, 0, 0);
