@@ -7,12 +7,12 @@ $dbname = "TF_Database";
 $conn = new mysqli($host, $user, $password, $dbname);
 
 session_start();
-$username = $_SESSION['username'] ?? null;
+$userID = $_SESSION['user_id'] ?? null;
 
 
 $sql = $conn->prepare("SELECT * FROM user_policy_agreement
-                       WHERE username = ? AND policy_id = 'delivery'");
-$sql->bind_param("s", $username);
+                       WHERE user_id = ? AND policy_id = 'delivery'");
+$sql->bind_param("s", $userID);
 $sql->execute();
 $agreement = $sql->get_result();
 $agree = $agreement->fetch_assoc();

@@ -15,7 +15,7 @@ $userID = $_SESSION['user_id'];
 $agree = $_POST['policy_id'];
 
 $data = $conn->prepare("SELECT 1 FROM user_policy_agreement
-                        WHERE id = ? AND policy_id = ?");
+                        WHERE user_id = ? AND policy_id = ?");
 $data->bind_param("is", $userID, $agree);
 $data->execute();
 $check = $data->get_result();

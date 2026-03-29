@@ -1367,4 +1367,7 @@ html,body{
   body, h1, h2, h3, h4 {
     font-size: 1rem;
   }
+  #progress-container{
+    max-width: 200px;
+  }
 }

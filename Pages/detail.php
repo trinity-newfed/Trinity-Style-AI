@@ -371,6 +371,26 @@ $sql->close();
     const closeAlert = document.getElementById("closeAlertBtn");
     const agreeForm = document.getElementById("agreementForm");
     const isLogin = <?=isset($_SESSION['user_id']) ? 'true' : 'false'?>;
+    const checked = document.getElementById("agreeAI");
+      
+      if(checked){
+        if(checked.checked != true){
+        genBtn.disabled = true;
+        genBtn.style.background = "gray";
+      }else{
+        genBtn.disabled = false;
+      }
+
+      checked.addEventListener('change', function(){
+        if(checked.checked == true){
+          genBtn.disabled = false;
+          genBtn.style.background = "";
+        }else{
+          genBtn.disabled = true;
+          genBtn.style.background = "gray";
+        }
+      });
+      }
 
     if(userWelcome){
             userWelcome.textContent = "Hi, " + username1;

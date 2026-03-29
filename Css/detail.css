@@ -1003,4 +1003,7 @@ html,body{
         letter-spacing: 2px;
         text-transform: uppercase;
     }
+    #progress-container{
+    max-width: 200px;
+  }
 }
