@@ -9,7 +9,7 @@ session_start();
 $otp = 0;
 if(isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])){
   $otp = 1;
-}elseif(isset($_SESSION['registerOtp'])){
+}elseif(isset($_SESSION['register_data'])){
   $otp = 2;
 }
 ?>
