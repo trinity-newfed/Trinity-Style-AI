@@ -989,6 +989,9 @@ html,body{
 
 
 @media(max-width: 600px){
+  .user-information{
+    max-width: 100%;
+  }
     #footer div{
         grid-template-columns: repeat(2, 1fr);
     }
