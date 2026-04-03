@@ -256,7 +256,8 @@ html,body{
     left: 5%;
     font-size: clamp(1rem, 2.5vw, 3rem);
     font-weight: bolder;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 4px;
 }
 #cart-item-container{
     position: relative;
@@ -267,7 +268,7 @@ html,body{
     justify-content: space-around;
 }
 #item-list{
-    width: 50%;
+    width: 65%;
     height: 100%;
     background-color: white;
     border-radius: 10px;
@@ -275,50 +276,111 @@ html,body{
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    justify-content: start;
+    align-items: center;
     padding: 1rem;
     gap: 1rem;
 }
-
+#item-list::-webkit-scrollbar{
+        width: 0;
+        height: 0;
+}
 #item-info{
-    width: 90%;
+    width: 95%;
     min-height: 15%;
     font-size: clamp(0.5rem, 1.2vw, 2rem);
-    font-weight: bolder;
+    font-weight: 500;
     font-family: Arial, Helvetica, sans-serif;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    gap: 12%;
+}
+#item-info :nth-child(1){
+    width: 32.5%;
 }
 .items{
-    width: 90%;
+    width: 95%;
     min-height: 22%;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    display: inline-flex;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
     align-items: center;
+    gap: 15%;
+}
+.item-name{
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 550;
+}
+#product-container{
+    display: flex;
+    justify-content: space-between;
+    width: 30%;
 }
 #items-image-container{
-    width: clamp(5rem, 5vw, 5.5rem);
-    height: clamp(5rem, 5vw, 5.5rem);
+    width: clamp(4rem, 7.5vw, 7.5rem);
+    height: clamp(4rem, 7.5vw, 7.5rem);
     border-radius: 10px;
 }
 #items-image-container img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    background: #f3f3f3d0;
+    width: 98%;
+    height: 98%;
+    object-fit: scale-down;
     object-position: center 10%;
-    border-radius: 10px;
+}
+.item-label{
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  border-radius: 3px;
+  border: 1.5px solid #777;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+}
+.item-label:hover{
+  border-color: #c9a96e;
+  box-shadow: 0 0 6px rgba(201, 169, 110, 0.25);
+}
+.item-label:has(input:checked){
+  border-color: #c9a96e;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  box-shadow: 0 0 8px rgba(201, 169, 110, 0.4);
+}
+.item-label::after{
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 11px;
+  border: solid #c9a96e;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+.item-label:has(input:checked)::after{
+  transform: rotate(45deg) scale(1);
+  opacity: 1;
+}
+.item-label:active{
+  transform: scale(0.9);
 }
 #items-info-container{
-    width: 39%;
+    min-width: fit-content;
+    max-width: fit-content;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: clamp(0.65rem, 0.4vw, 0.7rem);
-    padding-left: 5px;
+    gap: clamp(.6rem, .3vw, .7rem);
 }
 #items-info-container span{
-    font-size: clamp(0.65rem, 0.9vw, 1rem);
+    font-size: clamp(.7rem, 1vw, 1rem);
+    max-width: 80px;
     cursor: default;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -326,22 +388,18 @@ html,body{
     display: flex;
     justify-content: end;
     align-items: center;
-    font-size: clamp(0.65rem, 0.9vw, 1rem);
-    width: 15%;
-    padding-left: 10%;
+    font-size: clamp(0.65rem, .9vw, 1rem);
 }
 #items-quantity-container{
-    font-size: clamp(0.65rem, 0.9vw, 1rem); 
-    width: fit-content; 
+    font-size: clamp(0.65rem, .9vw, 1rem); 
+    width: fit-content;
     display: flex; 
     justify-content: center;
+    gap: 50%;
+    position: relative;
+    transition: .3s;
 }
-#items-quantity-container *{
-        position: relative;
-        left: 10%;
-    }
 #label-for-remove-input{
-    text-decoration: underline;
     color: rgba(0, 0, 0, 0.503);
     font-size: clamp(0.65rem, 0.9vw, 1rem);
 }
@@ -349,15 +407,26 @@ html,body{
     color: black;
 }
 .operation-button{
-    background-color: transparent;
+    background: white;
     border: none;
-    transition: .1s all;
-    font-size: clamp(0.65rem, .9vw, 1rem);
+    border-radius: 50%;
+    transition: .3s all;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
     margin: 0;
+    padding: 1px;
+}
+.icon.operate{
+    cursor: pointer;
+    width: clamp(.65rem, .7vw, 1.5rem);
+    height: clamp(.65rem, .7vw, 1.5rem);
 }
 .operation-button:hover{
-    font-size: clamp(0.7rem, 1vw, 1rem);
-    transition: .3s all;
+    scale: 1.02;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.5);
+    transition: .5s all;
 }
 #info-list{
     width: 30%;
@@ -371,15 +440,16 @@ html,body{
 #info-freeship{
     width: 100%;
     height: 30%;
-    background-color: black;
+    background: linear-gradient(to right, #0d0d0d, #1f1f1f);
     border-radius: 10px;
-    color: white;
+    color: #EAEAEA;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     pointer-events: none;
     gap: clamp(0.5rem, 1vw, 1rem);
+    box-shadow: 0 4px 10px rgb(0, 0, 0);
 }
 #freeship-progress-bar{
     width: 90%;
@@ -388,13 +458,13 @@ html,body{
     background-color: white;
 }
 #shipping-label{
-    font-size: clamp(0.5rem, 1vw, 1rem);
+    font-size: clamp(.6rem, 1vw, 1rem);
 }
 #progress-bar{
     width: 10%;
     max-width: 100%;
     height: 100%;
-    background-color: orangered;
+    background: linear-gradient(90deg, #B8965A, #E5C97A);
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -420,7 +490,7 @@ html,body{
 #info-total-order{
     width: 100%;
     height: 65%;
-    background-color: black;
+    background: linear-gradient(to right, #0d0d0d, #1f1f1f);
     border-radius: 10px;
     color: white;
     display: flex;
@@ -428,6 +498,7 @@ html,body{
     justify-content: space-around;
     align-items: start;
     overflow-x: hidden;
+    box-shadow: 0 4px 10px rgb(0, 0, 0);
 }
 .info-total-order-span-container{
     width: 90%;
@@ -446,13 +517,14 @@ html,body{
     width: 30%;
     min-width: fit-content;
     font-size: clamp(.8rem, 1vw, 2rem);
+    color: #EAEAEA;
 }
 #voucher-select{
     width: 40%;
     height: 20px;
     border: none;
-    color: white;
-    background: rgb(0, 0, 0);
+    color: #EAEAEA;
+    background: transparent;
     cursor: pointer;
     text-align: end;
     align-items: center;
@@ -541,15 +613,14 @@ html,body{
     position: relative;
     margin: 0 auto;
     left: 0;
-    border-radius: 10px;
-    background-color: transparent;
-    color: rgb(255, 255, 255);
-    border: 1px solid rgb(255, 255, 255);
+    border-radius: 5px;
+    background: linear-gradient(90deg, #B8965A, #E5C97A);
+    color: black;
+    border: 1px solid #E5C97A;
+    font-weight: 600;
 }
 #order-btn:hover{
-    background-color: white;
-    border: 1px solid rgb(255, 255, 255);
-    color: rgb(0, 0, 0);
+    opacity: .7;
 }
 /*END BODY*/
 
@@ -743,11 +814,38 @@ html,body{
         display: none;
     }
     .items{
-        width: 95%;
-        justify-content: space-between;
+        gap: 10%;
+        width: 100%;
+        justify-content: center;
     }
-    #items-image-container img{
-        object-fit: scale-down;
+    #product-container{
+        width: 80%;
+        justify-content: center;
+        gap: 15%;
+    }
+    .item-label{
+        width: 13px;
+        height: 13px;
+    }
+    .item-label::after{
+        width: 3px;
+        height: 8px;
+        left: 4px;
+        top: 1px;
+    }
+    .item-label:active{
+        transform: scale(.7);
+    }
+    #items-quantity-container{
+        gap: 10%;
+    }
+    #items-info-container{
+        min-width: 25vw;
+    }
+    #items-info-container span{
+        font-size: clamp(.55rem, 1vw, 1rem);
+        min-width: fit-content;
+        max-width: fit-content;
     }
     .items-price-container{
         display: none;
@@ -789,7 +887,7 @@ html,body{
         max-height: 30px;
     }
     .info-total-order-span-container.total{
-        width: 80%;
+        width: 80vw;
         bottom: 3%;
         left: 0;
         height: 100%;

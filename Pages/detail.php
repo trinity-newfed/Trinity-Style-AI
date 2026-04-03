@@ -142,7 +142,7 @@ $sql->close();
                 <label for="XL-size-<?=$row['id']?>">XL</label>
         </div>
 
-        <form action="../Database/add_item_to_cart.php" method="POST" style="width: 100%; display: grid; place-items: center;">     
+        <form action="../Database/add_item_to_cart.php" method="POST" style="width: 100%; display: grid; place-items: center;" id="addCartForm">     
                     <input type="hidden" name="product_id" value="<?=$row['id']?>" id="modal-product-id">
                     <input type="hidden" name="product_name" value="<?=$row['product_name']?>" id="modal-product-name">
                     <input type="hidden" name="product_category" value="<?=$row['product_category']?>" id="modal-product-type">
@@ -280,16 +280,10 @@ $sql->close();
         </div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">GIFT VOUNCHER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='voucher.php'" style="cursor: pointer;">Check voucher</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">TRINITY TIER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='userTier.php'" style="cursor: pointer;">Check your shopping tier</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
     </div>
     <div class="menu-item">
         <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>

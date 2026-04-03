@@ -8,6 +8,7 @@ $conn = new mysqli($host, $user, $password, $dbname);
 
 session_start();
 $username = $_SESSION['username'] ?? null;
+$userID = $_SESSION['user_id'] ?? null;
 //VOUNCHER FETCH
 if(isset($_SESSION['user_id'])){
 
@@ -65,7 +66,7 @@ $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 } else {
     $data = [];
 }
-
+$address = 0;
 if(isset($_SESSION['user_id'])){
     $userId = $_SESSION['user_id'];
     $distance = $conn->prepare("SELECT user_address FROM userdata
@@ -98,14 +99,12 @@ if(isset($_SESSION['user_id'])){
 </head>
 <body>
 <section id="body">
-        <div id="cart-header">SHOPPING CART</div>
+        <div id="cart-header">Shopping Cart</div>
     <form action="../Database/checkout.php" method="POST" style="width: 100%; height: 100%; top: 12.5%; position: relative;">
         <div id="cart-item-container">
             <div id="item-list">
                 <div id="item-info">
                     <span>Product</span>
-                    <span></span>
-                    <span class="fill2"></span>
                     <span class="price">Price</span>
                     <span>Quantity</span>
                     <span>Total</span>
@@ -116,20 +115,31 @@ if(isset($_SESSION['user_id'])){
                 <?php else: ?>
                 <?php foreach($data as $d): ?>
                 <div class="items">
-                    <input style="cursor: pointer;" type="checkbox" class="item-checkbox" name="cart_ids[]" value="<?=$d['cart_id']?>">
-                    <div id="items-image-container"><img src="../<?=$d['product_img']?>" onclick="window.location.href='detail.php?id=<?=$d['product_id']?>'"></div>
-                    <div id="items-info-container">
-                        <span style="font-weight: bolder; min-width: 300px;"><?=$d['product_name']?></span>
-                        <span style="color: rgba(0, 0, 0, 0.5); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
+                    <div id="product-container">
+                        <div style="display: flex; max-width: 50%; align-items: center; justify-content: center; gap: 5%;">
+                            <label class="item-label">
+                                <input style="cursor: pointer;" type="checkbox" class="item-checkbox" name="cart_ids[]" value="<?=$d['cart_id']?>" hidden>
+                            </label>
+                            <div id="items-image-container"><img src="../<?=$d['product_img']?>" onclick="window.location.href='detail.php?id=<?=$d['product_id']?>'"></div>
+                        </div>
+                        <div style="display: flex; max-width: 50%;">
+                            <div id="items-info-container">
+                                <span class="item-name"><?=$d['product_name']?></span>
+                                <span style="color: rgba(0, 0, 0, 0.75); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
                             <label style="cursor: pointer;" for="remove-input" id="label-for-remove-input" onclick="window.location.href='../Database/delete_item_cart.php?id=<?=$d['cart_id']?>'">Remove</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="items-price-container" style="font-size: clamp(0.7rem, 0.9vw, 1rem); width: 30%;">
-                        <?=$d['product_price']?> $
+                    <div class="items-price-container" data-price="<?=$d['product_price']?>" style="font-size: clamp(0.7rem, 0.9vw, 1rem);">
                     </div>
                     <div id="items-quantity-container">
-                            <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="minus">-</button>
-                        <span class="item-quantity"><?=$d['quantity']?></span>
-                            <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="plus">+</button>
+                            <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="minus">
+                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
+                            </button>
+                        <span class="item-quantity" style="font-weight: 550;"><?=$d['quantity']?></span>
+                            <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="plus">
+                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
+                            </button>
                     </div>
                     <div class="items-total-container">
                         <span style="font-size: clamp(0.7rem, 0.9vw, 1rem); position: relative;">0</span>
@@ -159,7 +169,7 @@ if(isset($_SESSION['user_id'])){
                         <?php else: ?>
                         <input type="hidden" id="id" name="id" value="">
                         <div id="voucher-select" style="cursor: pointer;">
-                            <div value="0" id="main-voucher" data-condition="0" data-max="0">No Selected</div>
+                            <div value="0" id="main-voucher" data-condition="0" data-max="0">No Selection</div>
                             <div class="voucher-list">
                                 <?php foreach($voucher as $v): ?>
                                 <?php if($v['voucher_type'] == "order"): ?>
@@ -202,11 +212,11 @@ if(isset($_SESSION['user_id'])){
                         <span id="deli-fee" style="text-align: center;"></span>
                     </div>
                     <div class="info-total-order-span-container total">
-                        <span>Totals</span>
+                        <span>Grand Total</span>
                         <?php if(empty($data)): ?>
-                        <span id="final-total">0$</span>
+                        <span id="final-total">$0</span>
                         <?php else: ?>
-                        <span id="final-total">0$</span>
+                        <span id="final-total">$0</span>
                         <?php endif; ?>
                     </div>       
                     <button type="submit" id="order-btn">Checkout</button>
@@ -287,16 +297,10 @@ if(isset($_SESSION['user_id'])){
         </div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">GIFT VOUNCHER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='voucher.php'" style="cursor: pointer;">Check voucher</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">TRINITY TIER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='userTier.php'" style="cursor: pointer;">Check your shopping tier</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
     </div>
     <div class="menu-item">
         <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
@@ -355,214 +359,21 @@ if(isset($_SESSION['user_id'])){
 </footer>
 <input type="hidden" value="<?=$address?>" id="to" disabled>
     <script>
-
-
-        //MAP API
-        let coords = {
-            from: [106.5775, 10.8908],
-            to: null
-        };
-
-        async function calc(){
-            const url = `https://router.project-osrm.org/route/v1/driving/${coords.from[0]},${coords.from[1]};${coords.to[0]},${coords.to[1]}?overview=false`;
-            const res = await fetch(url);
-            const data = await res.json();
-            const km = (data.routes[0].distance / 1000);
-            return km;
+        const priceDisplay = document.querySelectorAll(".items-price-container");
+        if(priceDisplay){
+            priceDisplay.forEach(pDisplay =>{
+                pDisplay.textContent = "$" + parseFloat(pDisplay.dataset.price);
+            });
         }
 
-        async function getCoordsFromName(name){
-            const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(name)}&limit=1`);
-            const data = await res.json();
-            if(data.features.length > 0){
-                return data.features[0].geometry.coordinates;
-            }
-            return null;
-        }
-
-        window.onload = async function() {
-            const toName = "<?=$address?>";
-            const coordsTo = await getCoordsFromName(toName);
-            coords.to = coordsTo;
-            document.getElementById("to").value = toName;
-            if(coordsTo){
-                coords.to = coordsTo;
-                calc();
-            }
-        };
-
-
-        //USERNAME
-        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.replace("@gmail.com", "");
-        const userWelcome = document.getElementById("menu-Username");
-        const finalTotal = document.getElementById("final-total");
-        
-        if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
-        }
-
-    //DELIVERY CALCULATE
-    function calculateShippingFee(km){
-        if(km < 20){
-            return 2;
-        }else if(km < 100){
-            return 5;
-        }else if(km < 1000){
-            return 15;
-        }else{
-            return 25;
-        }
-    }
-
-    window.onload = async function(){
-        const toName = "<?=$address?>";
-        const coordsTo = await getCoordsFromName(toName);
-        if(coordsTo){
-            coords.to = coordsTo;
-            const km = await calc();
-            const fee = calculateShippingFee(km);
-            document.getElementById("deli-fee").textContent = fee.toLocaleString() + "$";
-        }
-    };
-
-
-    const dropDown = document.getElementById("main-voucher");
-    if(dropDown){
-        dropDown.addEventListener('click', ()=>{
-            document.querySelector(".voucher-list").style.display = "block";
-        });
-        document.addEventListener('click', function(e){
-            if(e.target !== dropDown) document.querySelector(".voucher-list").style.display = "none";
-        });
-    }
-
-//CALCULATE TOTAL
-function calculateFinalTotal(){
-    const selectedVoucher = document.querySelector("#voucher-select option:checked");
-    const finalTotalDisplay = document.getElementById("final-total");
-    const deliFeeDisplay = document.getElementById("deli-fee");
-    const progressBar = document.getElementById("progress-bar");
-    const shippingLabel = document.getElementById("shipping-label");
-    const mainVoucher = document.getElementById("main-voucher");
-
-    let total = 0;
-    const items = document.querySelectorAll(".items");
-    
-
-    //FOREACH ITEM
-    items.forEach(item => {
-        const checkbox = item.querySelector(".item-checkbox");
-        const itemsTotalSpan = item.querySelector(".items-total-container span");
-        const price = parseFloat(item.querySelector(".items-price-container").textContent.replace("$", ""));
-        const quantity = parseInt(item.querySelector(".item-quantity").textContent);
-        
-        const itemTotal = price * quantity;
-        if (itemsTotalSpan) itemsTotalSpan.textContent = itemTotal + "$";
-
-        if (checkbox && checkbox.checked) {
-            total += itemTotal;
-        }
-    });
-
-    //FREESHIP THRESHOLD
-    const FREE_SHIP_THRESHOLD = 700;
-    const isAutoFreeShip = total >= FREE_SHIP_THRESHOLD;
-    let totalDiscount = 0;
-    let shipDiscount = 0;
-    let currentShippingFee = (typeof calculateShippingFee === 'function') ? calculateShippingFee() : 0;
-
-    //VOUCHER SELECT
-    const vouchers = document.querySelectorAll(".voucher-list .voucher");
-    vouchers.forEach(voucher => {
-        const condition = parseFloat(voucher.dataset.condition) || 0;
-        const isShipVoucher = parseInt(voucher.dataset.ship) === 1;
-
-
-        if(total < condition || (isShipVoucher && isAutoFreeShip)){
-            voucher.classList.add("disabled");
-            let disabledVouchers = document.querySelectorAll(".voucher.disabled");
-            disabledVouchers.forEach(disabledVoucher =>{
-                const text = disabledVoucher.textContent;
-                if(mainVoucher.textContent == text) mainVoucher.textContent = "No Selected";
-            })
-        }else{
-            voucher.classList.remove("disabled");
-        }
-    });
-
-    const activeVoucher = document.querySelector(".voucher.active");
-
-    //CHECK VOUCHER
-    if(activeVoucher && !activeVoucher.disabled && activeVoucher.value !== "0"){
-        const val = parseFloat(activeVoucher.dataset.discount) || 0;
-        const isShipVoucher = parseInt(activeVoucher.dataset.ship) === 1;
-        if(isShipVoucher){
-            shipDiscount = val; 
-            totalDiscount = 0; 
-        }else{
-            const maxLimit = parseFloat(activeVoucher.dataset.max) || Infinity;
-            totalDiscount = Math.min(total * (val / 100), maxLimit);
-            shipDiscount = 0;
-        }
-    }
-
-    const finalShippingFee = Math.max(0, currentShippingFee - shipDiscount);
-    const finalTotal = Math.max(0, total - totalDiscount + finalShippingFee);
-    
-    //DISPLAY FEE
-    if(finalTotalDisplay){
-        finalTotalDisplay.textContent = finalTotal + "$";
-    }
-    if(deliFeeDisplay){
-        deliFeeDisplay.textContent = finalShippingFee === 0 ? "0$" : finalShippingFee.toLocaleString() + "$";
-    }
-
-    //SHIPPING PROGRESS
-    if(progressBar){
-        const progressPercent = Math.min((total / FREE_SHIP_THRESHOLD) * 100, 100);
-        progressBar.style.width = total > 0 ? `${Math.max(progressPercent, 10)}%` : "10%";
-    }
-    //SHIPPING LABEL 
-    if(shippingLabel){
-        if (total >= FREE_SHIP_THRESHOLD) {
-            shippingLabel.textContent = "Free Shipping Applied";
-        } else if (total > 0) {
-            shippingLabel.textContent = `Buy $${(FREE_SHIP_THRESHOLD - total).toFixed(0)} more to enjoy Free Shipping`;
-        } else {
-            shippingLabel.textContent = "Buy more to enjoy Free Shipping";
-        }
-    }
-}
-
-const vouchers = document.querySelectorAll(".voucher-list .voucher");
-
-vouchers.forEach(voucher => {
-    voucher.addEventListener('click', ()=>{
-        if(voucher.classList.contains("disabled")) return;
-        vouchers.forEach(v => v.classList.remove("active"));
-        voucher.classList.add("active");
-        const activeVoucher = document.querySelector(".voucher.active");
-        const input = document.getElementById("id");
-        if(input){
-            input.value = activeVoucher ? activeVoucher.dataset.id : "";
-        }
-        document.querySelector(".voucher-list").style.display = "none";
-        const mainVoucher = document.getElementById("main-voucher");
-        if(mainVoucher){
-            mainVoucher.textContent = voucher.textContent;
-        }
-        calculateFinalTotal();
-    });
-});
-    //QUANTITY BTN
+        //QUANTITY BTN
     const operationBtn = document.querySelectorAll(".operation-button");
     operationBtn.forEach(btn =>{
         btn.addEventListener('click', function(){
             btn.disabled = true;
             const id = this.dataset.id;
             const action = this.dataset.action;
-            const item = btn.closest(".items");
+            const item = this.closest(".items");
             const quantities = item.querySelector(".item-quantity");
 
             let quantity = parseInt(quantities.textContent);
@@ -588,6 +399,210 @@ vouchers.forEach(voucher => {
             });
         });
     });
+        //USERNAME
+        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
+        let username1 = email.replace("@gmail.com", "");
+        const userWelcome = document.getElementById("menu-Username");
+        const finalTotal = document.getElementById("final-total");
+        
+        if(userWelcome){
+            userWelcome.textContent = "Hi, " + username1;
+        }
+
+        const dropDown = document.getElementById("main-voucher");
+        if(dropDown){
+            dropDown.addEventListener('click', ()=>{
+                document.querySelector(".voucher-list").style.display = "block";
+            });
+            document.addEventListener('click', function(e){
+                if(e.target !== dropDown) document.querySelector(".voucher-list").style.display = "none";
+            });
+        }
+
+
+        //MAP API
+        let currentKm = 0;
+        let coords = {
+            from: [106.5775, 10.8908],
+            to: null
+        };
+
+        window.onload = async function() {
+            const toName = "<?=$address?>";
+            const coordsTo = await getCoordsFromName(toName);
+            coords.to = coordsTo;
+            document.getElementById("to").value = toName;
+            if(coordsTo){
+                coords.to = coordsTo;
+                const km = await calc();
+                const fee = calculateShippingFee(km);
+            }
+        };
+
+        async function calc(){
+            const url = `https://router.project-osrm.org/route/v1/driving/${coords.from[0]},${coords.from[1]};${coords.to[0]},${coords.to[1]}?overview=false`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const km = (data.routes[0].distance / 1000);
+            return km;
+        }
+
+        async function getCoordsFromName(name){
+            const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(name)}&limit=1`);
+            const data = await res.json();
+            if(data.features.length > 0){
+                return data.features[0].geometry.coordinates;
+            }
+            return null;
+        }
+
+
+        
+
+    //DELIVERY CALCULATE
+    function calculateShippingFee(km){
+        if(isNaN(km) || km <= 0) return 0;
+        currentKm = km; 
+        if(km < 20) return 2;
+        else if(km < 100) return 5;
+        else if(km < 1000) return 15;
+        else return 25;
+    }
+
+    window.onload = async function(){
+        const toName = "<?=$address?>";
+        const coordsTo = await getCoordsFromName(toName);
+        if(coordsTo){
+            coords.to = coordsTo;
+            const km = await calc();
+            const fee = calculateShippingFee(km);
+            document.getElementById("deli-fee").textContent = fee.toLocaleString() + "$";
+        }
+        await calculateFinalTotal();
+    };
+    
+
+
+//CALCULATE TOTAL
+function calculateFinalTotal(){
+    const selectedVoucher = document.querySelector("#voucher-select option:checked");
+    const finalTotalDisplay = document.getElementById("final-total");
+    const deliFeeDisplay = document.getElementById("deli-fee");
+    const progressBar = document.getElementById("progress-bar");
+    const shippingLabel = document.getElementById("shipping-label");
+    const mainVoucher = document.getElementById("main-voucher");
+
+    let total = 0;
+    const items = document.querySelectorAll(".items");
+    
+
+    //FOREACH ITEM
+    items.forEach(item => {
+        const checkbox = item.querySelector(".item-checkbox");
+        const itemsTotalSpan = item.querySelector(".items-total-container span");
+        const price = parseFloat(item.querySelector(".items-price-container").textContent.replace("$", ""));
+        const quantity = parseInt(item.querySelector(".item-quantity").textContent);
+        
+        const itemTotal = price * quantity;
+        if (itemsTotalSpan) itemsTotalSpan.textContent = "$" + itemTotal;
+
+        if(checkbox && checkbox.checked){
+            total += itemTotal;
+        }
+    });
+
+    //FREESHIP THRESHOLD
+    const FREE_SHIP_THRESHOLD = 700;
+    const isAutoFreeShip = total >= FREE_SHIP_THRESHOLD;
+    let totalDiscount = 0;
+    let shipDiscount = 0;
+    let currentShippingFee = (typeof calculateShippingFee === 'function') ? calculateShippingFee(currentKm) : 0;
+
+    //VOUCHER SELECT
+    const vouchers = document.querySelectorAll(".voucher-list .voucher");
+    vouchers.forEach(voucher => {
+        const condition = parseFloat(voucher.dataset.condition) || 0;
+        const isShipVoucher = parseInt(voucher.dataset.ship) === 1;
+
+
+        if(total < condition || (isShipVoucher && isAutoFreeShip)){
+            voucher.classList.add("disabled");
+            let disabledVouchers = document.querySelectorAll(".voucher.disabled");
+            disabledVouchers.forEach(disabledVoucher =>{
+                const text = disabledVoucher.textContent;
+                if(mainVoucher.textContent == text) mainVoucher.textContent = "No Selection";
+            })
+        }else{
+            voucher.classList.remove("disabled");
+        }
+    });
+
+    const activeVoucher = document.querySelector(".voucher.active");
+
+    //CHECK VOUCHER
+    if(activeVoucher && !activeVoucher.disabled && activeVoucher.value !== "0"){
+        const val = parseFloat(activeVoucher.dataset.discount) || 0;
+        const isShipVoucher = parseInt(activeVoucher.dataset.ship) === 1;
+        if(isShipVoucher){
+            shipDiscount = val; 
+            totalDiscount = 0; 
+        }else{
+            const maxLimit = parseFloat(activeVoucher.dataset.max) || Infinity;
+            totalDiscount = Math.min(total * (val / 100), maxLimit);
+            shipDiscount = 0;
+        }
+    }
+
+    let finalShippingFee = Math.max(0, currentShippingFee - shipDiscount);
+    if(total >= FREE_SHIP_THRESHOLD){
+        finalShippingFee = 0;
+    }
+    const finalTotal = Math.max(0, total - totalDiscount + finalShippingFee);
+    
+    //DISPLAY FEE
+    if(finalTotalDisplay){
+        finalTotalDisplay.textContent = "$" + finalTotal;
+    }
+    if(deliFeeDisplay){
+        deliFeeDisplay.textContent = finalShippingFee === 0 ? "$0" : "$" + finalShippingFee.toLocaleString();
+    }
+
+    //SHIPPING PROGRESS
+    if(progressBar){
+        const progressPercent = Math.min((total / FREE_SHIP_THRESHOLD) * 100, 100);
+        progressBar.style.width = total > 0 ? `${Math.max(progressPercent, 10)}%` : "10%";
+    }
+    //SHIPPING LABEL 
+    if(shippingLabel){
+        if(total >= FREE_SHIP_THRESHOLD){
+            shippingLabel.textContent = "Complimentary Shipping";
+        }else if(total > 0){
+            shippingLabel.textContent = `Buy $${(FREE_SHIP_THRESHOLD - total).toFixed(0)} more to enjoy Free Shipping`;
+        }else{
+            shippingLabel.textContent = "Buy more to enjoy Free Shipping";
+        }
+    }
+}
+const vouchers = document.querySelectorAll(".voucher-list .voucher");
+
+vouchers.forEach(voucher => {
+    voucher.addEventListener('click', ()=>{
+        if(voucher.classList.contains("disabled")) return;
+        vouchers.forEach(v => v.classList.remove("active"));
+        voucher.classList.add("active");
+        const activeVoucher = document.querySelector(".voucher.active");
+        const input = document.getElementById("id");
+        if(input){
+            input.value = activeVoucher ? activeVoucher.dataset.id : "";
+        }
+        document.querySelector(".voucher-list").style.display = "none";
+        const mainVoucher = document.getElementById("main-voucher");
+        if(mainVoucher){
+            mainVoucher.textContent = voucher.textContent;
+        }
+        calculateFinalTotal();
+    });
+});
     
 
 

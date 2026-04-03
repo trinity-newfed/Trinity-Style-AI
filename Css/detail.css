@@ -767,13 +767,13 @@ html,body{
   text-align: center;
   display: flex;
   justify-content: center;
-  font-size: clamp(.9rem, 1vw, 2.25rem);
+  font-size: clamp(.9rem, 1.3vw, 2.25rem);
 }
 #alertNotice span{
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   text-align: center;
-  font-size: clamp(.75rem, 1vw, 2rem);
+  font-size: clamp(.75rem, 1.2vw, 2rem);
 }
 #alertNotice.alert{
   opacity: 1;
@@ -790,7 +790,7 @@ html,body{
   margin-right: 20px;
 }
 #CANCEL-btn{
-  width: clamp(3rem, 6.3vw, 6rem);
+  width: clamp(3.25rem, 6.3vw, 6rem);
   height: clamp(1rem, 3.5vh, 2.5rem);
   font-size: clamp(.7rem, .8vw, 2rem);
   background: white;
@@ -808,9 +808,9 @@ html,body{
   display: flex; 
   justify-content: center;
   align-items: center;
-  width: clamp(1.5rem, 5.5vw, 5rem);
+  width: clamp(1.65rem, 5.5vw, 5rem);
   height: clamp(1rem, 3.5vh, 3rem);
-  font-size: clamp(.5rem, 1vw, 2rem);
+  font-size: clamp(.7rem, 1vw, 2rem);
 }
 .alertBtn:hover{
   background: white;

@@ -58,10 +58,19 @@ $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
 $groupedOrders = [];
 
-foreach ($data as $d) {
-    $groupedOrders[$d['id']][] = $d;
-    $totalItems = 0;
-    $totalItems += $d['quantity'];
+$groupedOrders = [];
+foreach($data as $d){
+    $orderID = $d['id'];
+    
+    if (!isset($groupedOrders[$orderID])) {
+        $groupedOrders[$orderID] = [
+            'order_info' => $d,
+            'total_items' => 0
+        ];
+    }
+    
+
+    $groupedOrders[$orderID]['total_items'] += $d['quantity'];
 }
 ?>
 <!doctype html>
@@ -80,7 +89,7 @@ foreach ($data as $d) {
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <section id="head">
+<section id="head">
 <section id="menu">
         <div id="text-menu">
             <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
@@ -148,22 +157,17 @@ foreach ($data as $d) {
         </div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">GIFT VOUNCHER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='voucher.php'" style="cursor: pointer;">Check voucher</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">TRINITY TIER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='userTier.php'" style="cursor: pointer;">Check your shopping tier</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
     </div>
     <div class="menu-item">
         <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
     </div>
 </div>
-    </section>
+</section>
+</section>
     <section class="body">
       <div class="user-box">
         <div class="user-information">
@@ -231,7 +235,7 @@ foreach ($data as $d) {
           <?php endif; ?>
         </div>
         <div class="user-cart">
-          <div class="title" style="display: flex; justify-content: space-between; align-items: center; width: 78%; padding-top: 3%;">
+          <div class="title">
             <p>Your Orders</p>
             <select id="order-state-option">
                 <option value="Success">Success</option>
@@ -243,44 +247,53 @@ foreach ($data as $d) {
           </div>
           <div class="line2"></div>
           <div id="order-history">
-            <?php if(!empty($groupedOrders)): ?>
-                <?php foreach($groupedOrders as $order_id => $items): ?>
-                    <div class="order-block">
-                        <div class="order-state" style="width: 100%; display: flex; justify-content: space-around; align-items: center;">
-                            <h3 class="order-name">#<?= $items[0]['order_name'] ?></h3>
-                            <?php if($items[0]['order_state'] == "success"): ?>
-                                <span class="state" style="color: #16a34a; background: #e6f9ed;"><?=$items[0]['order_state']?></span>
-                            <?php elseif($items[0]['order_state'] == "cancel"): ?>
-                                <span class="state" style="color: #dc2626; background: #ffeaea;"><?=$items[0]['order_state']?></span>
-                            <?php elseif($items[0]['order_state'] == "delivery"): ?>
-                                <span class="state" style="color: #f59e0b; background: #fff4e5;"><?=$items[0]['order_state']?></span>
-                            <?php elseif($items[0]['order_state'] == "delivered"): ?>
-                                <span class="state" style="color: #6b7280c7; background: #f3f4f6;"><?=$items[0]['order_state']?></span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="order-img">
-                            <img src="../<?= $items[0]['img'] ?>" alt="">
-                            <div class="order-img-info">
-                                <h3><?=$items[0]['product_name']?></h3>
-                                <span style="text-align: end; color: gray; text-decoration-line: line-through; font-size: clamp(.7rem, .8vw, 1.1rem);"><?=$items[0]['order_original_price']?>$</span>
-                                <span style="font-size: clamp(.9rem, 1vw, 1.2rem);">Order totals (<?=$totalItems ?> items): <?=$items[0]['order_final_price']?>$</span>
-                            </div>
-                        </div>
-                        <div class="order-info">
-                            <button class="re-order">Re-Buy</button>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-                <?php else: ?>
-                    <h3 class="h3-alert">Nothing here...</h3>
+        <?php if(!empty($groupedOrders)): ?>
+            <?php foreach($groupedOrders as $order_id => $order): 
+                $info = $order['order_info']; 
+                $state = strtolower($info['order_state']);
+            ?>
+            <div class="order-block">
+            <div class="order-state" style="width: 100%; display: flex; justify-content: space-around; align-items: center;">
+                <h3 class="order-name">#<?= htmlspecialchars($info['order_name']) ?></h3>
+                
+                <?php if($state == "success"): ?>
+                    <span class="state" style="color: #16a34a; background: #e6f9ed;"><?=$info['order_state']?></span>
+                <?php elseif($state == "cancel"): ?>
+                    <span class="state" style="color: #dc2626; background: #ffeaea;"><?=$info['order_state']?></span>
+                <?php elseif($state == "delivery"): ?>
+                    <span class="state" style="color: #f59e0b; background: #fff4e5;"><?=$info['order_state']?></span>
+                <?php elseif($state == "delivered"): ?>
+                    <span class="state" style="color: #6b7280c7; background: #f3f4f6;"><?=$info['order_state']?></span>
                 <?php endif; ?>
+            </div>
+            
+                <div class="order-img">
+                    <img src="../<?= htmlspecialchars($info['img']) ?>" alt="">
+                    <div class="order-img-info">
+                        <h3><?= htmlspecialchars($info['product_name']) ?></h3>
+                        <span style="text-align: end; color: gray; text-decoration-line: line-through; font-size: clamp(.8rem, .9vw, 1.1rem);">
+                            <?= number_format($info['order_original_price']) ?>$
+                        </span>
+                        <span style="font-size: clamp(.9rem, 1vw, 1.2rem); text-align: end;">
+                            Order totals (<?= $order['total_items'] ?> items): <?= number_format($info['order_final_price']) ?>$
+                        </span>
+                    </div>
+                </div>
+                        <div class="order-info">
+                        <button class="re-order">Re-Buy</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <h3 class="h3-alert">Nothing here...</h3>
+        <?php endif; ?>
           </div>
           <p class="user-cart-alert"></p>
           <div class="user-history-AI">
             <p class="user-history-text">Try on history</p>
             <div class="line2"></div>
             <div id="try-on-container">
-            <?php if(!empty($tryonData)): ?>
+        <?php if(!empty($tryonData)): ?>
             <?php foreach($tryonData as $to): ?>
               <div class="line3">
                 <span style="display: flex; align-items: center; justify-content: center; width: 55%;">
@@ -301,14 +314,14 @@ foreach ($data as $d) {
             <?php endforeach; ?>
             <?php else: ?>
                 <h3 class="h3-alert">Nothing here...</h3>
-            <?php endif; ?>
+        <?php endif; ?>
             </div>
             <p class="user-cart-alert"></p>
           </div>
         </div>
       </div>
     </section>
-<footer class="footer-2">
+    <footer class="footer-2">
   <div class="footer-container">
     <div class="footer-left">
       <p class="footer-label">CONTACT US</p>
@@ -423,10 +436,11 @@ foreach ($data as $d) {
                         <div id="toList" class="suggest"></div>
                     </div>
             </div>
-            <button type="submit" class="re-order">Update Information</button>
+            <button type="submit" class="re-order">Submit</button>
         </form>
     </div>
 </div>
+
     <script>
       const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
       let username1 = email.replace("@gmail.com", "");

@@ -31,7 +31,7 @@ if($action === "plus"){
 }elseif($action === "minus"){
     $stmt = $conn->prepare($sql = "UPDATE cart 
                                    SET quantity = quantity - 1
-                                   WHERE username = ? 
+                                   WHERE user_id = ? 
                                    AND id = ? 
                                    AND quantity > 1"
                            );

@@ -277,7 +277,7 @@ html,body{
       }
 
       .banner-content h1 {
-        font-size: 4rem;
+        font-size: clamp(3.5rem, 5vw, 6rem);
         font-family: "Playfair Display", serif;
         line-height: 1.1;
         margin: 0 0 20px 0;
@@ -623,6 +623,7 @@ html,body{
 }
 #modal-detail:hover{
   opacity: .7;
+  text-decoration: underline;
 }
 #form-container{
   width: 100%;
@@ -836,13 +837,13 @@ html,body{
   text-align: center;
   display: flex;
   justify-content: center;
-  font-size: clamp(.9rem, 1vw, 2.25rem);
+  font-size: clamp(.9rem, 1.3vw, 2.25rem);
 }
 #alertNotice span{
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   text-align: center;
-  font-size: clamp(.75rem, 1vw, 2rem);
+  font-size: clamp(.75rem, 1.2vw, 2rem);
 }
 #alertNotice.alert{
   opacity: 1;
@@ -854,14 +855,14 @@ html,body{
   align-self: end;
   position: absolute;
   display: flex;
-  gap: 3px;
+  gap: 5%;
   bottom: 5%;
   margin-right: 20px;
 }
 #CANCEL-btn{
-  width: clamp(3rem, 6.3vw, 6rem);
+  width: clamp(3.25rem, 6.3vw, 6rem);
   height: clamp(1rem, 3.5vh, 2.5rem);
-  font-size: clamp(.7rem, .8vw, 2rem);
+  font-size: clamp(.7rem, .9vw, 2rem);
   background: white;
   color: black;
 }
@@ -877,9 +878,9 @@ html,body{
   display: flex; 
   justify-content: center;
   align-items: center;
-  width: clamp(1.5rem, 5.5vw, 5rem);
+  width: clamp(1.65rem, 5.5vw, 5rem);
   height: clamp(1rem, 3.5vh, 3rem);
-  font-size: clamp(.5rem, 1vw, 2rem);
+  font-size: clamp(.7rem, 1vw, 2rem);
 }
 .alertBtn:hover{
   background: white;
@@ -1282,7 +1283,7 @@ html,body{
       }
 
       .banner-content h1 {
-        font-size: 2rem;
+        font-size: clamp(1.7rem, 1.5vw, 2rem);
         font-family: "Playfair Display", serif;
         line-height: 1.1;
         margin: 0 0 14px -15px;
@@ -1305,7 +1306,6 @@ html,body{
         letter-spacing: 1px;
         transition: 0.3s;
         scroll-behavior: smooth;
-        border: 2px solid #ffdeac;
       }
    #text-menu #text {
     display: none; 

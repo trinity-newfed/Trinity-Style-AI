@@ -9,7 +9,8 @@ $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
 $userID = $_SESSION['user_id'] ?? null;
 
-
+$agree = null;
+if($userID !== null){
 $sql = $conn->prepare("SELECT * FROM user_policy_agreement
                        WHERE user_id = ? AND policy_id = 'terms'");
 $sql->bind_param("s", $userID);
@@ -17,6 +18,7 @@ $sql->execute();
 $agreement = $sql->get_result();
 $agree = $agreement->fetch_assoc();
 $sql->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,6 +110,7 @@ $sql->close();
             </div>
         </div>
     </div>
+    <div style="display: none;" onclick="window.location.href='#head'" id="stt"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3 329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160zm160 352l-160-160c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 329.4 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3z"/></svg></div>
 <footer class="footer-2">
   <div class="footer-container">
     <div class="footer-left">
@@ -158,10 +161,10 @@ $sql->close();
     </div>
   </div>
 </footer>
-<?php if(!empty($agree)): ?>
-<?php else: ?>
+<?php if($agree): ?>
+<?php elseif($agree == null && $userID): ?>
     <div class="modal-accept">
-        <span>By continuing, you agree to our AI Usage Policy and Terms of Service.</span>
+        <span>By continuing, you agree to our Terms of Service.</span>
         <button class="btn" id="accept">Accept</button>
         <button class="btn decline" id="decline">Decline</button>
     </div>
@@ -171,6 +174,8 @@ $sql->close();
 <?php endif; ?>
 </body>
 <script>
+    const accept = document.querySelector(".modal-accept");
+    if(accept){
     let timer = setTimeout(() => {
         document.querySelector(".modal-accept").classList.add("show");
     }, 5000);
@@ -183,5 +188,6 @@ $sql->close();
         clearTimeout(timer);
         document.getElementById("form").submit();
     });
+    }
 </script>
 </html>

@@ -40,7 +40,7 @@ if(isset($_SESSION['register_data'])){
         position: relative;
         width: 100vw;
         height: 100vh;
-        max-width: 1500px;
+        max-width: 1600px;
         max-height: 900px;
         margin: auto;
         background: url("../Pictures/Banners/banner_yellow.png") no-repeat
@@ -410,7 +410,7 @@ if(isset($_SESSION['register_data'])){
             </div>
           <button type="submit" class="btn-action">Create Account</button>
           <div class="login-link">
-            Already have an account? <a href="#" id="login-btn" class="btn">Login</a>
+            Already have an account? <a id="login-btn" class="btn" href="../Database/resetOtp.php">Login</a>
           </div>
         </div>
         </form>
@@ -492,7 +492,7 @@ if(isset($_SESSION['register_data'])){
           <?php endif; ?>
           <button type="submit" class="btn-action">Sign In</button>
           <div class="extra-link">
-            <a href="#">Forget password?</a>
+            <a href="resetPass.php">Forget password?</a>
             <div class="login-link">
             Don't have an account yet? <a href="#" id="signUp-btn" class="btn">Sign Up</a>
           </div>

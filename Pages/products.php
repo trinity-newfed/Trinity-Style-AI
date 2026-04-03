@@ -295,16 +295,10 @@ $sql->close();
         </div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">GIFT VOUNCHER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='voucher.php'" style="cursor: pointer;">Check voucher</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
     </div>
     <div class="menu-item">
-        <div class="menu-title">TRINITY TIER</div>
-        <div class="submenu">
-            <div onclick="window.location.href='userTier.php'" style="cursor: pointer;">Check your shopping tier</div>
-        </div>
+        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
     </div>
     <div class="menu-item">
         <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
@@ -591,6 +585,7 @@ setTimeout(() => {
           alertContent.textContent = "Please login first to use this feature!";
           closeAlert.style.opacity = "1";
           closeAlert.style.visibility = "visible";
+          agreeForm.style.display = "none";
           closeAlert.onclick = () =>{
             alert.classList.remove("alert");
           }
