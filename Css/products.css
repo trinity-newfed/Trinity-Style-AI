@@ -78,11 +78,14 @@ html,body{
 }
 #text span{
     font-size: clamp(0.65rem, 1.25vw, 1rem);
+    padding: 0 5px;
+    transition: .3s all;
 }
 #text span:hover{
     transition: .3s all;
     cursor: pointer;
-    background-color: rgb(0, 0, 0);
+    background: linear-gradient(to right, #0d0d0d, #2b2b2b);
+    padding: 0 5px;
     color: white;
 }
 
@@ -878,18 +881,18 @@ html,body{
   display: flex; 
   justify-content: center;
   align-items: center;
-  width: clamp(1.65rem, 5.5vw, 5rem);
+  width: fit-content;
+  max-width: fit-content;
   height: clamp(1rem, 3.5vh, 3rem);
   font-size: clamp(.7rem, 1vw, 2rem);
+  transition: .3s all;
 }
 .alertBtn:hover{
   background: white;
   color: black;
   border: 1px solid black;
-  padding: 7px 15px;
   cursor: pointer;
-  scale: 1.01;
-  transition: .4s all;
+  transition: .3s all;
 }
 #try-on-modal{
   width: 90%;
@@ -1137,9 +1140,6 @@ html,body{
     #menu{
         justify-content: space-around;
     }
-    #text-menu{
-        width: 30%;
-    }
     #text{
         display: none;
     }
@@ -1307,8 +1307,16 @@ html,body{
         transition: 0.3s;
         scroll-behavior: smooth;
       }
-   #text-menu #text {
+  #text-menu{
+    max-width: fit-content;
+  }
+  #text-menu #text {
     display: none; 
+  }
+  #logo{
+    max-width: fit-content;
+    max-height: fit-content;
+    min-width: fit-content;
   }
   #utility-menu {
     flex-direction: row;
@@ -1316,7 +1324,7 @@ html,body{
   }
   .hamburger {
     display: block;
-    margin-right: 14px;
+    margin-right: 0;
   }
   .product-container {
     display: grid;

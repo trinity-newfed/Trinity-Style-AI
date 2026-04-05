@@ -344,7 +344,10 @@ $sql->close();
 </body>
 <script>
     const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-    let username1 = email.replace("@gmail.com", "");
+    let username1 = email.split("@")[0] || "";
+      let displayName = username1.length > 6
+      ? username1.substring(0, 6) + "..."
+      : username1;
     const userWelcome = document.getElementById("menu-Username");
     const items = document.querySelectorAll(".items");
     const mainId = document.getElementById("mainId").dataset.id;
@@ -387,7 +390,7 @@ $sql->close();
       }
 
     if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
 
     items.forEach(item =>{
@@ -501,7 +504,8 @@ $sql->close();
           clearTimeout(timer);
           alert.classList.add("alert");
           alertName.textContent = "TRINITY";
-          alertContent.textContent = "Add item to cart success, view it?";
+          alertContent.textContent = "This item has been reserve for you";
+          alertOkBtn.textContent = "View";
           document.getElementById("fileChoose").style.display = "none";
           document.getElementById("genBtn").style.display = "none";
           agreeForm.style.display = "none";

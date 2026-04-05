@@ -102,7 +102,7 @@
     </style>
   </head>
   <body>
-    <div class="brand">Trinity</div>
+    <div class="brand" onclick="window.location.href='../Pages/'" style="cursor: pointer;">Trinity</div>
     <div class="body">
       <div class="title-container">
         <p>About Us</p>
@@ -113,7 +113,7 @@
         utilizing the finest fabrics and unparalleled craftsmanship sourced from
         around the globe. Each garment tells a story of prestige and excellence.
       </p>
-      <button class="btn" onclick="window.location.href='../Pages/'">Learn More</button>
+      <button class="btn" onclick="window.location.href='../Pages/products.php'">Learn More</button>
     </div>
   </body>
 </html>

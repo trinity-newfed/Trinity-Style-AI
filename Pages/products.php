@@ -359,7 +359,10 @@ $sql->close();
 setTimeout(() => {
 }, 2000);
       const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-      let username1 = email.replace("@gmail.com", "");
+      let username1 = email.split("@")[0] || "";
+      let displayName = username1.length > 6
+      ? username1.substring(0, 6) + "..."
+      : username1;
       const userWelcome = document.getElementById("menu-Username");
       const isLogin = <?=isset($_SESSION['user_id']) ? 'true' : 'false'?>;
       const products = document.querySelectorAll(".product-card");
@@ -431,8 +434,8 @@ setTimeout(() => {
 
       
       if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
-        }
+            userWelcome.textContent = "Hi, " + displayName;
+      }
 
       sizeAdd.forEach(label =>
         label.addEventListener('click', ()=>{
@@ -533,7 +536,8 @@ setTimeout(() => {
           clearTimeout(timer);
           alert.classList.add("alert");
           alertName.textContent = "TRINITY";
-          alertContent.textContent = "Add item to cart success, view it?";
+          alertContent.textContent = "This piece has been reserved for you";
+          alertOkBtn.textContent = "View";
           document.getElementById("fileChoose").style.display = "none";
           document.getElementById("genBtn").style.display = "none";
           agreeForm.style.display = "none";

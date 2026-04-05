@@ -1,3 +1,16 @@
+<?php 
+      $host = "localhost";
+      $user = "root";
+      $password = "";
+      $dbname = "TF_Database";
+
+      $conn = new mysqli($host, $user, $password, $dbname);
+      session_start();  
+      $otp = 0;
+      if(isset($_SESSION['resetOTP'])){
+        $otp = 2;
+      }
+    ?>
 <!DOCTYPE html>
 <html lang="vi">
   <head>
@@ -123,33 +136,48 @@
     </style>
   </head>
   <body>
-    <div class="reset-container">
+    <?php if($otp == 2 && isset($_SESSION['otp_verified']) != true): ?>
+      <div class="reset-container">
       <h1>Trinity</h1>
-      <form action="#">
+      <form action="../Database/resetPasswordConfirm.php" method="POST">
         <div class="form-group">
-          <label for="password">Your New Password</label>
-          <input type="password" id="password" name="password" required />
+          <label for="password">OTP</label>
+          <input type="text" name="otp" id="password" maxlength="6" pattern="\d{6}" required/>
+        </div>
+        <button type="submit" class="btn-reset">Submit</button>
+      </form>
+      <a href="reglog.php" class="back-link">Back to Login</a>
+    </div>
+    <?php elseif($otp == 0 && isset($_SESSION['otp_verified']) != true): ?>
+      <div class="reset-container">
+      <h1>Trinity</h1>
+      <form action="../Database/resetPassword.php" method="POST">
+        <div class="form-group">
+          <label for="password">Your Email</label>
+          <input type="email" id="password" name="email" required/>
         </div>
 
+        <button type="submit" class="btn-reset">Sent OTP</button>
+      </form>
+      <a href="reglog.php" class="back-link">Back to Login</a>
+    </div>
+    <?php else: ?>
+      <div class="reset-container">
+      <h1>Trinity</h1>
+      <form action="../Database/resetPasswordConfirm.php" method="POST">
         <div class="form-group">
-          <label for="confirm-password">Confirm password</label>
-          <input
-            type="password"
-            id="confirm-password"
-            name="confirm-password"
-            required
-          />
+          <label for="password">Your New Password</label>
+          <input type="password" id="password" name="password" required/>
+        </div>
+        <div class="form-group">
+          <label for="password">Confirm Your Password</label>
+          <input type="password" id="password"/>
         </div>
 
         <button type="submit" class="btn-reset">Submit Password</button>
       </form>
-      <form action="../Database/reset_token.php" style="display: none">
-        <div class="form-group">
-          <label for="confirm-otp">OTP</label>
-          <input type="text" id="confirm-otp" name="confirm-otp" required />
-        </div>
-      </form>
       <a href="reglog.php" class="back-link">Back to Login</a>
     </div>
+    <?php endif; ?>
   </body>
 </html>

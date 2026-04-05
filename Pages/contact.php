@@ -35,7 +35,7 @@
 </div>
 <div class="right">
 <nav>
-    <a>About</a>
+    <a onclick="window.location.href='about.php'">About</a>
     <button>Contact us</button>
 </nav>
 <h2>Contact us</h2>

@@ -64,7 +64,9 @@ $used_voucher->close();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap" rel="stylesheet">
 <body>
 <section class="voucher-page">
 
@@ -389,7 +391,10 @@ $used_voucher->close();
 </body>
 <script>
     const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-    let username1 = email.replace("@gmail.com", "");
+    let username1 = email.split("@")[0] || "";
+      let displayName = username1.length > 6
+      ? username1.substring(0, 6) + "..."
+      : username1;
     const userWelcome = document.getElementById("menu-Username");
     const menuTitles = document.querySelectorAll(".menu-title");
     const cards = document.querySelectorAll(".voucher-list");
@@ -420,7 +425,7 @@ $used_voucher->close();
     });
 
     if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
 
     menuTitles.forEach(title =>{

@@ -53,6 +53,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS orders(
     discount INT,
     ship_discount INT,
     order_final_price DECIMAL(10,2),
+    order_address VARCHAR(255),
     order_state ENUM('success','cancel','delivery','delivered'),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
@@ -85,6 +86,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS user_otp(
     email VARCHAR(40) UNIQUE NOT NULL,
     otp VARCHAR(255),
     expire_at INT,
+    max_otp INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 $conn->query("CREATE TABLE IF NOT EXISTS user_policy_agreement(

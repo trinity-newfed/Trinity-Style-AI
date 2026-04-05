@@ -290,14 +290,17 @@ $stmt->close();
 </body>
 <script>
     const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-      let username1 = email.replace("@gmail.com", "");
+      let username1 = email.split("@")[0] || "";
+      let displayName = username1.length > 6
+      ? username1.substring(0, 6) + "..."
+      : username1;
       const userWelcome = document.getElementById("menu-Username");
       const menuTitles = document.querySelectorAll(".menu-title");
 
       
 
       if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
         menuTitles.forEach(title =>{
                 title.addEventListener("click", ()=>{

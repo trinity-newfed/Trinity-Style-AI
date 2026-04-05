@@ -9,6 +9,13 @@ session_start();
 $otp = 0;
 if(isset($_SESSION['register_data'])){
   $otp = 2;
+  $resent = $conn->prepare("SELECT expire_at FROM user_otp
+                         WHERE email = ?");
+  $resent->bind_param("s", $_SESSION['register_data']['email']);
+  $resent->execute();
+  $expire_at = $resent->get_result();
+  $row = $expire_at->fetch_assoc();
+  $expire = isset($row['expire_at']) ? (int)$row['expire_at'] : 0;
 }elseif(isset($_SESSION['admin_otp']) || isset($_SESSION['otp'])){
   $otp = 1;
 }
@@ -240,6 +247,7 @@ if(isset($_SESSION['register_data'])){
         font-weight: 600;
         text-decoration: none;
         border-bottom: 1px solid #000;
+        cursor: pointer;
       }
       #regForm, #loginForm{
         position: absolute;
@@ -313,6 +321,13 @@ if(isset($_SESSION['register_data'])){
       input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
+      }
+      #resent{
+        display: none;
+      }
+      #resent:hover{
+        cursor: pointer;
+        text-decoration: underline;
       }
 
       @media(max-width: 600px){
@@ -394,8 +409,7 @@ if(isset($_SESSION['register_data'])){
       </div>
 
       <?php if($otp == 2): ?>
-      <form action="register.php" method="POST" id="regForm" class="move">
-        
+      <form action="register.php" method="POST" id="regForm">
         <div class="info-box">
           <div class="brand-header">
             <h2>Register</h2>
@@ -404,16 +418,47 @@ if(isset($_SESSION['register_data'])){
               <b><?php echo $_SESSION['register_data']['email'] ?? '' ?></b>
             </p>
           </div>
-      <div class="input-group">
+            <div class="input-group">
               <input type="text" name="registerOtp" maxlength="6" pattern="\d{6}" required/>
               <label>OTP</label>
             </div>
-          <button type="submit" class="btn-action">Create Account</button>
+          <button type="submit" class="btn-action btn-create">Verify OTP</button>
           <div class="login-link">
-            Already have an account? <a id="login-btn" class="btn" href="../Database/resetOtp.php">Login</a>
+            Already have an account? <a id="login-btn" class="btn">Login</a>
+            <span id="countdown"></span>
+            <buttom id="resent" onclick="window.location.href='../Database/resetOTP.php'">Resent OTP</button>
           </div>
         </div>
-        </form>
+      </form>
+      <form action="login.php" method="POST" id="loginForm">
+        <div class="info-box login-box">
+          <div class="brand-header">
+            <h2>Login</h2>
+            <p>Welcome back</p>
+          </div>
+          <div class="input-group">
+            <input type="text" name="username" required />
+            <label>Email</label>
+          </div>
+          <div class="input-group">
+            <input type="password" name="user_password" required/>
+            <label>Password</label>
+          </div>
+          <?php if($otp == 1): ?>
+          <div class="input-group">
+            <input type="text" name="otp" required/>
+            <label>OTP</label>
+          </div>
+          <?php endif; ?>
+          <button type="submit" class="btn-action">Sign In</button>
+          <div class="extra-link">
+            <a href="resetPass.php">Forget password?</a>
+            <div class="login-link">
+            Don't have an account yet? <a href="#" id="signUp-btn" class="btn">Sign Up</a>
+          </div>
+          </div>
+        </div>
+      </form>
         <?php else: ?>
           <form action="register.php" method="POST" id="regForm">
           <div class="info-box">
@@ -459,7 +504,7 @@ if(isset($_SESSION['register_data'])){
               <div id="toList" class="suggest"></div>
             </div>
           </div>
-          <button type="submit" class="btn-action">Create Account</button>
+          <button type="submit" class="btn-action btn-create">Create Account</button>
           <div class="login-link">
             Already have an account? <a href="#" id="login-btn" class="btn">Login</a>
           </div>
@@ -566,7 +611,9 @@ if(addressInput){
 
 document.addEventListener("click", function(e){
   if (!e.target.closest(".address-container")) {
-    suggestBox.style.display = "none";
+    if(suggestBox){
+      suggestBox.style.display = "none";
+    }
   }
 });
 
@@ -604,6 +651,34 @@ async function search(input, listId){
 
     list.appendChild(div);
   });
+}
+
+//OTP
+const expire = <?= json_encode($expire ?? 0) ?>;
+
+if(expire){
+  function updateCountdown() {
+    const now = Math.floor(Date.now() / 1000);
+    const remaining = expire - now;
+
+    if(remaining <= 0){
+        document.getElementById("countdown").style.display = "none";
+        document.getElementById("resent").style.display = "block";
+        return;
+    }
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+
+    document.getElementById("countdown").textContent ="Resent OTP in: " +
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+  setInterval(updateCountdown, 1000);
+  updateCountdown();
+}
+
+if(new URLSearchParams(window.location.search).get('otp')){
+    document.getElementById("signUp-btn").click();
 }
     </script>
   </body>

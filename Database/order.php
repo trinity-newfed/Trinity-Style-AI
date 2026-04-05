@@ -20,6 +20,7 @@ if(!isset($_SESSION['checkout_cart_ids'])){
 $agree = $_POST['policy_id'];
 $userID = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$orderAddress = $_POST['address'];
 
 $policy = $conn->prepare("SELECT * FROM user_policy_agreement
                           WHERE user_id = ? AND policy_id = ?");
@@ -171,11 +172,11 @@ $conn->begin_transaction();
 
 try{
     $stmt = $conn->prepare("
-        INSERT INTO orders(user_id, order_name, order_original_price, order_delivery_fee, discount, ship_discount, order_final_price, order_state)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders(user_id, order_name, order_original_price, order_delivery_fee, discount, ship_discount, order_final_price, order_address, order_state)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
-    $stmt->bind_param("isddddds", $userID, $orderCode, $total, $final_ship_fee, $discount_amount, $ship_discount, $final_total, $orderstate);
+    $stmt->bind_param("isdddddss", $userID, $orderCode, $total, $final_ship_fee, $discount_amount, $ship_discount, $final_total, $orderAddress, $orderstate);
     $stmt->execute();
 
     $order_id = $stmt->insert_id;
@@ -260,7 +261,7 @@ try{
     }
     $conn->commit();
     unset($_SESSION['checkout_cart_ids']);
-    header("Location: ../Pages/cart.php");
+    header("Location: ../Pages/user.php");
     exit;
 
 } catch (Exception $e){

@@ -57,8 +57,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
 $groupedOrders = [];
-
-$groupedOrders = [];
+$count = 0;
 foreach($data as $d){
     $orderID = $d['id'];
     
@@ -251,8 +250,9 @@ foreach($data as $d){
             <?php foreach($groupedOrders as $order_id => $order): 
                 $info = $order['order_info']; 
                 $state = strtolower($info['order_state']);
+                $count++;
             ?>
-            <div class="order-block">
+            <div class="order-block" onclick="window.location.href='orderItem.php?id=<?=$info['id']?>'">
             <div class="order-state" style="width: 100%; display: flex; justify-content: space-around; align-items: center;">
                 <h3 class="order-name">#<?= htmlspecialchars($info['order_name']) ?></h3>
                 
@@ -279,8 +279,11 @@ foreach($data as $d){
                         </span>
                     </div>
                 </div>
-                        <div class="order-info">
-                        <button class="re-order">Re-Buy</button>
+                    <div class="order-info">
+                        <form action="../Database/reOrder.php" method="POST" style="width: 35%; height: 55%; margin-right: 5%;">
+                            <input type="hidden" name="order_id" value="<?=$info['id']?>">
+                            <button class="re-order" type="submit">Re-Buy</button>
+                        </form>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -443,7 +446,10 @@ foreach($data as $d){
 
     <script>
       const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-      let username1 = email.replace("@gmail.com", "");
+      let username1 = email.split("@")[0] || "";
+      let displayName = username1.length > 6
+      ? username1.substring(0, 6) + "..."
+      : username1;
       const userWelcome = document.getElementById("menu-Username");
       const menuTitles = document.querySelectorAll(".menu-title");
       const imgPopup = document.querySelectorAll(".line3 img");
@@ -576,7 +582,7 @@ async function search(input, listId){
 
 
       if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
         menuTitles.forEach(title =>{
                 title.addEventListener("click", ()=>{

@@ -96,7 +96,7 @@ if(isset($_SESSION['error'])){
                         <source src="..\Pictures\Banners\VideoBanner1.mp4" type="video/mp4">
                     </video>
                     <div id="cta-tryon">
-                        <h3>Try on with AI</h3>
+                        <h3>See yourself in Trinity</h3>
                         <p>Upload your photo and experience <br> virtual fiting powered by AI</p>
                         <button onclick="window.location.href='products.php#product-section'">Try now</button>
                     </div>
@@ -283,7 +283,10 @@ if(isset($_SESSION['error'])){
 </footer>
     <script>
         const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.replace("@gmail.com", "");
+        let username1 = email.split("@")[0] || "";
+        let displayName = username1.length > 6
+        ? username1.substring(0, 6) + "..."
+        : username1;
         const userWelcome = document.getElementById("menu-Username");
         const head = document.getElementById("head");
         const body = document.getElementById("body");
@@ -293,7 +296,7 @@ if(isset($_SESSION['error'])){
         const video = document.getElementById("bannerVideo");
 
         if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
 
         let index = 0;

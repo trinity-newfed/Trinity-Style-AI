@@ -96,10 +96,21 @@ if(isset($_SESSION['user_id'])){
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&display=swap" rel="stylesheet">
 </head>
 <body>
 <section id="body">
-        <div id="cart-header">Shopping Cart</div>
+        <div id="cart-header">
+            <span>Shopping Cart</span>
+            <div style="z-index: 100; display: flex; align-items: center; gap: 10px;">
+            <label class="item-label">
+                <input type="checkbox" id="selectAll" hidden>
+            </label>
+            <p>Select All</p>
+        </div>
+        </div>
     <form action="../Database/checkout.php" method="POST" style="width: 100%; height: 100%; top: 12.5%; position: relative;">
         <div id="cart-item-container">
             <div id="item-list">
@@ -110,8 +121,8 @@ if(isset($_SESSION['user_id'])){
                     <span>Total</span>
                 </div>
                 <?php if(empty($data)): ?>
-                    <span style="position: relative; top: 20%; left: 40%; min-width: fit-content; max-width: 20%; font-size: clamp(0.7rem, 1vw, 1rem); color: rgba(0, 0, 0, 0.3);">Your cart is empty</span>
-                    <span onclick="window.location.href='products.php'" style="min-width: fit-content; top: 20%; left: 39%; max-width: 20%; position: relative; top: 20%; font-size: clamp(0.7rem, 1vw, 1rem); color: rgba(0, 72, 255, 0.3); cursor: pointer;">[Continue shopping]</span>
+                    <span style="position: relative; top: 20%; min-width: fit-content; max-width: 20%; font-size: clamp(1rem, 1.5vw, 2rem); color: rgb(0, 0, 0);">Your bag is await</span>
+                    <span onclick="window.location.href='products.php'" style="min-width: fit-content; top: 20%; max-width: 20%; position: relative; top: 20%; font-size: clamp(0.7rem, 1vw, 1rem); color: rgba(0, 72, 255, .6); cursor: pointer;">[Discover more pieces]</span>
                 <?php else: ?>
                 <?php foreach($data as $d): ?>
                 <div class="items">
@@ -125,7 +136,7 @@ if(isset($_SESSION['user_id'])){
                         <div style="display: flex; max-width: 50%;">
                             <div id="items-info-container">
                                 <span class="item-name"><?=$d['product_name']?></span>
-                                <span style="color: rgba(0, 0, 0, 0.75); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
+                                <span style="color: rgba(0, 0, 0, 1); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
                             <label style="cursor: pointer;" for="remove-input" id="label-for-remove-input" onclick="window.location.href='../Database/delete_item_cart.php?id=<?=$d['cart_id']?>'">Remove</label>
                             </div>
                         </div>
@@ -170,7 +181,8 @@ if(isset($_SESSION['user_id'])){
                         <input type="hidden" id="id" name="id" value="">
                         <div id="voucher-select" style="cursor: pointer;">
                             <div value="0" id="main-voucher" data-condition="0" data-max="0">No Selection</div>
-                            <div class="voucher-list">
+                            <div class="voucher-list" value="0" data-condition="0" data-max="0">
+                                <div class="voucher">No Selection</div>
                                 <?php foreach($voucher as $v): ?>
                                 <?php if($v['voucher_type'] == "order"): ?>
                                     <div class="voucher order" value="<?=$v['id']?>"
@@ -178,7 +190,7 @@ if(isset($_SESSION['user_id'])){
                                                         data-max="<?=$v['voucher_max']?>"
                                                         data-id="<?=$v['id']?>"
                                                         data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="0">SALE <?=$v['voucher_discount']?>% (MAX <?=$v['voucher_max']?>$)
+                                                        data-ship="0">Sale <?=$v['voucher_discount']?>% | Max <?=$v['voucher_max']?>$
                                     </div>
                                 <?php elseif($v['voucher_type'] == "shipping"): ?>
                                     <?php if($v['voucher_discount'] == 25): ?>
@@ -219,7 +231,7 @@ if(isset($_SESSION['user_id'])){
                         <span id="final-total">$0</span>
                         <?php endif; ?>
                     </div>       
-                    <button type="submit" id="order-btn">Checkout</button>
+                    <button type="submit" id="order-btn">Purchase</button>
                 </div>
             </div>
         </div>
@@ -382,7 +394,7 @@ if(isset($_SESSION['user_id'])){
                 quantity++;
             }else if(action === "minus" && quantity > 1){
                 quantity--;
-            }else if(action === "minus" && quantity <= 1){
+            }else if(action === "minus" && quantity == 1){
                 location.reload();
             }
 
@@ -401,12 +413,15 @@ if(isset($_SESSION['user_id'])){
     });
         //USERNAME
         const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.replace("@gmail.com", "");
+        let username1 = email.split("@")[0] || "";
+        let displayName = username1.length > 6
+        ? username1.substring(0, 6) + "..."
+        : username1;
         const userWelcome = document.getElementById("menu-Username");
         const finalTotal = document.getElementById("final-total");
         
         if(userWelcome){
-            userWelcome.textContent = "Hi, " + username1;
+            userWelcome.textContent = "Hi, " + displayName;
         }
 
         const dropDown = document.getElementById("main-voucher");
@@ -577,9 +592,9 @@ function calculateFinalTotal(){
         if(total >= FREE_SHIP_THRESHOLD){
             shippingLabel.textContent = "Complimentary Shipping";
         }else if(total > 0){
-            shippingLabel.textContent = `Buy $${(FREE_SHIP_THRESHOLD - total).toFixed(0)} more to enjoy Free Shipping`;
+            shippingLabel.textContent = `Add $${(FREE_SHIP_THRESHOLD - total).toFixed(0)} more to enjoy Complimentary Shipping`;
         }else{
-            shippingLabel.textContent = "Buy more to enjoy Free Shipping";
+            shippingLabel.textContent = "Evelate your order to receive Complimentary Shipping";
         }
     }
 }
@@ -611,6 +626,15 @@ vouchers.forEach(voucher => {
             checkbox.addEventListener('change', calculateFinalTotal);
         });
         calculateFinalTotal();
+
+        const selectAll = document.getElementById("selectAll");
+        selectAll.addEventListener('change', function(){
+            const checkboxes = document.querySelectorAll(".item-checkbox");
+            checkboxes.forEach(checkbox =>{
+                checkbox.checked = selectAll.checked;
+            });
+            calculateFinalTotal();
+        });
 
         const menuTitles = document.querySelectorAll(".menu-title");
             menuTitles.forEach(title =>{

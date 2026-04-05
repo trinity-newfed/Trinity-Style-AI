@@ -322,11 +322,14 @@ body {
 }
 #text span{
     font-size: clamp(0.65rem, 1.25vw, 1rem);
+    padding: 0 5px;
+    transition: .3s all;
 }
 #text span:hover{
     transition: .3s all;
     cursor: pointer;
-    background-color: rgb(0, 0, 0);
+    background: linear-gradient(to right, #0d0d0d, #2b2b2b);
+    padding: 0 5px;
     color: white;
 }
 
@@ -627,6 +630,11 @@ body {
     }
     #text-menu{
         width: 30%;
+    }
+    #logo{
+      max-width: fit-content;
+      max-height: fit-content;
+      min-width: fit-content;
     }
     #text{
         display: none;

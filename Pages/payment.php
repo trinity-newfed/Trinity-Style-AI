@@ -232,7 +232,7 @@ $sql->close();
 
                 <div class="input-group">
                     <div class="address-container">
-                        <input type="text" value="<?=$user['user_address']?>" readonly>
+                        <input type="text" value="<?=$user['user_address']?>" name="address" readonly>
                         <label for="address">Shipping Address</label>
                         <div id="toList" class="suggest"></div>
                     </div>

@@ -209,7 +209,8 @@ html,body{
 #body-content-container::before{
     content: "";
     z-index: 2;
-    width: 35%;
+    width: 36vw;
+    max-width: 550px;
     height: 100%;
     transform: translateX(-100%);
     position: absolute;
@@ -228,7 +229,8 @@ html,body{
 #body-content-container.b-show::before{
     content: "";
     z-index: 2;
-    width: 35%;
+    width: 36vw;
+    max-width: 550px;
     height: 100%;
     transform: translateX(0);
     position: absolute;
@@ -332,7 +334,7 @@ html,body{
 #cta-tryon h3{
     position: relative;
     z-index: 3;
-    font-size: clamp(.9rem, 5vw, 3rem);
+    font-size: clamp(.9rem, 5vw, 2.4rem);
     font-weight: 600;
     font-family: "Cormorant Garamond", serif;
     letter-spacing: normal;
@@ -340,8 +342,8 @@ html,body{
 #cta-tryon p{
     position: relative;
     z-index: 3;
-    font-size: clamp(.8rem, 1.3vw, 3rem);
-    overflow-wrap: break-word;
+    font-size: clamp(.8rem, 1.2vw, 1.3rem);
+    word-break: break-all;
 }
 #cta-tryon button{
     position: relative;
@@ -356,6 +358,7 @@ html,body{
     cursor: pointer;
     transition: 0.3s;
     border: 1px solid rgb(0, 0, 0);
+    font-size: clamp(.8rem, 1.2vw, 1.3rem);
 }
 #cta-tryon button:hover{
     background-color: #ffffff;
@@ -365,9 +368,9 @@ html,body{
 }
 #cta-tryon{
     position: absolute;
-    left: -7%;
     transform: translateX(-200%);
     width: 50%;
+    max-width: 550px;
     height: 50%;
     display: flex;
     flex-direction: column;
@@ -377,7 +380,7 @@ html,body{
 }
 #cta-tryon.b-show{
     z-index: 100;
-    transform: translateX(0);
+    transform: translateX(-80%);
     transition: 3s;
 }
 #b-img2,#b-img3{
@@ -828,7 +831,7 @@ html,body{
     bottom: -4px;
     width: 0;
     height: 2px;
-    background: black;
+    background: #0B0B0B;
     transition: 0.3s;
 }
 
@@ -868,11 +871,14 @@ html,body{
 }
 #text span{
     font-size: clamp(0.65rem, 1.25vw, 1rem);
+    padding: 0 5px;
+    transition: .3s all;
 }
 #text span:hover{
     transition: .3s all;
     cursor: pointer;
-    background-color: rgb(0, 0, 0);
+    background: linear-gradient(to right, #0d0d0d, #2b2b2b);
+    padding: 0 5px;
     color: white;
 }
 
@@ -1047,6 +1053,11 @@ html,body{
     #text-menu{
         width: 30%;
     }
+    #logo{
+        max-width: fit-content;
+        max-height: fit-content;
+        min-width: fit-content;
+    }
     #text{
         display: none;
     }
@@ -1092,7 +1103,7 @@ html,body{
         transform: translate(0, 50%);
     }
     #cta-tryon h3{
-        font-size: 25px;
+        font-size: 30px;
     }
     #cta-tryon button{
         width: 50%;

@@ -79,11 +79,14 @@ html,body{
 }
 #text span{
     font-size: clamp(0.65rem, 1.25vw, 1rem);
+    padding: 0 5px;
+    transition: .3s all;
 }
 #text span:hover{
     transition: .3s all;
     cursor: pointer;
-    background-color: rgb(0, 0, 0);
+    background: linear-gradient(to right, #0d0d0d, #2b2b2b);
+    padding: 0 5px;
     color: white;
 }
 
@@ -246,6 +249,7 @@ padding:80px 20px;
 .voucher-page h1{
 font-size:40px;
 margin-bottom:40px;
+font-family: "Cormorant Garamond", serif;
 }
 
 .voucher-filter{
@@ -367,7 +371,7 @@ cursor: pointer;
 .tier.shipping{
   background: linear-gradient(90deg, #43cea2, #185a9d);
   color: white;
-  padding: 6px 12px;
+  padding: 6px 5px;
   border-radius: 4px;
   font-weight: bold;
   display: flex;
@@ -531,6 +535,11 @@ cursor: pointer;
     #text-menu{
         width: 30%;
     }
+    #logo{
+      max-width: fit-content;
+      max-height: fit-content;
+      min-width: fit-content;
+    }
     #text{
         display: none;
     }
@@ -559,5 +568,8 @@ cursor: pointer;
     #hero-text-2 p{
         background: rgba(0, 0, 0, 0.05);
         color: #ffffff;
+    }
+    .voucher-brand h4{
+      display: none;
     }
 }

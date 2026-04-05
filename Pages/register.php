@@ -13,13 +13,13 @@ $password = "";
 $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
-if ($conn->connect_error) {
+if($conn->connect_error){
     die("Lỗi kết nối: " . $conn->connect_error);
 }
 
 session_start();
 
-if($_SERVER["REQUEST_METHOD"] === "POST") {
+if($_SERVER["REQUEST_METHOD"] === "POST"){
 
     $email = isset($_POST['email']) ? trim($_POST['email']) : "";
     $password = $_POST['user_password'] ?? "";
@@ -39,15 +39,14 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if(empty($inputOtp)){
-
         $stmt = $conn->prepare("SELECT created_at FROM user_otp WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if($row = $result->fetch_assoc()){
-            if (time() - strtotime($row['created_at']) < 30){
-                echo "<script>alert('Please wait 30s before requesting new OTP');window.location.href='reglog.php';</script>";
+            if(time() - strtotime($row['created_at']) < 30){
+                echo "<script>alert('Too many request, please try again later!');window.location.href='reglog.php?otp=1';</script>";
                 exit;
             }
         }
@@ -74,7 +73,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
         ];
 
         $stmt->close();
-        try {
+        try{
             $mail = new PHPMailer(true);
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
@@ -119,22 +118,25 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $mail->send();
 
-            echo "<script>alert('OTP sent!');window.location.href='reglog.php';</script>";
+            echo "<script>
+                    alert('OTP sent!');
+                    window.location.href='reglog.php?otp=1';
+                  </script>";
             exit;
 
-        } catch (Exception $e) {
+        }catch (Exception $e){
             error_log($mail->ErrorInfo);
             echo "Send mail failed";
         }
     }else{
         $data = $_SESSION['register_data'];
 
-        $stmt = $conn->prepare("SELECT otp FROM user_otp WHERE email = ?");
+        $stmt = $conn->prepare("SELECT otp, max_otp FROM user_otp WHERE email = ?");
         $stmt->bind_param("s", $data['email']);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $userOtp = $row['otp'];
+        $maxOtp = $row['max_otp'];
 
         if(!isset($_SESSION['register_data'])){
             echo "<script>
@@ -163,7 +165,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
                     $data['hotline']
                 );
 
-                if ($stmt->execute()) {
+                if($stmt->execute()){
 
                     $stmt = $conn->prepare("DELETE FROM user_otp WHERE email = ?");
                     $stmt->bind_param("s", $data['email']);
@@ -178,17 +180,17 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
                     exit;
                 }
 
-            } else {
+            }else{
                 echo "<script>
                         alert('Invalid or expired OTP');
-                        window.location.href='reglog.php';
+                        window.location.href='reglog.php?otp=1';
                       </script>";
             }
 
         }else{
             echo "<script>
                     alert('OTP not found');
-                    window.location.href='reglog.php';
+                    window.location.href='reglog.php?otp=1';
                   </script>";
         }
         }

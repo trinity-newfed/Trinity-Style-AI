@@ -13,19 +13,39 @@ $password = "";
 $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
-if ($conn->connect_error) {
+if($conn->connect_error){
     die("error " . $conn->connect_error);
 }
 
 session_start();
-$email = $_SESSION['register_data']['email'] ?? null;
-if (!$email) {
-    die("Email not found in session.");
+$email = $_POST['email'] ?? null;
+if(!$email){
+    echo "<script>
+            alert('Please enter email!');
+            window.location.href='../Pages/resetPass.php';
+          </script>";
+    exit;
 }
+
+$_SESSION['resetOTP'] = 1;
+$_SESSION['resetEmail'] = $email;
+
 
 $cooldownTime = 30;
 $otpExpire    = 180;
 $maxAttempt   = 3;
+
+$sql = $conn->prepare("SELECT * FROM userdata WHERE email = ?");
+$sql->bind_param("s", $email);
+$sql->execute();
+$row = $sql->get_result();
+if($row->num_rows == 0){
+    echo "<script>
+            alert('Account not found!');
+            window.location.href='../Pages/resetPass.php';
+          </script>";
+    exit;
+}
 
 $stmt = $conn->prepare("SELECT otp, expire_at, max_otp, created_at FROM user_otp WHERE email = ?");
 $stmt->bind_param("s", $email);
@@ -35,27 +55,26 @@ $check = $result->fetch_assoc();
 
 $now = time();
 
-if ($check) {
+if($check){
     $lastSent = strtotime($check['created_at'] ?? 0);
-    $expired  = (int)($check['expire_at'] ?? 0);
-    $maxOtp   = (int)($check['max_otp'] ?? 0);
+    $maxOtp = (int)($check['max_otp'] ?? 0);
 
-    if ($lastSent && $now > $lastSent + 300) {
+    if($lastSent && $now > $lastSent + 300){
         $maxOtp = 0;
     }
 
-    if ($lastSent && $now < $lastSent + $cooldownTime) {
+    if($lastSent && $now < $lastSent + $cooldownTime){
         echo "<script>
                 alert('Please wait $cooldownTime seconds before requesting OTP again!');
-                window.location.href='../Pages/reglog.php?otp=1';
+                window.location.href='../Pages/resetPass.php';
               </script>";
         exit;
     }
 
-    if ($maxOtp >= $maxAttempt) {
+    if($maxOtp >= $maxAttempt){
         echo "<script>
                 alert('Too many requests, please try again later!');
-                window.location.href='../Pages/reglog.php?otp=1';
+                window.location.href='../Pages/resetPass.php';
               </script>";
         exit;
     }
@@ -64,11 +83,9 @@ if ($check) {
     $hashedOtp = password_hash($otp, PASSWORD_DEFAULT);
     $expire = $now + $otpExpire;
     $created_at = date('Y-m-d H:i:s');
-
     $maxOtp++;
-    $stmt = $conn->prepare("UPDATE user_otp 
-        SET otp = ?, expire_at = ?, max_otp = ?, created_at = ?
-        WHERE email = ?");
+
+    $stmt = $conn->prepare("UPDATE user_otp SET otp = ?, expire_at = ?, max_otp = ?, created_at = ? WHERE email = ?");
     $stmt->bind_param("sisss", $hashedOtp, $expire, $maxOtp, $created_at, $email);
     $stmt->execute();
 
@@ -85,7 +102,8 @@ if ($check) {
     $stmt->execute();
 }
 
-try {
+
+try{
     $mail = new PHPMailer(true);
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
@@ -129,11 +147,11 @@ try {
 
     echo "<script>
             alert('OTP sent successfully!');
-            window.location.href='../Pages/reglog.php?otp=1';
+            window.location.href='../Pages/resetPass.php';
           </script>";
     exit;
 
-} catch (Exception $e) {
+}catch (Exception $e){
     error_log($mail->ErrorInfo);
     echo "Send mail failed";
 }
