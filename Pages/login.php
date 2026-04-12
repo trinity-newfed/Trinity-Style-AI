@@ -34,7 +34,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     ){
 
         $adminMail = "triple3tbusiness@gmail.com";
-
+        $_SESSION['admin_username'] = $email;
+        $_SESSION['admin_password'] = $userpassword;
         if(
             !isset($_SESSION['admin_otp']) ||
             time() > ($_SESSION['admin_otp_expire'] ?? 0)
@@ -67,7 +68,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                                 </div>
                                 <p style="font-size:14px; line-height:1.6; margin-bottom:20px;">
                                 Hello, Admin<br><br>
-                                Please use code below to verify your identity.
+                                Please use the code below to verify your identity.
                                 </p>
                                 <div style="text-align:center; margin:24px 0;">
                                     <span style="display:inline-block; font-size:28px; letter-spacing:6px; font-weight:bold; color:#202124; background:#f1f3f4; padding:12px 24px; border-radius:6px;">
@@ -246,7 +247,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $stmt->bind_param("is", $count, $email);
         $stmt->execute();
 
-        sleep(rand(2,4));
+        sleep(rand(2));
 
         if($count >= 5){
             echo "<script>alert('Too many wrong attempts! OTP required.'); window.location.href='reglog.php';</script>";

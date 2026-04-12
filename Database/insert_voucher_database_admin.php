@@ -31,7 +31,8 @@ while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {
 
 fclose($file);
 
-echo "Import products successfully!";
+header("Location: admin.php");
+exit;
 
 $conn->close();
 ?>

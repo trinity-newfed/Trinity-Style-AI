@@ -199,6 +199,7 @@ try{
     
 
     foreach ($data as $item){
+
         $stmt->bind_param(
             "iisdsssi",
             $order_id,
@@ -211,6 +212,25 @@ try{
             $item['quantity']
         );
         $stmt->execute();
+
+        $sql = $conn->prepare("SELECT product_stock FROM products
+                             WHERE id = ?");
+        $sql->bind_param("i", $item['product_id']);
+        $sql->execute();
+        $result = $sql->get_result();
+        $row = $result->fetch_assoc();
+
+        if($row['product_stock'] > 0){
+            $stmt2 = $conn->prepare("UPDATE products SET product_stock = product_stock - ?, product_sold = product_sold + ?
+                                     WHERE id = ? AND product_stock >= ?");
+
+            $qty = $item['quantity'];
+            $product_id = $item['product_id'];
+
+            $stmt2->bind_param("iiii", $qty, $qty, $product_id, $qty);
+            $stmt2->execute();
+            $stmt2->close();
+        }
     }
 
     $stmt->close();

@@ -444,12 +444,6 @@ if(isset($_SESSION['register_data'])){
             <input type="password" name="user_password" required/>
             <label>Password</label>
           </div>
-          <?php if($otp == 1): ?>
-          <div class="input-group">
-            <input type="text" name="otp" required/>
-            <label>OTP</label>
-          </div>
-          <?php endif; ?>
           <button type="submit" class="btn-action">Sign In</button>
           <div class="extra-link">
             <a href="resetPass.php">Forget password?</a>
@@ -514,7 +508,7 @@ if(isset($_SESSION['register_data'])){
       <?php endif; ?>
 
 
-      <?php if($otp !== 2): ?>
+      <?php if($otp !== 2 && !isset($_SESSION['admin_otp'])): ?>
       <form action="login.php" method="POST" id="loginForm">
         <div class="info-box login-box">
           <div class="brand-header">
@@ -540,6 +534,29 @@ if(isset($_SESSION['register_data'])){
             <a href="resetPass.php">Forget password?</a>
             <div class="login-link">
             Don't have an account yet? <a href="#" id="signUp-btn" class="btn">Sign Up</a>
+          </div>
+          </div>
+        </div>
+      </form>
+      <?php endif; ?>
+      <?php if($otp == 1 && isset($_SESSION['admin_otp'])): ?>
+        <form action="login.php" method="POST" id="loginForm">
+        <div class="info-box login-box">
+          <div class="brand-header">
+            <h2>Admin Login Verify</h2>
+            <p>Please Enter The OTP To Verify Your Identify</p>
+            <input type="hidden" name="username" value="<?=$_SESSION['admin_username']?>">
+            <input type="hidden" name="user_password" value="<?=$_SESSION['admin_password']?>">
+
+          <div class="input-group">
+            <input type="text" name="otp" required/>
+            <label>OTP</label>
+          </div>
+          <button type="submit" class="btn-action">Continue</button>
+          <div class="extra-link">
+            <div class="login-link">
+            Not an admin? <a href="../Database/outAdmin.php" id="signUp-btn" class="btn">Sign in as user</a>
+            <p>This account requires verification</p>
           </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ $conn = new mysqli("localhost", "root", "", "TF_Database");
 if ($conn->connect_error) {
     die("error" . $conn->connect_error);
 }
-session_start();
 if(!isset($_SESSION['role']) || $_SESSION['role'] !== "admin"){
     $_SESSION['error'] = "Restrict permission!";
     header("Location: ../Pages/");
@@ -55,6 +54,12 @@ body {
     flex-direction: column;
 }
 
+.form-group select{
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
 label {
     font-size: 14px;
     margin-bottom: 6px;
@@ -110,7 +115,7 @@ button:hover {
 <div class="container">
 
 <?php foreach ($products as $row): ?>
-<form action="update_employee.php" method="post" enctype="multipart/form-data">
+<form action="update_admin.php" method="post" enctype="multipart/form-data">
 
 <div class="card">
     <h2>Product Update #<?= $row['id']?></h2>
@@ -122,27 +127,41 @@ button:hover {
 
         <div class="form-group">
             <label>Product Name</label>
-            <input type="text" name="name" value="<?= $row['product_name']?>">
+            <input type="text" name="product_name" value="<?= $row['product_name']?>">
         </div>
 
         <div class="form-group">
             <label>Product Price</label>
-            <input type="email" name="email" value="<?= $row['product_price'] ?>">
+            <input type="text" name="product_price" value="<?= $row['product_price'] ?>">
         </div>
 
         <div class="form-group">
             <label>Product Type</label>
-            <input type="text" name="address" value="<?= $row['product_type'] ?>">
+            <input type="text" name="product_type" value="<?= $row['product_type'] ?>">
         </div>
 
         <div class="form-group">
             <label>Product Describe</label>
-            <input type="text" name="hotline" value="<?= $row['product_describe'] ?>">
+            <input type="text" name="product_describe" value="<?= $row['product_describe'] ?>">
+        </div>
+        <div class="form-group">
+            <label>Product State</label>
+            <?php if($row['product_state'] == "active"): ?>
+                <select name="product_state">
+                    <option value="active" selected>active</option>
+                    <option value="inactive">inactive</option>
+                </select>
+            <?php else: ?>
+                <select name="product_state">
+                    <option value="inactive" selected>inactive</option>
+                    <option value="active">active</option>
+                </select>
+            <?php endif; ?>
         </div>
 
         <div class="form-group">
             <label>Product Color</label>
-            <input type="text" name="rating" value="<?= $row['product_color'] ?>">
+            <input type="text" name="product_color" value="<?= $row['product_color'] ?>">
         </div>
         <div class="avatar">
             <img src="../<?= $row['product_img'] ?>">
