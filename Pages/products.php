@@ -101,14 +101,63 @@ $sql->close();
           <div class="product-container">
           <?php foreach($product as $p): ?>
             <?php if($p['product_category'] == "collections"): ?>
+            <?php if($p['product_stock'] > 0 && $p['product_state'] != "inactive" && $p['product_is_delete'] != 1): ?>
             <div id="product-<?=$p['id']?>" class="product-card fixed" data-img="../<?=$p['product_img']?>" 
                                       data-name="<?=$p['product_name']?>" 
                                       data-price="<?=$p['product_price']?>"
                                       data-id="<?=$p['id']?>"
                                       data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>">
+                                      data-color="<?=$p['product_color']?>"
+                                      data-stock="<?=$p['product_stock']?>"
+                                      <?php 
+                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
+                                        $sql->bind_param("i", $p['id']);
+                                        $sql->execute();
+                                        $result = $sql->get_result();
+                                        $row = $result->fetch_assoc();
+                                      ?>
+                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
+                                      data-active="1">
 
               <div class="image-box">
+                <img
+                  src="../<?=$p['product_img']?>"
+                  alt="Product"
+                />
+                <div class="image-overlay">
+                  <button class="details-btn">View Details</button>
+                </div>
+              </div>
+
+              <div class="info-box">
+                <span class="brand">TRINITY</span>
+                <h2 class="title"><?=$p['product_name']?></h2>
+
+                <div class="price-wrapper">
+                  <span class="new-price">$<?=$p['product_price']?></span>
+                </div>
+              </div>
+            </div>
+            <?php else: ?>
+            <div id="product-<?=$p['id']?>" class="product-card fixed out" data-img="../<?=$p['product_img']?>" 
+                                      data-name="<?=$p['product_name']?>" 
+                                      data-price="<?=$p['product_price']?>"
+                                      data-id="<?=$p['id']?>"
+                                      data-category="<?=$p['product_category']?>"
+                                      data-color="<?=$p['product_color']?>"
+                                      data-stock="<?=$p['product_stock']?>"
+                                      <?php 
+                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
+                                        $sql->bind_param("i", $p['id']);
+                                        $sql->execute();
+                                        $result = $sql->get_result();
+                                        $row = $result->fetch_assoc();
+                                      ?>
+                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
+                                      data-active="0">
+
+              <div class="image-box">
+                <p class="stock">Temporarily unavailable</p>
                 <img
                   src="../<?=$p['product_img']?>"
                   alt="Product"
@@ -128,6 +177,7 @@ $sql->close();
               </div>
             </div>
             <?php endif; ?>
+            <?php endif; ?>
           <?php endforeach; ?>
           </div>
         </div>
@@ -146,13 +196,24 @@ $sql->close();
         <div class="product-container" id="normal">
           <?php foreach($product as $p): ?>
             <?php if($p['product_category'] != "collections"): ?>
+            <?php if($p['product_stock'] > 0 && $p['product_state'] != "inactive" && $p['product_is_delete'] != 1): ?>
             <div id="product-<?=$p['id']?>" class="product-card" data-img="../<?=$p['product_img']?>" 
                                       data-name="<?=$p['product_name']?>" 
                                       data-price="<?=$p['product_price']?>"
                                       data-id="<?=$p['id']?>"
                                       data-category="<?=$p['product_category']?>"
                                       data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>">
+                                      data-color="<?=$p['product_color']?>"
+                                      data-stock="<?=$p['product_stock']?>"
+                                      <?php 
+                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
+                                        $sql->bind_param("i", $p['id']);
+                                        $sql->execute();
+                                        $result = $sql->get_result();
+                                        $row = $result->fetch_assoc();
+                                      ?>
+                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
+                                      data-active="1">
               <div class="image-box">
                 <img
                   src="../<?=$p['product_img']?>"
@@ -172,6 +233,45 @@ $sql->close();
                 </div>
               </div>
             </div>
+            <?php else: ?> 
+            <div id="product-<?=$p['id']?>" class="product-card out" data-img="../<?=$p['product_img']?>" 
+                                      data-name="<?=$p['product_name']?>" 
+                                      data-price="<?=$p['product_price']?>"
+                                      data-id="<?=$p['id']?>"
+                                      data-category="<?=$p['product_category']?>"
+                                      data-category="<?=$p['product_category']?>"
+                                      data-color="<?=$p['product_color']?>"
+                                      data-stock="<?=$p['product_stock']?>"
+                                      <?php 
+                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
+                                        $sql->bind_param("i", $p['id']);
+                                        $sql->execute();
+                                        $result = $sql->get_result();
+                                        $row = $result->fetch_assoc();
+                                      ?>
+                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
+                                      data-active="0">
+              <div class="image-box">
+                <p class="stock">Temporarily unavailable</p>
+                <img
+                  src="../<?=$p['product_img']?>"
+                  alt="Product"
+                />
+                <div class="image-overlay">
+                  <button class="details-btn">View Details</button>
+                </div>
+              </div>
+
+              <div class="info-box">
+                <span class="brand">TRINITY</span>
+                <h2 class="title"><?=$p['product_name']?></h2>
+
+                <div class="price-wrapper">
+                  <span class="new-price">$<?=$p['product_price']?></span>
+                </div>
+              </div>
+            </div>
+            <?php endif; ?> 
             <?php endif; ?>
           <?php endforeach; ?>
           </div>
@@ -464,6 +564,19 @@ setTimeout(() => {
               modalProductType.value = "default";
               currentProductId = product.dataset.id;
               try_on_input.value = product.dataset.img;
+              if(product.dataset.stock <= product.dataset.cartquantity || product.dataset.active == 0){
+                addCart.forEach(btn =>{
+                  btn.disabled = true;
+                  btn.style.background = "#333";
+                  btn.textContent = "Limit reached for this item";
+                });
+              }else{
+                addCart.forEach(btn =>{
+                  btn.disabled = false;
+                  btn.style.background = "";
+                  btn.textContent = "Add to cart";
+                });
+              }
               modal.style.setProperty("display", "flex", "important");
             });
       });
@@ -532,7 +645,6 @@ setTimeout(() => {
         })
         .then(res => res.text())
         .then(data => {
-          console.log("SERVER:", data);
           clearTimeout(timer);
           alert.classList.add("alert");
           alertName.textContent = "TRINITY";

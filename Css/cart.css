@@ -334,6 +334,20 @@ html,body{
     align-items: center;
     padding: 0 5px;
 }
+.items.out{
+    opacity: .8;
+    filter: grayscale(70%);
+}
+.stock{
+    position: absolute;
+    color: red;
+    font-weight: bold;
+    top: 50%;
+    left: 12%;
+    font-size: 14px;
+    width: 20px;
+    transform: rotate(-40deg);
+}
 .item-name{
     font-family: Arial, Helvetica, sans-serif;
     font-weight: 550;
@@ -350,6 +364,7 @@ html,body{
     max-height: 100px;
     min-height: fit-content;
     border-radius: 10px;
+    position: relative;
 }
 #items-image-container img{
     background: #f9f9f9;
@@ -992,5 +1007,11 @@ html,body{
     #main-voucher{
         padding-top: 0;
         font-size: clamp(.8rem, 1vw, 2rem);
+    }
+}
+@media (max-width: 600px) {
+    .stock{
+        font-size: clamp(.8rem, 1vw, 1.1rem);
+        left: 2%;
     }
 }

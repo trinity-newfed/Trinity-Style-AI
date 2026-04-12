@@ -32,6 +32,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS products(
     product_img VARCHAR(255),
     product_img1 VARCHAR(255),
     product_img2 VARCHAR(255),
+    product_stock INT DEFAULT 999,
+    product_sold INT DEFAULT 0,
     product_is_delete TINYINT(1) DEFAULT 0,
     product_state ENUM('active','inactive') DEFAULT 'active'
     )");

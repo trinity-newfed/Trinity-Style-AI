@@ -13,8 +13,22 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] !== "admin"){
 }
 //PRODUCT FETCH
 $product = $conn
-    ->query("SELECT * FROM products")
+    ->query("SELECT * FROM products ORDER BY product_sold DESC LIMIT 5")
     ->fetch_all(MYSQLI_ASSOC);
+
+$inventory = $conn
+    ->query("SELECT * FROM products ORDER BY product_stock DESC LIMIT 5")
+    ->fetch_all(MYSQLI_ASSOC);
+
+$totalSold = 0;
+$totalStock = 0;
+
+foreach($product as $item){
+    $totalSold += $item['product_sold'];
+}
+foreach($inventory as $i){
+    $totalStock += $i['product_stock'];
+}
 
 //USER FETCH
 $userdata = $conn
@@ -42,7 +56,7 @@ $voucher = $conn
             width: 100vw;
             height: 100svh;
             max-width: 1500px;
-            max-height: 900px;
+            max-height: 1000px;
             position: relative;
             margin: auto;
             display: flex;
@@ -50,17 +64,16 @@ $voucher = $conn
             align-items: center;
         }
         #header{
-            position: sticky;
-            width: 20%;
-            height: 100%;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            top: 10px;
-            margin-top: 5%;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: start;
             align-items: center;
+            width: 20%;
+            height: 100%;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 2%;
         }
         .brand{
             border-bottom: 1px solid rgba(0, 0, 0, 0.5);
@@ -130,14 +143,14 @@ $voucher = $conn
             fill: white;
         }
         #header-body{
-            width: 80%;
+            width: 90%;
             height: 100%;
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: start;
-            margin-top: 5%;
+            margin-top: 2%;
         }
         #list{
             position: relative;
@@ -147,21 +160,97 @@ $voucher = $conn
             border-top: none;
             padding-top: 2%;
         }
+        .chart{
+            position: relative;
+            width: 100%;
+            height: 40%;
+            margin: 10px 0;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .chart h3{
+            top: 0;
+            position: absolute;
+            left: 2%;
+            color: white;
+            color: black;
+        }
+        .hot{
+            width: 100%;
+            height: 100%;
+            background: #F9FAFB;
+            display: flex;
+            justify-content: space-around;
+            align-items: end;
+        }
+        .column{
+            width: 40px;
+            height: 0;
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            position: relative;
+            background: #eaeaea;
+        }
+        .column.top1{
+            background: #2d2d2d;
+        }
+        .column.top2{
+            background: #555;
+        }
+        .column.top3{
+            background: #999;
+        }
+        .column img{
+            width: 40px;
+            height: 40px;
+            top: 0;
+            object-fit: scale-down;
+            position: absolute;
+        }
+        .column span{
+            font-size: 11px;
+            position: absolute;
+            bottom: 0;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, .05);
+            color: rgb(255, 255, 255);
+        }
+
+        .chart.inventory .hot{
+            background: #19222b;
+        }
+        .chart.inventory h3{
+            color: white;
+        }
+        .chart.inventory span{
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, .05);
+            color: rgb(255, 255, 255);
+        }
         .list-view::-webkit-scrollbar{
             width: 0;
             height: 0;
         }
         .list-view{
             width: 100%;
-            height: 100%;
+            height: 45%;
             display: grid;
             place-items: center;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            overflow-x: hidden;
-            padding: 30px 0;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
+            padding-bottom: 30px;
+            overflow-y: hidden;
+            padding-top: 30px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
         #search{
@@ -236,7 +325,6 @@ $voucher = $conn
             flex-direction: column;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.5);
             border-radius: 5px;
             text-align: center;
             transition: .3s all;
@@ -522,7 +610,7 @@ $voucher = $conn
             <div class="head-section" id="h-product">Product</div>
             <div class="head-section" id="h-user">User</div>
             <div class="head-section" id="h-voucher">Voucher</div>
-            <div class="dashboard" onclick="window.location.href='dashboard.php'">Dashboard<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l370.7 0-105.4 105.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg></div>
+            <div class="dashboard" onclick="window.location.href='admin.php'">Crud<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l370.7 0-105.4 105.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg></div>
             <div></div>
         </div>
         <div id="header-body">
@@ -553,83 +641,84 @@ $voucher = $conn
                 </div>
             </div>
             <div id="list">
+                <div class="chart trending">
+                    <div class="hot">
+                    <h3>Top Selling</h3>
+                        <?php foreach($product as $index => $p):?>
+                            <div class="column
+                            <?= $index == 0 ? 'top1' : '' ?> 
+                            <?= $index == 1 ? 'top2' : '' ?>
+                            <?= $index == 2 ? 'top3' : '' ?>" 
+                            style="height: calc(<?=$p['product_sold']/$totalSold?>% * 100);">
+
+                                <?php if($p['product_sold'] > 2): ?>
+                                    <img src="../<?=$p['product_img']?>" alt="">
+                                <?php endif; ?>
+                                <span><?=$p['product_sold']?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 <div id="product" class="list-view">
                     <?php if(empty($product)): ?>
-                        <span>Nothing in product table</span>
+                        <span>No data in product table</span>
                     <?php else: ?>
                         <?php foreach($product as $p): ?>
-                            <?php if($p['product_is_delete'] == 1): ?>
-                                <div class="items" style="opacity: .8; filter: grayscale(50%);">
-                                    <span style="color: red; transform: rotateZ(40deg); font-size: 20px; z-index: 3; position: absolute;">Deleted</span>
-                                    <img src="../<?=$p['product_img']?>" alt="">
-                                    <span><?=$p['product_name']?></span>
-                                    <?php if($p['product_stock'] < 5): ?>
-                                        <span class="stock low">Stock: <?=$p['product_stock']?></span>
-                                    <?php else: ?>
-                                        <span class="stock">Stock: <?=$p['product_stock']?></span>
-                                    <?php endif; ?>
-                                    <div class="function-container">
-                                        <form action="restore_item_admin.php" method="post">
-                                            <input type="submit" id="p-restore-<?=$p['id']?>" hidden>
-                                            <input type="hidden" name="id" value="<?=$p['id']?>">
-                                            <label class="Restore" for="p-restore-<?=$p['id']?>">Restore Product</label>
-                                        </form>
-                                        <span class="Update" onclick="window.location.href='update.php?id=<?=$p['id']?>'">Update product</span>
-                                    </div>
-                                </div>
-                            <?php else: ?>
-                                <div class="items" style="opacity: 1;">
-                                    <img src="../<?=$p['product_img']?>" alt="">
-                                    <span><?=$p['product_name']?></span>
-                                    <?php if($p['product_stock'] < 5): ?>
-                                        <span class="stock low">Stock: <?=$p['product_stock']?></span>
-                                    <?php else: ?>
-                                        <span class="stock">Stock: <?=$p['product_stock']?></span>
-                                    <?php endif; ?>
-                                    <div class="function-container">
-                                        <form action="delete_item_admin.php" method="post">
-                                            <input type="submit" id="p-delete-<?=$p['id']?>" hidden>
-                                            <input type="hidden" name="id" value="<?=$p['id']?>">
-                                            <label class="Delete" for="p-delete-<?=$p['id']?>">Delete Product</label>
-                                        </form>
-                                        <span class="Update" onclick="window.location.href='update.php?id=<?=$p['id']?>'">Update product</span>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
+                            <div class="items">
+                                <img src="../<?=$p['product_img']?>" alt="">
+                                <span><?=$p['product_name']?></span>
+                                <span>Sold: <?=$p['product_sold']?></span>
+                            </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
+
+                <div class="chart inventory">
+                    <div class="hot">
+                    <h3>Top Inventory</h3>
+                        <?php foreach($inventory as $index => $i):?>
+                            <div class="column
+                            <?= $index == 0 ? 'top1' : '' ?> 
+                            <?= $index == 1 ? 'top2' : '' ?>
+                            <?= $index == 2 ? 'top3' : '' ?>" 
+                            style="height: calc(<?=$i['product_stock']/$totalStock?>% * 100);">
+
+                                <?php if($i['product_stock'] > 2): ?>
+                                    <img src="../<?=$i['product_img']?>" alt="">
+                                <?php endif; ?>
+                                <span><?=$i['product_stock']?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div id="product" class="list-view">
+                    <?php if(empty($inventory)): ?>
+                        <span>No data in product table</span>
+                    <?php else: ?>
+                        <?php foreach($inventory as $i): ?>
+                            <div class="items">
+                                <img src="../<?=$i['product_img']?>" alt="">
+                                <span><?=$i['product_name']?></span>
+                                <span>Inventory: <?=$i['product_stock']?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
                 <div id="user" style="display: none;" class="list-view">
                     <?php if(empty($userdata)): ?>
-                        <span>Nothing in user table</span>
+                        <span>No data in user table</span>
                     <?php else: ?>
                         <?php foreach($userdata as $u): ?>
-                            <div class="items user">
-                                <?php if(empty($u['img'])): ?>
-                                    <img style="width: 60px; height: 60px; border-radius: 50%;" src="../Pictures/Banners/BA.webp" alt="">
-                                <?php else: ?>
-                                    <img style="width: 60px; height: 60px; border-radius: 50%;" src="../upload/<?=$u['img']?>" alt="">
-                                <?php endif; ?>
-                                <span><?=$u['email']?></span>
-                            </div>
+                            
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
                 <div id="voucher" style="display: none" class="list-view">
                     <?php if(empty($voucher)): ?>
-                        <span>Nothing in voucher table</span>
+                        <span>No data in voucher table</span>
                     <?php else: ?>
-                        <?php foreach($voucher as $v):
-                        $tierNames = ["All", "🥈 Silver", "🪙 Gold", "💎 Diamond"];
-                        $tier = (int)$v['voucher_min_tier'];
-                        ?>
-                        <div class="items voucher">
-                            <h3>Tier: <?=$tierNames[$tier - 1]?> || Type: <?=$v['voucher_type']?></h3>
-                            <span>Discount: $<?=$v['voucher_discount']?></span>
-                            <span>Max discount: $<?=$v['voucher_max']?></span>
-                            <span>Condition: $<?=$v['voucher_condition']?></span>
-                        </div>
-                        <?php endforeach; ?>
+                        
                     <?php endif; ?>
                 </div>
             </div>

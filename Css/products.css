@@ -393,6 +393,10 @@ html,body{
         align-items: center;
         transition: 0.3s;
       }
+      .product-card.out{
+        filter: grayscale(20%);
+        opacity: .7;
+      }
 
       .product-card:hover {
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -404,6 +408,14 @@ html,body{
         height: 350px;
         position: relative;
         overflow: hidden;
+      }
+      .stock{
+        position: absolute;
+        color: red;
+        top: 30%;
+        left: 50%;
+        transform: rotate(-40deg) translate(-50%, -50%);
+        z-index: 100;
       }
 
       .image-box img {
@@ -484,24 +496,6 @@ html,body{
         text-decoration: line-through;
         margin-left: 10px;
         font-size: 14px;
-      }
-
-      .add-to-cart-btn {
-        width: 100%;
-        padding: 12px;
-        background: #000;
-        color: #fff;
-        border: 1px solid #000;
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-
-      .add-to-cart-btn:hover {
-        background: #fff;
-        color: #000;
       }
 
       .wishlist-btn {

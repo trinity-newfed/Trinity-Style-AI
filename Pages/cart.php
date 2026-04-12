@@ -49,6 +49,9 @@ if(isset($_SESSION['user_id'])){
     cart.product_color,
     products.product_category,
     products.product_img,
+    products.product_stock,
+    products.product_state,
+    products.product_is_delete,
     cart.cart_size,
     cart.quantity
 FROM cart
@@ -125,7 +128,8 @@ if(isset($_SESSION['user_id'])){
                     <span onclick="window.location.href='products.php'" style="min-width: fit-content; top: 20%; max-width: 20%; position: relative; top: 20%; font-size: clamp(0.7rem, 1vw, 1rem); color: rgba(0, 72, 255, .6); cursor: pointer;">[Discover more pieces]</span>
                 <?php else: ?>
                 <?php foreach($data as $d): ?>
-                <div class="items">
+                <?php if($d['product_stock'] > 0 && $d['product_state'] != "inactive" && $d['product_is_delete'] != 1): ?>
+                <div class="items" data-stock="<?=$d['product_stock']?>">
                     <div id="product-container">
                         <div style="display: flex; max-width: 50%; align-items: center; justify-content: center; gap: 5%;">
                             <label class="item-label">
@@ -156,6 +160,42 @@ if(isset($_SESSION['user_id'])){
                         <span style="font-size: clamp(0.7rem, 0.9vw, 1rem); position: relative;">0</span>
                     </div>
                 </div>
+                <?php else: ?>
+                <div class="items out">
+                    <div id="product-container">
+                        <div style="display: flex; max-width: 50%; align-items: center; justify-content: center; gap: 5%;">
+                            <label class="item-label">
+                                <input style="cursor: pointer;" type="checkbox" class="" name="cart_ids[]" value="<?=$d['cart_id']?>" hidden>
+                            </label>
+                            <div id="items-image-container">
+                                <span class="stock">Temporarily unavailable</span>
+                                <img src="../<?=$d['product_img']?>" onclick="window.location.href='detail.php?id=<?=$d['product_id']?>'">
+                            </div>
+                        </div>
+                        <div style="display: flex; max-width: 50%;">
+                            <div id="items-info-container">
+                                <span class="item-name"><?=$d['product_name']?></span>
+                                <span style="color: rgba(0, 0, 0, 1); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
+                            <label style="cursor: pointer;" for="remove-input" id="label-for-remove-input" onclick="window.location.href='../Database/delete_item_cart.php?id=<?=$d['cart_id']?>'">Remove</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="items-price-container" data-price="<?=$d['product_price']?>" style="font-size: clamp(0.7rem, 0.9vw, 1rem);">
+                    </div>
+                    <div id="items-quantity-container">
+                            <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="minus" disabled>
+                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
+                            </button>
+                        <span class="item-quantity" style="font-weight: 550;"><?=$d['quantity']?></span>
+                            <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="plus" disabled>
+                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
+                            </button>
+                    </div>
+                    <div class="items-total-container">
+                        <span style="font-size: clamp(0.7rem, 0.9vw, 1rem); position: relative;">0</span>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -382,7 +422,6 @@ if(isset($_SESSION['user_id'])){
     const operationBtn = document.querySelectorAll(".operation-button");
     operationBtn.forEach(btn =>{
         btn.addEventListener('click', function(){
-            btn.disabled = true;
             const id = this.dataset.id;
             const action = this.dataset.action;
             const item = this.closest(".items");
@@ -390,25 +429,45 @@ if(isset($_SESSION['user_id'])){
 
             let quantity = parseInt(quantities.textContent);
 
-            if(action === "plus"){
+            if(action === "plus" && item.dataset.stock > (quantity + 1)){
                 quantity++;
+                fetch('../Database/cart_update.php', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `cart_id=${id}&action=${action}`
+                })
+                .then(() => {btn.disabled = false;
+                        calculateFinalTotal();
+                });  
             }else if(action === "minus" && quantity > 1){
                 quantity--;
+                fetch('../Database/cart_update.php', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `cart_id=${id}&action=${action}`
+                })
+                .then(() => {btn.disabled = false;
+                        calculateFinalTotal();
+                });  
             }else if(action === "minus" && quantity == 1){
                 location.reload();
+                fetch('../Database/cart_update.php', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `cart_id=${id}&action=${action}`
+                })
+                .then(() => {btn.disabled = false;
+                        calculateFinalTotal();
+                });  
             }
 
-            quantities.textContent = quantity;
-            fetch('../Database/cart_update.php', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `cart_id=${id}&action=${action}`
-            })
-            .then(() => {btn.disabled = false;
-                        calculateFinalTotal();
-            });
+            quantities.textContent = quantity;                        
         });
     });
         //USERNAME

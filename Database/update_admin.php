@@ -6,17 +6,19 @@ if ($conn->connect_error) {
 
 $id      = $_POST['id'];
 $name    = $_POST['product_name'];
-$email   = $_POST['product_price'];
-$address = $_POST['product_type'];
-$hotline = $_POST['product_describe'];
-$rating  = $_POST['product_color'];
+$price   = $_POST['product_price'];
+$type = $_POST['product_type'];
+$des = $_POST['product_describe'];
+$state = $_POST['product_state'];
+$color  = $_POST['product_color'];
 
 $sql = "UPDATE products SET
             product_name    = '$name',
-            product_price   = '$email',
-            product_type = '$address',
-            product_describe = '$hotline',
-            product_color  = '$rating'
+            product_price   = '$price',
+            product_type = '$type',
+            product_describe = '$des',
+            product_state = '$state',
+            product_color  = '$color'
         WHERE id = $id";
 
 if ($conn->query($sql)) {
