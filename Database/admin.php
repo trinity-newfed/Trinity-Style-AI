@@ -371,6 +371,7 @@ $voucher = $conn
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.85);
+            position: relative;
         }
         #form{
             padding-top: 10px;
@@ -411,7 +412,7 @@ $voucher = $conn
             background: black;
             color: white;
             cursor: pointer;
-            bottom: 5%;
+            bottom: 3%;
             left: 50%;
             transform: translateX(-50%);
         }

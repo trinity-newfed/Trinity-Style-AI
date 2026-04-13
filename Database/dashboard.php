@@ -39,6 +39,33 @@ $userdata = $conn
 $voucher = $conn
     ->query("SELECT * FROM vouchers")
     ->fetch_all(MYSQLI_ASSOC);
+
+
+$orders = $conn->query("SELECT
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '2026-03-01' AND created_at < '2026-04-01'
+    THEN order_final_price 
+  END), 0) AS lastMonth,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '2026-04-01' AND created_at < '2026-05-01'
+    THEN order_final_price  
+  END), 0) AS thisMonth
+FROM orders;
+");
+if(!$orders){
+    die("SQL Error: " . $conn->error);
+}
+
+$res = $orders->fetch_assoc();
+
+$revenueLM = ($res['lastMonth'] / 10000)*100;
+$revenueTM = Floor(($res['thisMonth'] / $res['lastMonth'])*100);
+$offsetLM = 100 - $revenueLM;
+$offsetTM = 100 - $revenueTM;
+
+$recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10");
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,16 +91,16 @@ $voucher = $conn
             align-items: center;
         }
         #header{
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: start;
-            align-items: center;
+            position: sticky;
             width: 20%;
             height: 100%;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            margin-top: 2%;
+            display: flex;
+            margin-top: 5%;
+            flex-direction: column;
+            justify-content: start;
+            align-items: center;
         }
         .brand{
             border-bottom: 1px solid rgba(0, 0, 0, 0.5);
@@ -143,14 +170,14 @@ $voucher = $conn
             fill: white;
         }
         #header-body{
-            width: 90%;
+            width: 80%;
             height: 100%;
             position: relative;
+            margin-top: 5%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: start;
-            margin-top: 2%;
         }
         #list{
             position: relative;
@@ -185,6 +212,36 @@ $voucher = $conn
             display: flex;
             justify-content: space-around;
             align-items: end;
+        }
+        .revenue{
+            width: 100%;
+            height: 100%;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .lastMonth, .thisMonth{
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: white;
+            position: relative;
+        }
+        .lastMonth span, .thisMonth span{
+            bottom: -1.5rem;
+            position: absolute;
+        }
+        .lastMonth{
+            box-shadow: 0 3px 10px rgb(255, 183, 183);
+        }
+        .thisMonth{
+            box-shadow: 0 3px 10px rgb(183, 217, 255);
+        }
+        .venue.last{
+            width: 50%;
+            height: 100%;
         }
         .column{
             width: 40px;
@@ -246,7 +303,7 @@ $voucher = $conn
             height: 45%;
             display: grid;
             place-items: center;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             padding-bottom: 30px;
             overflow-y: hidden;
@@ -609,7 +666,7 @@ $voucher = $conn
             <div class="brand" onclick="window.location.href='../Pages/'">TRINITY</div>
             <div class="head-section" id="h-product">Product</div>
             <div class="head-section" id="h-user">User</div>
-            <div class="head-section" id="h-voucher">Voucher</div>
+            <div class="head-section" id="h-order">Order</div>
             <div class="dashboard" onclick="window.location.href='admin.php'">Crud<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l370.7 0-105.4 105.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg></div>
             <div></div>
         </div>
@@ -629,19 +686,23 @@ $voucher = $conn
                     <input type="text" placeholder="Search" id="search-input-2" class="search">
                     <label id="total-users" style="text-align: center;"></label>
                 </div>
-                <div id="s-voucher" style="display: none;" class="search-div">
+                <div id="s-order" style="display: none;" class="search-div">
                     <input type="text" placeholder="Search" id="search-input-3" class="search">
-                    <label id="total-vouchers" style="text-align: center;"></label>
-                    <div id="add-voucher" class="add">Add new voucher</div>
-                    <?php if(empty($voucher)): ?>
-                    <form action="insert_voucher_database_admin.php">
-                        <input class="add full" type="submit" value="add database (voucher)">
-                    </form>
+                    <label id="total-orders" style="text-align: center;"></label>
+                    <?php if(empty($orders)): ?>
                     <?php endif; ?>
                 </div>
             </div>
-            <div id="list">
+            <div id="list" class="listView product">
                 <div class="chart trending">
+                    <div class="revenue">
+                        <div class="lastMonth" style="background: conic-gradient(#ff785d 0% 0%, #ff785d 20% <?=$offsetLM?>%, #ffa8a8 20% <?=$revenueLM?>%);"><?=$revenueLM?>%
+                            <span>Last Month Revenue</span>
+                        </div>
+                        <div class="thisMonth" style="background: conic-gradient(#93C5FD 0% 0%, #93C5FD 20% <?=$offsetTM?>%, #BFDBFE 20% <?=$revenueTM?>%);"><?=$revenueTM?>%
+                            <span>This Month Revenue</span>
+                        </div>
+                    </div>
                     <div class="hot">
                     <h3>Top Selling</h3>
                         <?php foreach($product as $index => $p):?>
@@ -704,24 +765,9 @@ $voucher = $conn
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-
-                <div id="user" style="display: none;" class="list-view">
-                    <?php if(empty($userdata)): ?>
-                        <span>No data in user table</span>
-                    <?php else: ?>
-                        <?php foreach($userdata as $u): ?>
-                            
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-                <div id="voucher" style="display: none" class="list-view">
-                    <?php if(empty($voucher)): ?>
-                        <span>No data in voucher table</span>
-                    <?php else: ?>
-                        
-                    <?php endif; ?>
-                </div>
             </div>
+            <div id="list" style="display: none;" class="listView user"></div>
+            <div id="list" style="display: none;" class="listView order"></div>
         </div>
     </div>
     <script>
@@ -735,7 +781,6 @@ $voucher = $conn
         const search_input_2 = document.getElementById("search-input-2");
         const search_input_3 = document.getElementById("search-input-3");
         const add_product = document.getElementById("add-product");
-        const add_voucher = document.getElementById("add-voucher");
 
         h_product.classList.add("show");
         product.style.display = "grid";
@@ -743,12 +788,15 @@ $voucher = $conn
         section.forEach(sec =>{
             sec.addEventListener('click', ()=>{
                 section.forEach(s => s.classList.remove("show"));
-                lists.forEach(list => list.style.display = "none");
                 searchs.forEach(search => search.style.display = "none");
                 sec.classList.add("show");
                 const name = sec.id.replace("h-", "");
-                document.getElementById(name).style.display = "grid";
+                const list = document.querySelectorAll(".listView");
                 document.getElementById("s-" + name).style.display = "flex";
+                list.forEach(li =>{
+                    li.style.display = "none";
+                    if(li.classList.contains(name)) li.style.display = "";
+                });
             });
         });
 
