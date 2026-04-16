@@ -40,15 +40,76 @@ $voucher = $conn
     ->query("SELECT * FROM vouchers")
     ->fetch_all(MYSQLI_ASSOC);
 
-
+$year = 2026;
+$date = date("Y:m:d");
 $orders = $conn->query("SELECT
+    COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-01-01' AND  created_at < '$year-02-01' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS jan,
+
+    COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-02-01' AND created_at <= '$year-02-28' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS feb,
+
   COALESCE(SUM(CASE 
-    WHEN created_at >= '2026-03-01' AND created_at < '2026-04-01'
+    WHEN created_at >= '$year-03-01' AND created_at <= '$year-03-31' AND order_state = 'delivered'
     THEN order_final_price 
+  END), 0) AS mar,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-04-01' AND created_at <= '$year-04-30' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS apr,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-05-01' AND created_at <= '$year-05-31' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS may,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-6-01' AND created_at <= '$year-06-30' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS jun,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-7-01' AND created_at <= '$year-07-31' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS jul,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-8-01' AND created_at <= '$year-08-31' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS aug,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-9-01' AND created_at <= '$year-9-30' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS sep,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-10-01' AND created_at <= '$year-10-31' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS oct,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-11-01' AND created_at <= '$year-11-30' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS nov,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at >= '$year-12-01' AND created_at <= '$year-12-31' AND order_state = 'delivered'
+    THEN order_final_price  
+  END), 0) AS dece,
+
+  COALESCE(SUM(CASE 
+    WHEN created_at < '$date' AND order_state = 'delivered'
+    THEN order_final_price  
   END), 0) AS lastMonth,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '2026-04-01' AND created_at < '2026-05-01'
+    WHEN created_at = '$date' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS thisMonth
 FROM orders;
@@ -59,8 +120,8 @@ if(!$orders){
 
 $res = $orders->fetch_assoc();
 
-$revenueLM = ($res['lastMonth'] / 10000)*100;
-$revenueTM = Floor(($res['thisMonth'] / $res['lastMonth'])*100);
+$revenueLM = ($res['lastMonth'] / 1000000)*100;
+$revenueTM = $res['lastMonth'] <= 0 ? 0 : round(($res['thisMonth'] / $res['lastMonth'])*100);
 $offsetLM = 100 - $revenueLM;
 $offsetTM = 100 - $revenueTM;
 
@@ -77,12 +138,13 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
     <style>
         html{
             user-select: none;
+            overflow-x: hidden;
         }
         #head{
             top: 0;
             width: 100vw;
             height: 100svh;
-            max-width: 1500px;
+            max-width: 2000px;
             max-height: 1000px;
             position: relative;
             margin: auto;
@@ -170,7 +232,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             fill: white;
         }
         #header-body{
-            width: 80%;
+            width: 75%;
             height: 100%;
             position: relative;
             margin-top: 5%;
@@ -190,13 +252,13 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         .chart{
             position: relative;
             width: 100%;
-            height: 40%;
+            height: 45%;
             margin: 10px 0;
-            border: 1px solid #E5E7EB;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2%;
         }
         .chart h3{
             top: 0;
@@ -206,38 +268,37 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             color: black;
         }
         .hot{
-            width: 100%;
+            width: 49%;
             height: 100%;
-            background: #F9FAFB;
             display: flex;
             justify-content: space-around;
             align-items: end;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .revenue{
-            width: 100%;
+            width: 49%;
             height: 100%;
-            border: 1px solid #E5E7EB;
+            border-radius: 5px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-around;
             align-items: center;
         }
         .lastMonth, .thisMonth{
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             background: white;
             position: relative;
         }
         .lastMonth span, .thisMonth span{
-            bottom: -1.5rem;
+            text-align: center;
+            width: 100%;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
             position: absolute;
-        }
-        .lastMonth{
-            box-shadow: 0 3px 10px rgb(255, 183, 183);
-        }
-        .thisMonth{
-            box-shadow: 0 3px 10px rgb(183, 217, 255);
         }
         .venue.last{
             width: 50%;
@@ -262,8 +323,8 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             background: #999;
         }
         .column img{
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             top: 0;
             object-fit: scale-down;
             position: absolute;
@@ -279,12 +340,9 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             background: rgba(0, 0, 0, .05);
             color: rgb(255, 255, 255);
         }
-
         .chart.inventory .hot{
-            background: #19222b;
-        }
-        .chart.inventory h3{
-            color: white;
+            width: 100%;
+            color: black;
         }
         .chart.inventory span{
             text-align: center;
@@ -299,16 +357,53 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             height: 0;
         }
         .list-view{
+            position: relative;
             width: 100%;
-            height: 45%;
-            display: grid;
-            place-items: center;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding-bottom: 30px;
+            height: 55%;
+            display: flex;
+            padding-bottom: 10px;
             overflow-y: hidden;
             padding-top: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .lineChart{
+            width: 90%;
+            height: 100%;
+            border: 1px solid black;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+        }
+        .line{
+            height: 0;
+            max-height: 100%;
+            width: 25px;
+            background: black;
+        }
+        .monthContainer{
+            width: 90%;
+            display: flex;
+            align-items: start;
+            justify-content: space-around;
+        }
+        .moneyScale{
+            width: 10%;
+            height: 100%;
+            position: relative;
+        }
+        .max{
+            top: 0;
+            left: 0;
+            position: absolute;
+        }
+        .mid{
+            top: 50%;
+            left: 0;
+            position: absolute;
+        }
+        .min{
+            left: 0;
+            position: absolute;
+            bottom: 0;
         }
         #search{
             width: 100%;
@@ -376,8 +471,8 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         }
 
         .items{
-            width: 200px;
-            height: 320px;
+            width: 180px;
+            height: 280px;
             display: flex;
             flex-direction: column;
             justify-content: space-around;
@@ -694,17 +789,17 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                 </div>
             </div>
             <div id="list" class="listView product">
+                <h3>Top Selling</h3>
                 <div class="chart trending">
                     <div class="revenue">
-                        <div class="lastMonth" style="background: conic-gradient(#ff785d 0% 0%, #ff785d 20% <?=$offsetLM?>%, #ffa8a8 20% <?=$revenueLM?>%);"><?=$revenueLM?>%
+                        <div class="lastMonth" style="background: conic-gradient(#7173f2 0% 0%, #7173f2 20% <?=$offsetLM?>%, #9d75fb 20% <?=$revenueLM?>%);"><?=$revenueLM?>%
                             <span>Last Month Revenue</span>
                         </div>
-                        <div class="thisMonth" style="background: conic-gradient(#93C5FD 0% 0%, #93C5FD 20% <?=$offsetTM?>%, #BFDBFE 20% <?=$revenueTM?>%);"><?=$revenueTM?>%
+                        <div class="thisMonth" style="background: conic-gradient(#7173f2 0% 0%, #7173f2 20% <?=$offsetTM?>%, #ec4899 20% <?=$revenueTM?>%);"><?=$revenueTM?>%
                             <span>This Month Revenue</span>
                         </div>
                     </div>
                     <div class="hot">
-                    <h3>Top Selling</h3>
                         <?php foreach($product as $index => $p):?>
                             <div class="column
                             <?= $index == 0 ? 'top1' : '' ?> 
@@ -715,28 +810,54 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                                 <?php if($p['product_sold'] > 2): ?>
                                     <img src="../<?=$p['product_img']?>" alt="">
                                 <?php endif; ?>
-                                <span><?=$p['product_sold']?></span>
+                                <span><?=$p['product_sold']?></span>  
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
                 <div id="product" class="list-view">
+                    <div class="lineChart">
+                        <div class="line" style="height: <?=$res['jan'] <= 0 ? 0 : ($res['jan'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['feb'] <= 0 ? 0 : ($res['feb'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['mar'] <= 0 ? 0 : ($res['mar'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['apr'] <= 0 ? 0 : ($res['apr'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['may'] <= 0 ? 0 : ($res['may'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['jun'] <= 0 ? 0 : ($res['jun'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['jul'] <= 0 ? 0 : ($res['jul'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['aug'] <= 0 ? 0 : ($res['aug'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['sep'] <= 0 ? 0 : ($res['sep'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['oct'] <= 0 ? 0 : ($res['oct'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['nov'] <= 0 ? 0 : ($res['nov'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['dece'] <= 0 ? 0 : ($res['dece'] / 1000000) * 100?>%"></div>
+                    </div>
+                    <div class="moneyScale">
+                        <span class="max">-1.000.000$</span>
+                        <span class="mid">-500.000</span>
+                        <span class="min">-0$</span>
+                    </div>
                     <?php if(empty($product)): ?>
                         <span>No data in product table</span>
                     <?php else: ?>
-                        <?php foreach($product as $p): ?>
-                            <div class="items">
-                                <img src="../<?=$p['product_img']?>" alt="">
-                                <span><?=$p['product_name']?></span>
-                                <span>Sold: <?=$p['product_sold']?></span>
-                            </div>
-                        <?php endforeach; ?>
                     <?php endif; ?>
+                </div>
+                <div class="monthContainer">
+                    <div class="month">Jan</div>
+                    <div class="month">Feb</div>
+                    <div class="month">Mar</div>
+                    <div class="month">Apr</div>
+                    <div class="month">May</div>
+                    <div class="month">Jun</div>
+                    <div class="month">Jul</div>
+                    <div class="month">Aug</div>
+                    <div class="month">Sep</div>
+                    <div class="month">Oct</div>
+                    <div class="month">Nov</div>
+                    <div class="month">Dec</div>
                 </div>
 
                 <div class="chart inventory">
                     <div class="hot">
-                    <h3>Top Inventory</h3>
+                        <h3>Top Inventory</h3>
                         <?php foreach($inventory as $index => $i):?>
                             <div class="column
                             <?= $index == 0 ? 'top1' : '' ?> 
@@ -757,11 +878,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                         <span>No data in product table</span>
                     <?php else: ?>
                         <?php foreach($inventory as $i): ?>
-                            <div class="items">
-                                <img src="../<?=$i['product_img']?>" alt="">
-                                <span><?=$i['product_name']?></span>
-                                <span>Inventory: <?=$i['product_stock']?></span>
-                            </div>
+                            
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -783,7 +900,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         const add_product = document.getElementById("add-product");
 
         h_product.classList.add("show");
-        product.style.display = "grid";
+        product.style.display = "flex";
 
         section.forEach(sec =>{
             sec.addEventListener('click', ()=>{
