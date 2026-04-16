@@ -130,7 +130,7 @@ $voucher = $conn
             fill: white;
         }
         #header-body{
-            width: 80%;
+            width: 75%;
             height: 100%;
             position: relative;
             display: flex;
