@@ -55,7 +55,6 @@ $voucher = $conn
             height: 100%;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            top: 10px;
             margin-top: 5%;
             display: flex;
             flex-direction: column;
@@ -133,11 +132,11 @@ $voucher = $conn
             width: 75%;
             height: 100%;
             position: relative;
+            margin-top: 5%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: start;
-            margin-top: 5%;
         }
         #list{
             position: relative;

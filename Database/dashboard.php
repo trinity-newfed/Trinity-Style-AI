@@ -41,7 +41,7 @@ $voucher = $conn
     ->fetch_all(MYSQLI_ASSOC);
 
 $year = 2026;
-$date = date("Y:m:d");
+$date = date("Y:m");
 $orders = $conn->query("SELECT
     COALESCE(SUM(CASE 
     WHEN created_at >= '$year-01-01' AND  created_at < '$year-02-01' AND order_state = 'delivered'
@@ -49,52 +49,52 @@ $orders = $conn->query("SELECT
   END), 0) AS jan,
 
     COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-02-01' AND created_at <= '$year-02-28' AND order_state = 'delivered'
+    WHEN created_at >= '$year-02-01' AND created_at < '$year-03-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS feb,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-03-01' AND created_at <= '$year-03-31' AND order_state = 'delivered'
+    WHEN created_at >= '$year-03-01' AND created_at < '$year-04-01' AND order_state = 'delivered'
     THEN order_final_price 
   END), 0) AS mar,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-04-01' AND created_at <= '$year-04-30' AND order_state = 'delivered'
+    WHEN created_at >= '$year-04-01' AND created_at < '$year-05-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS apr,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-05-01' AND created_at <= '$year-05-31' AND order_state = 'delivered'
+    WHEN created_at >= '$year-05-01' AND created_at < '$year-06-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS may,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-6-01' AND created_at <= '$year-06-30' AND order_state = 'delivered'
+    WHEN created_at >= '$year-6-01' AND created_at < '$year-07-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS jun,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-7-01' AND created_at <= '$year-07-31' AND order_state = 'delivered'
+    WHEN created_at >= '$year-7-01' AND created_at < '$year-08-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS jul,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-8-01' AND created_at <= '$year-08-31' AND order_state = 'delivered'
+    WHEN created_at >= '$year-8-01' AND created_at < '$year-09-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS aug,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-9-01' AND created_at <= '$year-9-30' AND order_state = 'delivered'
+    WHEN created_at >= '$year-9-01' AND created_at < '$year-10-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS sep,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-10-01' AND created_at <= '$year-10-31' AND order_state = 'delivered'
+    WHEN created_at >= '$year-10-01' AND created_at < '$year-11-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS oct,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= '$year-11-01' AND created_at <= '$year-11-30' AND order_state = 'delivered'
+    WHEN created_at >= '$year-11-01' AND created_at < '$year-12-01' AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS nov,
 
@@ -104,12 +104,16 @@ $orders = $conn->query("SELECT
   END), 0) AS dece,
 
   COALESCE(SUM(CASE 
-    WHEN created_at < '$date' AND order_state = 'delivered'
+    WHEN created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01') 
+    AND created_at <  DATE_FORMAT(NOW(), '%Y-%m-01')
+    AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS lastMonth,
 
   COALESCE(SUM(CASE 
-    WHEN created_at = '$date' AND order_state = 'delivered'
+    WHEN created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')
+    AND created_at <  DATE_FORMAT(NOW() + INTERVAL 1 MONTH, '%Y-%m-01')
+    AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS thisMonth
 FROM orders;
@@ -120,10 +124,9 @@ if(!$orders){
 
 $res = $orders->fetch_assoc();
 
-$revenueLM = ($res['lastMonth'] / 1000000)*100;
-$revenueTM = $res['lastMonth'] <= 0 ? 0 : round(($res['thisMonth'] / $res['lastMonth'])*100);
-$offsetLM = 100 - $revenueLM;
-$offsetTM = 100 - $revenueTM;
+$revenueLM = $res['lastMonth'] <= 0 ? 1 : round(($res['lastMonth'] / 100), 2);
+$revenueTM = $res['thisMonth'] <= 0 ? 1 : round(($res['thisMonth'] / 100), 2);
+$grown = round(($res['thisMonth'] - $res['lastMonth']) / $res['lastMonth'] * 100, 2);
 
 $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10");
 
@@ -158,8 +161,8 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             height: 100%;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            display: flex;
             margin-top: 5%;
+            display: flex;
             flex-direction: column;
             justify-content: start;
             align-items: center;
@@ -285,20 +288,62 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             justify-content: space-around;
             align-items: center;
         }
-        .lastMonth, .thisMonth{
+        .Monthly{
             width: 180px;
             height: 180px;
             border-radius: 50%;
             background: white;
             position: relative;
         }
-        .lastMonth span, .thisMonth span{
+        .Grown{
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+        .Grown :nth-child(1){
+            color: green;
+        }
+        .Monthly span{
             text-align: center;
             width: 100%;
-            bottom: -1rem;
+            bottom: -1.5rem;
             left: 50%;
             transform: translateX(-50%);
             position: absolute;
+        }
+        .explain{
+            width: 100px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .Monthlylabel{
+            display: flex;
+            gap: 3px;
+        }
+        .box{
+            width: 10px;
+            height: 10px;
+            border: 3px solid black;
+        }
+        .box.last{
+            background: #64748B;
+        }
+        .box.this{
+            background: #4F46E5;
         }
         .venue.last{
             width: 50%;
@@ -307,6 +352,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         .column{
             width: 40px;
             height: 0;
+            max-height: 90%;
             display: flex;
             justify-content: center;
             align-items: start;
@@ -323,11 +369,13 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             background: #999;
         }
         .column img{
-            width: 30px;
+            width: 100%;
             height: 30px;
             top: 0;
+            transform: translateY(-100%);
             object-fit: scale-down;
             position: absolute;
+            background: rgba(0, 0, 0, 0.3);
         }
         .column span{
             font-size: 11px;
@@ -345,12 +393,13 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             color: black;
         }
         .chart.inventory span{
+            width: 100%;
             text-align: center;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, .05);
-            color: rgb(255, 255, 255);
+            background: rgba(0, 0, 0, 0.2);
+            color: rgb(245, 245, 245);
         }
         .list-view::-webkit-scrollbar{
             width: 0;
@@ -361,7 +410,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             width: 100%;
             height: 55%;
             display: flex;
-            padding-bottom: 10px;
+            padding-bottom: 20px;
             overflow-y: hidden;
             padding-top: 30px;
         }
@@ -375,9 +424,29 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         }
         .line{
             height: 0;
-            max-height: 100%;
-            width: 25px;
+            max-height: 95%;
+            width: 45px;
             background: black;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: .8;
+        }
+        .line:hover{
+            opacity: 1;
+        }
+        .line:hover .lineRevenue{
+            opacity: 1;
+            transition: .3s all;
+        }
+        .line span{
+            opacity: 0;
+            transition: .3s all;
+            position: absolute;
+            top: 0;
+            transform: translateY(-100%);
         }
         .monthContainer{
             width: 90%;
@@ -792,11 +861,27 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                 <h3>Top Selling</h3>
                 <div class="chart trending">
                     <div class="revenue">
-                        <div class="lastMonth" style="background: conic-gradient(#7173f2 0% 0%, #7173f2 20% <?=$offsetLM?>%, #9d75fb 20% <?=$revenueLM?>%);"><?=$revenueLM?>%
-                            <span>Last Month Revenue</span>
+                        <div class="Monthly" style="background: conic-gradient(#64748B 0deg <?=$revenueLM?>deg, #4F46E5 <?=$revenueLM?>deg <?=$revenueTM?>deg, #E5E7EB <?=$revenueTM?>deg 360deg);">
+                            <div class="Grown">
+                                <p data-value=<?=round($res['thisMonth'])?>><?=round($res['thisMonth'], 0)?>$</p>
+                                <?php if($grown > 0): ?>
+                                    <p>+<?=$grown?>%</p>
+                                <?php else: ?>
+                                    <p style="color: red;"><?=$grown?>%</p>
+                                <?php endif; ?>
+                            </div>
+                            <span> Monthly Revenue</span>
                         </div>
-                        <div class="thisMonth" style="background: conic-gradient(#7173f2 0% 0%, #7173f2 20% <?=$offsetTM?>%, #ec4899 20% <?=$revenueTM?>%);"><?=$revenueTM?>%
-                            <span>This Month Revenue</span>
+                        <div class="explain">
+                            <label class="Monthlylabel">
+                                <div class="box last" id="boxLast"></div>    
+                                <span>Last Month</span>
+                            </label>
+
+                            <label class="Monthlylabel">
+                                <div class="box this"></div>
+                                <span>This Month</span>
+                            </label>
                         </div>
                     </div>
                     <div class="hot">
@@ -807,7 +892,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                             <?= $index == 2 ? 'top3' : '' ?>" 
                             style="height: calc(<?=$p['product_sold']/$totalSold?>% * 100);">
 
-                                <?php if($p['product_sold'] > 2): ?>
+                                <?php if($p['product_sold'] > 0): ?>
                                     <img src="../<?=$p['product_img']?>" alt="">
                                 <?php endif; ?>
                                 <span><?=$p['product_sold']?></span>  
@@ -817,22 +902,46 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                 </div>
                 <div id="product" class="list-view">
                     <div class="lineChart">
-                        <div class="line" style="height: <?=$res['jan'] <= 0 ? 0 : ($res['jan'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['feb'] <= 0 ? 0 : ($res['feb'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['mar'] <= 0 ? 0 : ($res['mar'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['apr'] <= 0 ? 0 : ($res['apr'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['may'] <= 0 ? 0 : ($res['may'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['jun'] <= 0 ? 0 : ($res['jun'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['jul'] <= 0 ? 0 : ($res['jul'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['aug'] <= 0 ? 0 : ($res['aug'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['sep'] <= 0 ? 0 : ($res['sep'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['oct'] <= 0 ? 0 : ($res['oct'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['nov'] <= 0 ? 0 : ($res['nov'] / 1000000) * 100?>%"></div>
-                        <div class="line" style="height: <?=$res['dece'] <= 0 ? 0 : ($res['dece'] / 1000000) * 100?>%"></div>
+                        <div class="line" style="height: <?=$res['jan'] <= 0 ? 0 : ($res['jan'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['jan'])?>><?=round($res['jan'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['feb'] <= 0 ? 0 : ($res['feb'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['feb'])?>><?=round($res['feb'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['mar'] <= 0 ? 0 : ($res['mar'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['mar'])?>><?=round($res['mar'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['apr'] <= 0 ? 0 : ($res['apr'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['apr'])?>><?=round($res['apr'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['may'] <= 0 ? 0 : ($res['may'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['may'])?>><?=round($res['may'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['jun'] <= 0 ? 0 : ($res['jun'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['jun'])?>><?=round($res['jun'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['jul'] <= 0 ? 0 : ($res['jul'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['jul'])?>><?=round($res['jul'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['aug'] <= 0 ? 0 : ($res['aug'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['aug'])?>><?=round($res['aug'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['sep'] <= 0 ? 0 : ($res['sep'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['sep'])?>><?=round($res['sep'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['oct'] <= 0 ? 0 : ($res['oct'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['oct'])?>><?=round($res['oct'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['nov'] <= 0 ? 0 : ($res['nov'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['nov'])?>><?=round($res['nov'])?></span>
+                        </div>
+                        <div class="line" style="height: <?=$res['dece'] <= 0 ? 0 : ($res['dece'] / 100000) * 100?>%">
+                            <span class="lineRevenue" data-value=<?=round($res['dece'])?>><?=round($res['dece'])?></span>
+                        </div>
                     </div>
                     <div class="moneyScale">
                         <span class="max">-1.000.000$</span>
-                        <span class="mid">-500.000</span>
+                        <span class="mid">-500.000$</span>
                         <span class="min">-0$</span>
                     </div>
                     <?php if(empty($product)): ?>
@@ -873,15 +982,6 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                         <?php endforeach; ?>
                     </div>
                 </div>
-                <div id="product" class="list-view">
-                    <?php if(empty($inventory)): ?>
-                        <span>No data in product table</span>
-                    <?php else: ?>
-                        <?php foreach($inventory as $i): ?>
-                            
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
             </div>
             <div id="list" style="display: none;" class="listView user"></div>
             <div id="list" style="display: none;" class="listView order"></div>
@@ -898,6 +998,20 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         const search_input_2 = document.getElementById("search-input-2");
         const search_input_3 = document.getElementById("search-input-3");
         const add_product = document.getElementById("add-product");
+        const revenue = document.querySelector(".Grown p");
+        const monthlyRevenue = document.querySelectorAll(".lineRevenue");
+
+        if(revenue.textContent.length > 6){
+            revenue.textContent = (revenue.dataset.value / 1000000).toFixed(2) + "M";
+        }
+
+        monthlyRevenue.forEach(monthly =>{
+            if(monthly.textContent.length > 6){
+                monthly.textContent = (monthly.dataset.value / 1000000).toFixed(2) + "M";
+            }else if(monthly.textContent.length > 4){
+                monthly.textContent = (monthly.dataset.value / 1000).toFixed(1) + "K";
+            }
+        })
 
         h_product.classList.add("show");
         product.style.display = "flex";

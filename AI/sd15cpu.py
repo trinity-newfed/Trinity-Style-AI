@@ -81,8 +81,7 @@ def generate_mask(image: Image.Image):
     pred = upsampled_logits.argmax(dim=1)[0].cpu().numpy()
     mask = np.zeros_like(pred, dtype=np.uint8)
     mask[pred == 4] = 255
-    kernel = np.ones((8,8),np.uint8)
-    mask = cv2.dilate(mask,kernel,iterations=1)
+    mask = cv2.GaussianBlur(mask, (7,7), 0)
     return Image.fromarray(mask)
 
 def preprocess_person_cloth(person_img: Image.Image, cloth_img: Image.Image):
@@ -103,7 +102,7 @@ def preprocess_person_cloth(person_img: Image.Image, cloth_img: Image.Image):
     mask_np = np.array(seg_mask)
     mask_np[face_mask==255] = 0
 
-    person_np[mask_np>200] = cloth_np[mask_np>200]
+    person_np[mask_np>128] = cloth_np[mask_np>128]
 
     for (x,y,w,h) in faces:
         person_np[y:y+h, x:x+w] = np.array(person_resized)[y:y+h, x:x+w]
@@ -119,6 +118,7 @@ def api_generate():
     person_file = request.files["person"]
     cloth_path = request.form["cloth"]
     userID = request.form.get("user_id")
+    productID = request.form["product_id"]
 
     with progress_lock:
         progress_dict[userID] = 0
@@ -138,7 +138,7 @@ def api_generate():
     generator = torch.Generator(device).manual_seed(seed)
 
     def progress_callback(step, timestep, latents):
-        percent = int(((step+1)/40)*100)
+        percent = int(((step+1)/30)*100)
         with progress_lock:
             progress_dict[userID] = percent
             current = progress_dict.get(userID, 0)
@@ -160,7 +160,7 @@ def api_generate():
         mask_image=mask,
         control_image=canny_image,
         ip_adapter_image=cloth_img,
-        num_inference_steps=40,
+        num_inference_steps=30,
         strength=0.65,
         generator=generator,
         guidance_scale=8,
@@ -177,7 +177,7 @@ def api_generate():
     with progress_lock:
         progress_dict[userID] = 100
 
-    sql = "INSERT INTO tryon (user_id, cloth_path, result_img) VALUES (%s,%s,%s)"
+    sql = "INSERT INTO tryon (user_id, cloth_path, result_img, product_id) VALUES (%s,%s,%s,%s)"
     try:
         db = mysql.connector.connect(
             host="localhost",
@@ -186,7 +186,7 @@ def api_generate():
             database="TF_Database"
         )
         cursor = db.cursor()
-        cursor.execute(sql,(userID, cloth_path, filename))
+        cursor.execute(sql,(userID, cloth_path, filename, productID))
         db.commit()
     except Exception as e:
         print("DB ERROR:", e)

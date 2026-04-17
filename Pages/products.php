@@ -55,6 +55,7 @@ $sql->close();
     <input type="hidden" name="user_id" value="<?=$_SESSION['user_id']?>">
     <input type="file" id="try-on-input" name="person" hidden required>
     <input type="hidden" name="cloth" id="cloth">
+    <input type="hidden" name="product_id" id="p_id">
     <label id="fileChoose" for="try-on-input">Choose your file</label>
     <button id="genBtn" type="submit">Generate</button>
     <div id="progress-container">
@@ -494,6 +495,7 @@ setTimeout(() => {
       const sortSelect = document.getElementById("sort");
       const agreeForm = document.getElementById("agreementForm");
       const checked = document.getElementById("agreeAI");
+      const inputId = document.getElementById("p_id");
       
       if(checked){
         if(checked.checked != true){
@@ -564,6 +566,7 @@ setTimeout(() => {
               modalProductType.value = "default";
               currentProductId = product.dataset.id;
               try_on_input.value = product.dataset.img;
+              inputId.value = product.dataset.id;;
               if(product.dataset.stock <= product.dataset.cartquantity || product.dataset.active == 0){
                 addCart.forEach(btn =>{
                   btn.disabled = true;

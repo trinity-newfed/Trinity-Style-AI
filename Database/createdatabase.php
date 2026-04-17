@@ -125,6 +125,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS tryon(
     user_id VARCHAR(255),
     cloth_path VARCHAR(255),
     result_img VARCHAR(255),
+    product_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 ?>
