@@ -60,7 +60,7 @@ html,body{
 /*START MENU*/
 #menu{
     width: 100%;
-    max-width: 1500px;
+    max-width: 2000px;
     height: 70px;
     position: fixed;
     top: 0;
@@ -354,7 +354,7 @@ html,body{
   margin: 40px;
   font-family: sans-serif;
   position: relative;
-  max-width: 1500px;
+  max-width: 2000px;
   margin: auto;
 }
 
@@ -899,7 +899,7 @@ html,body{
 
 #body{
     width: 100vw;
-    max-width: 1500px;
+    max-width: 2000px;
     display: grid;
     position: relative;
     margin: auto;

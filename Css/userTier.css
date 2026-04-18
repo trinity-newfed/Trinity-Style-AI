@@ -22,7 +22,7 @@ body {
     position: relative;
     margin: auto;
     width: 100vw;
-    max-width: 1500px;
+    max-width: 2000px;
 }
 
 .container {
@@ -256,7 +256,7 @@ body {
 /*START MENU*/
 #menu{
     width: 100%;
-    max-width: 1500px;
+    max-width: 2000px;
     height: 70px;
     position: fixed;
     top: 0;

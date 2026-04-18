@@ -54,7 +54,7 @@ pipe.load_ip_adapter(
 
 pipe.set_ip_adapter_scale(0.9)
 
-def resize_with_padding(img, target_size=(512,512)):
+def resize_with_padding(img, target_size=(768,768)):
     w, h = img.size
     scale = min(target_size[0]/w, target_size[1]/h)
     new_w, new_h = int(w*scale), int(h*scale)
@@ -94,7 +94,7 @@ def preprocess_person_cloth(person_img: Image.Image, cloth_img: Image.Image):
     gray = cv2.cvtColor(person_np, cv2.COLOR_RGB2GRAY)
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-    face_mask = np.zeros((512,512), dtype=np.uint8)
+    face_mask = np.zeros((768,768), dtype=np.uint8)
     for (x,y,w,h) in faces:
         face_mask[y:y+h, x:x+w] = 255
 

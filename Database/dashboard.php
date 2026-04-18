@@ -126,7 +126,7 @@ $res = $orders->fetch_assoc();
 
 $revenueLM = $res['lastMonth'] <= 0 ? 1 : round(($res['lastMonth'] / 100), 2);
 $revenueTM = $res['thisMonth'] <= 0 ? 1 : round(($res['thisMonth'] / 100), 2);
-$grown = round(($res['thisMonth'] - $res['lastMonth']) / $res['lastMonth'] * 100, 2);
+$grown = $res['lastMonth'] <= 0 ? 1 : round(($res['thisMonth'] - $res['lastMonth']) / $res['lastMonth'] * 100, 2);
 
 $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10");
 
@@ -1001,7 +1001,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         const revenue = document.querySelector(".Grown p");
         const monthlyRevenue = document.querySelectorAll(".lineRevenue");
 
-        if(revenue.textContent.length > 6){
+        if(revenue.textContent.length > 7){
             revenue.textContent = (revenue.dataset.value / 1000000).toFixed(2) + "M";
         }
 

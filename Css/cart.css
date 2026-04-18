@@ -13,7 +13,7 @@ html,body{
 /*START MENU*/
 #menu{
     width: 100%;
-    max-width: 1500px;
+    max-width: 2000px;
     height: 70px;
     position: fixed;
     top: 0;
@@ -244,7 +244,7 @@ html,body{
 #body{
     width: 100vw;
     height: 100svh;
-    max-width: 1500px;
+    max-width: 2000px;
     max-height: 900px;
     position: relative;
     margin: auto;
@@ -373,6 +373,7 @@ html,body{
     object-fit: scale-down;
     border-radius: 5px;
     object-position: center 10%;
+    cursor: pointer;
 }
 .item-label{
   min-width: 15px;

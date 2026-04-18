@@ -13,14 +13,14 @@ html,body{
       position: relative;
       margin: auto;
       width: 100vw;
-      max-width: 1500px;
+      max-width: 2000px;
       max-height: 900px;
       top: 0;
     }
 /*START MENU*/
 #menu{
     width: 100%;
-    max-width: 1500px;
+    max-width: 2000px;
     height: 70px;
     position:fixed;
     top: 0;
@@ -257,11 +257,10 @@ html,body{
       justify-content: space-between;
       z-index: 10;
       padding-top: 5%;
-      max-width: 1600px;
+      max-width: 2000px;
     }
     .user-box {
       width: 100%;
-      max-width: 1600px;
       margin: auto;
       display: flex;
       align-items: stretch;
@@ -667,7 +666,7 @@ html,body{
   margin: 40px;
   font-family: sans-serif;
   position: relative;
-  max-width: 1500px;
+  max-width: 2000px;
   margin: auto;
 }
 
