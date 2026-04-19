@@ -4,6 +4,13 @@ if ($conn->connect_error) {
     die("Error: " . $conn->connect_error);
 }
 
+session_start();
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
+    $_SESSION['error'] = "Restrict permission!";
+    header("Location: ../Pages/");
+    exit();
+}
+
 $id      = $_POST['id'];
 $name    = $_POST['product_name'];
 $price   = $_POST['product_price'];

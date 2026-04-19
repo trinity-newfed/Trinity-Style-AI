@@ -9,6 +9,13 @@ if ($conn->connect_error) {
     die("Lỗi kết nối DB");
 }
 
+session_start();
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
+    $_SESSION['error'] = "Restrict permission!";
+    header("Location: ../Pages/");
+    exit();
+}
+
 if (!isset($_POST['id'])) {
     die("ID REQUIRED!");
 }

@@ -6,7 +6,7 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
-if(!isset($_SESSION['role']) || $_SESSION['role'] !== "admin"){
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
     $_SESSION['error'] = "Restrict permission!";
     header("Location: ../Pages/");
     exit();
@@ -608,7 +608,7 @@ $voucher = $conn
                                 <?php if(empty($u['img'])): ?>
                                     <img style="width: 60px; height: 60px; border-radius: 50%;" src="../Pictures/Banners/BA.webp" alt="">
                                 <?php else: ?>
-                                    <img style="width: 60px; height: 60px; border-radius: 50%;" src="../upload/<?=$u['img']?>" alt="">
+                                    <img style="width: 60px; height: 60px; border-radius: 50%; background: #b4b4b4;" src="../<?=$u['img']?>" alt="">
                                 <?php endif; ?>
                                 <span><?=$u['email']?></span>
                             </div>

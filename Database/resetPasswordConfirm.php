@@ -67,7 +67,7 @@ if($new_password){
 
     $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
 
-    $stmt = $conn->prepare("UPDATE userdata SET password = ? WHERE email = ?");
+    $stmt = $conn->prepare("UPDATE userdata SET user_password = ? WHERE email = ?");
     $stmt->bind_param("ss", $hashedPassword, $email);
     $stmt->execute();
 
@@ -75,13 +75,13 @@ if($new_password){
     $stmt->bind_param("s", $email);
     $stmt->execute();
 
+    unset($_SESSION['resetOTP']);
     unset($_SESSION['otp_verified']);
     unset($_SESSION['resetEmail']);
-    unset($_SESSION['resetOTP']);
 
     echo "<script>
             alert('Password reset successfully!');
-            window.location.href='../Pages/login.php';
+            window.location.href='../Pages/reglog.php';
           </script>";
     exit;
 }

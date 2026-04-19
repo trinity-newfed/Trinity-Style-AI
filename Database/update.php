@@ -1,14 +1,15 @@
 <?php
-session_start();
 $conn = new mysqli("localhost", "root", "", "TF_Database");
 if ($conn->connect_error) {
     die("error" . $conn->connect_error);
 }
-if(!isset($_SESSION['role']) || $_SESSION['role'] !== "admin"){
+session_start();
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
     $_SESSION['error'] = "Restrict permission!";
     header("Location: ../Pages/");
     exit();
 }
+
 $id = $_GET['id'];
 $products = $conn->query("SELECT * FROM products WHERE id = $id")
 ?>

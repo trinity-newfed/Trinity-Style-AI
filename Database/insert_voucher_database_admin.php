@@ -11,6 +11,13 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+session_start();
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
+    $_SESSION['error'] = "Restrict permission!";
+    header("Location: ../Pages/");
+    exit();
+}
+
 $file = fopen("vouchers.csv", "r");
 
 while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {

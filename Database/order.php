@@ -221,15 +221,20 @@ try{
         $row = $result->fetch_assoc();
 
         if($row['product_stock'] > 0){
-            $stmt2 = $conn->prepare("UPDATE products SET product_stock = product_stock - ?, product_sold = product_sold + ?
+            $stmt2 = $conn->prepare("UPDATE products SET product_stock = product_stock - ?
                                      WHERE id = ? AND product_stock >= ?");
 
             $qty = $item['quantity'];
             $product_id = $item['product_id'];
 
-            $stmt2->bind_param("iiii", $qty, $qty, $product_id, $qty);
+            $stmt2->bind_param("iii", $qty, $product_id, $qty);
             $stmt2->execute();
             $stmt2->close();
+
+            $sold = $conn->prepare("INSERT INTO product_sold(`sold`,`product_id`) VALUES(?, ?)");
+            $sold->bind_param("ii", $qty, $product_id);
+            $sold->execute();
+            $sold->close();
         }
     }
 

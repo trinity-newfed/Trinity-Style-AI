@@ -543,8 +543,8 @@ if(isset($_SESSION['register_data'])){
         <form action="login.php" method="POST" id="loginForm">
         <div class="info-box login-box">
           <div class="brand-header">
-            <h2>Admin Login Verify</h2>
-            <p>Please Enter The OTP To Verify Your Identify</p>
+            <h2>Admin Verification</h2>
+            <p style="margin-bottom: 10%;">Enter The OTP To Verify Your Identify</p>
             <input type="hidden" name="username" value="<?=$_SESSION['admin_username']?>">
             <input type="hidden" name="user_password" value="<?=$_SESSION['admin_password']?>">
 
