@@ -6,14 +6,23 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
-if(!isset($_SESSION['role']) || $_SESSION['role'] !== "admin"){
+if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
     $_SESSION['error'] = "Restrict permission!";
     header("Location: ../Pages/");
     exit();
 }
+$year = $_GET['year'] ?? date("Y");
 //PRODUCT FETCH
 $product = $conn
-    ->query("SELECT * FROM products ORDER BY product_sold DESC LIMIT 5")
+    ->query("SELECT product_sold.sold,
+                    product_sold.product_id,
+                    products.product_img,
+                    products.id
+             FROM product_sold
+             JOIN products ON product_sold.product_id = products.id
+             WHERE YEAR(created_at) = $year
+             ORDER BY sold DESC
+             LIMIT 5")
     ->fetch_all(MYSQLI_ASSOC);
 
 $inventory = $conn
@@ -24,7 +33,7 @@ $totalSold = 0;
 $totalStock = 0;
 
 foreach($product as $item){
-    $totalSold += $item['product_sold'];
+    $totalSold += $item['sold'];
 }
 foreach($inventory as $i){
     $totalStock += $i['product_stock'];
@@ -34,13 +43,26 @@ foreach($inventory as $i){
 $userdata = $conn
     ->query("SELECT * FROM userdata")
     ->fetch_all(MYSQLI_ASSOC);
+$totalUser = COUNT($userdata);
 
-//VOUCHER FETCH
-$voucher = $conn
-    ->query("SELECT * FROM vouchers")
-    ->fetch_all(MYSQLI_ASSOC);
+$result = $conn->query("SELECT COUNT(*) as total
+                        FROM userdata u
+                        WHERE NOT EXISTS(
+                            SELECT 1 FROM orders o
+                            WHERE o.user_id = u.id
+                            AND o.created_at >= NOW() - INTERVAL 30 DAY
+                        )
+                ");
 
-$year = 2026;
+$row = $result->fetch_assoc();
+$inactive = $row['total'];
+
+//REVENUE
+$years = $conn->query("SELECT YEAR(created_at) as year, COUNT(*) as total
+                          FROM orders GROUP BY year
+                          ORDER BY year DESC");
+$yearData = $years->fetch_all(MYSQLI_ASSOC);
+
 $date = date("Y:m");
 $orders = $conn->query("SELECT
     COALESCE(SUM(CASE 
@@ -104,15 +126,15 @@ $orders = $conn->query("SELECT
   END), 0) AS dece,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '%Y-%m-01') 
-    AND created_at <  DATE_FORMAT(NOW(), '%Y-%m-01')
+    WHEN created_at >= DATE_FORMAT(NOW() - INTERVAL 1 MONTH, '$year-%m-01') 
+    AND created_at <  DATE_FORMAT(NOW(), '$year-%m-01')
     AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS lastMonth,
 
   COALESCE(SUM(CASE 
-    WHEN created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')
-    AND created_at <  DATE_FORMAT(NOW() + INTERVAL 1 MONTH, '%Y-%m-01')
+    WHEN created_at >= DATE_FORMAT(NOW(), '$year-%m-01')
+    AND created_at <  DATE_FORMAT(NOW() + INTERVAL 1 MONTH, '$year-%m-01')
     AND order_state = 'delivered'
     THEN order_final_price  
   END), 0) AS thisMonth
@@ -124,12 +146,43 @@ if(!$orders){
 
 $res = $orders->fetch_assoc();
 
-$revenueLM = $res['lastMonth'] <= 0 ? 1 : round(($res['lastMonth'] / 100), 2);
-$revenueTM = $res['thisMonth'] <= 0 ? 1 : round(($res['thisMonth'] / 100), 2);
-$grown = $res['lastMonth'] <= 0 ? 1 : round(($res['thisMonth'] - $res['lastMonth']) / $res['lastMonth'] * 100, 2);
+$revenueLM = $res['lastMonth'] <= 0 ? 0 : round(($res['lastMonth'] / 100), 2);
+$revenueTM = $res['thisMonth'] <= 0 ? 0 : round(($res['thisMonth'] / 100), 2);
+$grown = $res['lastMonth'] <= 0 ? 0 : round(($res['thisMonth'] - $res['lastMonth']) / $res['lastMonth'] * 100, 2);
 
 $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10");
 
+
+$users = $conn->query("SELECT SUM(CASE
+                                  WHEN MONTH(created_at) = MONTH(NOW()) 
+                                  AND YEAR(created_at) = $year
+                                  THEN 1 ELSE 0
+                                  END) AS userThisMonth, 
+
+                              SUM(CASE
+                                  WHEN MONTH(created_at) = MONTH(NOW() - INTERVAL 1 MONTH)
+                                  AND YEAR(created_at) = $year
+                                  THEN 1 ELSE 0
+                                  END) AS userLastMonth
+                        FROM userdata");
+
+$user = $users->fetch_assoc();
+
+$userRank = $conn->query("SELECT user_tier, COUNT(*) as totalTier
+                          FROM userdata GROUP BY user_tier")
+                 ->fetch_all(MYSQLI_ASSOC);
+
+$diamond = 0;
+$gold = 0;
+$silver = 0;
+$bronze = 0;
+
+foreach($userRank as $u){
+    $u['user_tier'] == 4 ? $diamond = $u['totalTier'] : 0;
+    $u['user_tier'] == 3 ? $gold = $u['totalTier'] : 0;
+    $u['user_tier'] == 2 ? $silver = $u['totalTier'] : 0;
+    $u['user_tier'] == 1 ? $bronze = $u['totalTier'] : 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -166,6 +219,15 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             flex-direction: column;
             justify-content: start;
             align-items: center;
+        }
+        #year{
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
         }
         .brand{
             border-bottom: 1px solid rgba(0, 0, 0, 0.5);
@@ -358,6 +420,13 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             align-items: start;
             position: relative;
             background: #eaeaea;
+            opacity: .9;
+            transition: .3s all;
+        }
+        .column:hover{
+            transition: .3s all;
+            opacity: 1;
+            cursor: pointer;
         }
         .column.top1{
             background: #2d2d2d;
@@ -421,6 +490,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             display: flex;
             align-items: end;
             justify-content: space-around;
+            transition: .3s all;
         }
         .line{
             height: 0;
@@ -433,6 +503,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             justify-content: center;
             cursor: pointer;
             opacity: .8;
+            transition: .3s all;
         }
         .line:hover{
             opacity: 1;
@@ -738,6 +809,95 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
             width: 50px;
             height: 50px;
         }
+        .avatarContainer{
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: absolute;
+            right: 2%;
+        }
+        .avatarContainer img{
+            width: 100%;
+            height: 100%;
+            object-fit: scale-down;
+            border-radius: 50%;
+            background: #b4b4b4;
+        }
+        
+
+        .userStatic{
+            position: relative;
+            width: 100%;
+            height: 30%;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2%;
+        }
+        .tierUser{
+            width: 49%;
+            height: 100%;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: start;
+        }
+        .tier{
+            width: 100%;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .tier span{
+            width: 60px;
+            text-align: end;
+            margin-left: 3%;
+            font-family: Arial, 'san-serif';
+            color: rgba(0, 0, 0, 0.8);
+        }
+        .tier div{
+            width: 0%;
+            max-width: 83%;
+            height: 100%;
+            background: #00d7ea;
+        }
+        .tier.diamond{
+            margin-top: 5%;
+        }
+        .totalUser{
+            width: 49%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .lastActive{
+            width: 90%;
+            text-align: center;
+            padding-bottom: 7px;
+            border-bottom: 1px solid #c4c4c4;
+            font-family: Arial, 'san-serif';
+            font-size: 20px;
+            font-weight: 600;
+            color: #4f4f4f;
+        }
+        .userImgContainer{
+            width: 100px;
+            height: 100px;
+        }
+        .userImgContainer img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -828,7 +988,7 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         </div>
         <div id="header">
             <div class="brand" onclick="window.location.href='../Pages/'">TRINITY</div>
-            <div class="head-section" id="h-product">Product</div>
+            <div class="head-section" id="h-product">Revenue</div>
             <div class="head-section" id="h-user">User</div>
             <div class="head-section" id="h-order">Order</div>
             <div class="dashboard" onclick="window.location.href='admin.php'">Crud<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l370.7 0-105.4 105.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg></div>
@@ -837,34 +997,47 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         <div id="header-body">
             <div id="search">
                 <div id="s-product" class="search-div">
-                    <input type="text" placeholder="Search " id="search-input-1" class="search">
-                    <label id="total-products" style="text-align: center;"></label>
-                    <div id="add-product" class="add">Add new product</div>
-                    <?php if(empty($product)): ?>
-                    <form action="insert_product_database_admin.php" method="post">
-                        <input class="add full" type="submit" value="add database (product)">
+                    <form action="dashboard.php" id="yearData">
+                        <select name="year" id="year">
+                            <option value="<?=$y['year']?>">Data <?=$year?></option>
+                            <?php foreach($yearData as $y): ?>
+                                <?php if($y['year'] == $year) continue; ?>
+                                    <option value="<?=$y['year']?>">Data <?=$y['year']?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </form>
+                    <div id="add-product" class="add">Add new product</div>
+                    <?php if($_SESSION['role'] == "adminTrung"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Trung.png" alt="">
+                        </div>
+                    <?php elseif($_SESSION['role'] == "adminTan"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Tan.png" alt="">
+                        </div>
+                    <?php else: ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/Banners/BA.webp" alt="">
+                        </div>
                     <?php endif; ?>
                 </div>
                 <div id="s-user" style="display: none;" class="search-div">
                     <input type="text" placeholder="Search" id="search-input-2" class="search">
-                    <label id="total-users" style="text-align: center;"></label>
                 </div>
                 <div id="s-order" style="display: none;" class="search-div">
                     <input type="text" placeholder="Search" id="search-input-3" class="search">
-                    <label id="total-orders" style="text-align: center;"></label>
                     <?php if(empty($orders)): ?>
                     <?php endif; ?>
                 </div>
             </div>
             <div id="list" class="listView product">
-                <h3>Top Selling</h3>
+                <h3>Revenue</h3>
                 <div class="chart trending">
                     <div class="revenue">
                         <div class="Monthly" style="background: conic-gradient(#64748B 0deg <?=$revenueLM?>deg, #4F46E5 <?=$revenueLM?>deg <?=$revenueTM?>deg, #E5E7EB <?=$revenueTM?>deg 360deg);">
                             <div class="Grown">
                                 <p data-value=<?=round($res['thisMonth'])?>><?=round($res['thisMonth'], 0)?>$</p>
-                                <?php if($grown > 0): ?>
+                                <?php if($grown >= 0): ?>
                                     <p>+<?=$grown?>%</p>
                                 <?php else: ?>
                                     <p style="color: red;"><?=$grown?>%</p>
@@ -890,12 +1063,12 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                             <?= $index == 0 ? 'top1' : '' ?> 
                             <?= $index == 1 ? 'top2' : '' ?>
                             <?= $index == 2 ? 'top3' : '' ?>" 
-                            style="height: calc(<?=$p['product_sold']/$totalSold?>% * 100);">
+                            style="height: calc(<?=$p['sold']/$totalSold?>% * 100);">
 
-                                <?php if($p['product_sold'] > 0): ?>
-                                    <img src="../<?=$p['product_img']?>" alt="">
+                                <?php if($p['sold'] > 0): ?>
+                                    <img src="../<?=$p['product_img']?>" onclick="window.location.href='../Pages/detail.php?id=<?=$p['product_id']?>'">
                                 <?php endif; ?>
-                                <span><?=$p['product_sold']?></span>  
+                                <span><?=$p['sold']?></span>  
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -944,10 +1117,6 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                         <span class="mid">-500.000$</span>
                         <span class="min">-0$</span>
                     </div>
-                    <?php if(empty($product)): ?>
-                        <span>No data in product table</span>
-                    <?php else: ?>
-                    <?php endif; ?>
                 </div>
                 <div class="monthContainer">
                     <div class="month">Jan</div>
@@ -964,9 +1133,9 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                     <div class="month">Dec</div>
                 </div>
 
+                <h3>Top Inventory</h3>
                 <div class="chart inventory">
                     <div class="hot">
-                        <h3>Top Inventory</h3>
                         <?php foreach($inventory as $index => $i):?>
                             <div class="column
                             <?= $index == 0 ? 'top1' : '' ?> 
@@ -983,7 +1152,45 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                     </div>
                 </div>
             </div>
-            <div id="list" style="display: none;" class="listView user"></div>
+            <div id="list" style="display: none;" class="listView user">
+                <h3>Users</h3>
+                <div class="userStatic">
+                    <div class="tierUser">
+                        <div class="tier diamond">
+                            <span>Diamond</span>
+                            <div style="width: <?=round(($diamond / $totalUser) * 100)?>%"></div>
+                        </div>
+
+                        <div class="tier gold">
+                            <span>Gold</span>
+                            <div style="width: <?=round(($gold / $totalUser) * 100)?>%"></div>
+                        </div>
+
+                        <div class="tier silver">
+                            <span>Silver</span>
+                            <div style="width: <?=round(($silver / $totalUser) * 100)?>%"></div>
+                        </div>
+                                    
+                        <div class="tier bronze">
+                            <span>Bronze</span>
+                            <div style="width: <?=round(($bronze / $totalUser) * 100)?>%"></div>
+                        </div>
+                    </div>
+                    <div class="totalUser">
+                        <div class="lastActive"># of Last 30 days</div>
+                        <div style="display: flex; gap: 20px;">
+                            <div class="userImgContainer">
+                                <img src="../Pictures/Banners/BA.webp" alt="">
+                            </div>
+                        
+                            <div class="userTotal" style="display: grid; font-family: Arial, san-serif;">
+                                <h3>Active Users: <?=$totalUser - $inactive?></h3>
+                                <span>Out of: <?=$totalUser?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="list" style="display: none;" class="listView order"></div>
         </div>
     </div>
@@ -1000,15 +1207,16 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         const add_product = document.getElementById("add-product");
         const revenue = document.querySelector(".Grown p");
         const monthlyRevenue = document.querySelectorAll(".lineRevenue");
-
-        if(revenue.textContent.length > 7){
+        const yearData = document.getElementById("year");
+        
+        if(revenue.dataset.value.length > 6){
             revenue.textContent = (revenue.dataset.value / 1000000).toFixed(2) + "M";
         }
 
         monthlyRevenue.forEach(monthly =>{
-            if(monthly.textContent.length > 6){
+            if(monthly.dataset.value.length > 6){
                 monthly.textContent = (monthly.dataset.value / 1000000).toFixed(2) + "M";
-            }else if(monthly.textContent.length > 4){
+            }else if(monthly.dataset.value.length > 4){
                 monthly.textContent = (monthly.dataset.value / 1000).toFixed(1) + "K";
             }
         })
@@ -1030,52 +1238,6 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
                 });
             });
         });
-
-        //SEARCH BY NAME FEAT
-        search_input_1.addEventListener('keyup', ()=>{
-            const keyword = search_input_1.value.toLowerCase();
-
-            items.forEach(item =>{
-                const search = item.textContent.toLowerCase();
-                if(search.includes(keyword)){
-                    item.style.display = "";
-                }else{
-                    item.style.display = "none";
-                }
-            });
-        });
-        search_input_2.addEventListener('keyup', ()=>{
-            const keyword = search_input_2.value.toLowerCase();
-
-            items.forEach(item =>{
-                const search = item.textContent.toLowerCase();
-                if(search.includes(keyword)){
-                    item.style.display = "";
-                }else{
-                    item.style.display = "none";
-                }
-            });
-        });
-        search_input_3.addEventListener('keyup', ()=>{
-            const keyword = search_input_3.value.toLowerCase();
-
-            items.forEach(item =>{
-                const search = item.textContent.toLowerCase();
-                if(search.includes(keyword)){
-                    item.style.display = "";
-                }else{
-                    item.style.display = "none";
-                }
-            });
-        });
-        //SEARCH BY NAME FEAT
-
-
-
-
-
-
-
 
         add_product.addEventListener('click', ()=>{
             document.getElementById("modal-popup").classList.add("show");
@@ -1106,16 +1268,9 @@ $recent = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT 10")
         });
 
 
-
-
-
-        const total_user = document.getElementById("total-users");
-        const total_product = document.getElementById("total-products");
-        const total_voucher = document.getElementById("total-vouchers");
-
-        const user = document.querySelectorAll("#user .items");
-        const products = document.querySelectorAll("#product .items");
-        const voucher = document.querySelectorAll("#voucher .items");
+        year.addEventListener('change', ()=>{
+            document.getElementById("yearData").submit();
+        });
 
     </script>
 </body>

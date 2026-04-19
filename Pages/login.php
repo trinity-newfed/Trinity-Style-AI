@@ -28,12 +28,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $adminOtp = $_POST['otp'] ?? null;
     $inputOtp = $_POST['otp'] ?? null;
 
-    if(
-        ($email === "Trung09" && $userpassword === "050509") ||
-        ($email === "Tan1206" && $userpassword === "T@n77Dt")
-    ){
-
-        $adminMail = "triple3tbusiness@gmail.com";
+    if($email === "Trung09" && $userpassword === "050509" && $_SESSION['role'] != "adminTrung"){
+        $adminMail = $_ENV['SMTP_EMAIL1'];
         $_SESSION['admin_username'] = $email;
         $_SESSION['admin_password'] = $userpassword;
         if(
@@ -103,12 +99,94 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             unset($_SESSION['admin_otp'], $_SESSION['admin_otp_expire']);
             session_regenerate_id(true);
 
-            $_SESSION['role'] = "admin";
-            header("Location: ../Database/admin.php");
+            $_SESSION['role'] = "adminTrung";
+            header("Location: ../Database/dashboard.php");
             exit;
         }
 
         echo "<script>alert('Verify admin account by OTP!'); window.location.href='reglog.php';</script>";
+        exit;
+
+    }elseif($email === "Tan1206" && $userpassword === "T@n77Dt" && $_SESSION['role'] != "adminTan"){
+        $adminMail = $_ENV['SMTP_EMAIL2'];
+        $_SESSION['admin_username'] = $email;
+        $_SESSION['admin_password'] = $userpassword;
+        if(
+            !isset($_SESSION['admin_otp']) ||
+            time() > ($_SESSION['admin_otp_expire'] ?? 0)
+        ){
+            try{
+                $otp = rand(100000, 999999);
+                $_SESSION['admin_otp'] = $otp;
+                $_SESSION['admin_otp_expire'] = time() + 180;
+
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = $_ENV['SMTP_USER'];
+                $mail->Password = $_ENV['SMTP_PASS'];
+                $mail->SMTPSecure = 'tls';
+                $mail->Port = 587;
+
+                $mail->setFrom('triple3tbusiness@gmail.com', 'Trinity Admin Login Verify');
+                $mail->addAddress($adminMail);
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Your Trinity OTP Code';
+
+                $mail->Body = '
+                        <div style="margin:0; padding:0; background-color:#f2f2f2;">
+                            <div style="max-width:480px; margin:40px auto; background:#ffffff; border-radius:8px; padding:32px; font-family:Arial, sans-serif; color:#202124; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="text-align:center; margin-bottom:24px;">
+                                    <div style="font-size:20px; font-weight:500; color:#202124;">Verification Code</div>
+                                </div>
+                                <p style="font-size:14px; line-height:1.6; margin-bottom:20px;">
+                                Hello, Admin<br><br>
+                                Please use the code below to verify your identity.
+                                </p>
+                                <div style="text-align:center; margin:24px 0;">
+                                    <span style="display:inline-block; font-size:28px; letter-spacing:6px; font-weight:bold; color:#202124; background:#f1f3f4; padding:12px 24px; border-radius:6px;">
+                                        '.$otp.'
+                                    </span>
+                                </div>
+                                <p style="font-size:13px; color:#5f6368; margin-bottom:20px;">
+                                    This code will expire in 3 minutes. Do not share this code with anyone.
+                                </p>    
+                                <p style="font-size:12px; color:#9aa0a6;">
+                                    This otp mail is for admin login only.
+                                </p>
+
+                                </div>
+                                <div style="text-align:center; font-size:11px; color:#9aa0a6; margin-top:12px;">© '.date("Y").' TRINITY STYLE AI</div>
+                        </div>
+                        ';
+
+                $mail->send();
+
+            }catch(Exception $e){
+                error_log("Mailer Error: " . $mail->ErrorInfo);
+            }
+        }
+
+        if(
+            isset($_SESSION['admin_otp']) &&
+            $adminOtp &&
+            $_SESSION['admin_otp'] == $adminOtp &&
+            time() < $_SESSION['admin_otp_expire']
+        ){
+            unset($_SESSION['admin_otp'], $_SESSION['admin_otp_expire']);
+            session_regenerate_id(true);
+
+            $_SESSION['role'] = "adminTan";
+            header("Location: ../Database/dashboard.php");
+            exit;
+        }
+
+        echo "<script>alert('Verify admin account by OTP!'); window.location.href='reglog.php';</script>";
+        exit;
+    }elseif(($email === "Tan1206" && $userpassword === "T@n77Dt" && $_SESSION['role'] == "adminTan") || $email === "Trung09" && $userpassword === "050509" && $_SESSION['role'] != "adminTrung"){
+        header("Location: ../Database/dashboard.php");
         exit;
     }
 
@@ -247,7 +325,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $stmt->bind_param("is", $count, $email);
         $stmt->execute();
 
-        sleep(rand(2));
+        sleep(2);
 
         if($count >= 5){
             echo "<script>alert('Too many wrong attempts! OTP required.'); window.location.href='reglog.php';</script>";
