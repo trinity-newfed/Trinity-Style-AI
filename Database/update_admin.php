@@ -11,13 +11,14 @@ if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_S
     exit();
 }
 
-$id      = $_POST['id'];
-$name    = $_POST['product_name'];
-$price   = $_POST['product_price'];
-$type = $_POST['product_type'];
-$des = $_POST['product_describe'];
-$state = $_POST['product_state'];
-$color  = $_POST['product_color'];
+$id      = $_POST['id'] ?? "";
+$name    = $_POST['product_name'] ?? "";
+$price   = $_POST['product_price'] ?? "";
+$type = $_POST['product_type'] ?? "";
+$des = $_POST['product_describe'] ?? "";
+$state = $_POST['product_state'] ?? "";
+$stock = $_POST['product_stock'] ?? "";
+$color  = $_POST['product_color'] ?? "";
 
 $sql = "UPDATE products SET
             product_name    = '$name',
@@ -25,6 +26,7 @@ $sql = "UPDATE products SET
             product_type = '$type',
             product_describe = '$des',
             product_state = '$state',
+            product_stock = '$stock',
             product_color  = '$color'
         WHERE id = $id";
 

@@ -824,13 +824,27 @@ setTimeout(() => {
               document.querySelector("#progress-container span").classList.add("animation");
             } 
             else if(data.progress > 2){
-              let percent = data.progress + data.progress / 4.75; 
+              let percent = data.progress + data.progress / 5; 
               document.getElementById("progress").style.width = `${percent}%`;
-              if(alert.classList.contains("tryon-close")){
+              if(alert.classList.contains("tryon-close")){  
                 alert.querySelector("h4").style.opacity = "1";
                 alert.querySelector("h4").style.visibility = "visible";
                 alert.querySelector("h4").textContent = `${parseFloat(percent.toFixed(2))}%`;
+              }else if(!alert.classList.contains("tryon-close") && !alert.classList.contains("tryon")){
+                document.getElementById("tryon-form").style.display = "";
+                document.getElementById("progress-container").style.display = "grid";
+                document.getElementById("fileChoose").style.display = "none";
+                document.getElementById("genBtn").style.display = "none";
+                alertOkBtn.style.display = "none";
+                alertCancelBtn.textContent = "Stop";
+                agreeForm.style.display = "none";
+                document.getElementById("alertNotice").classList.remove("alert");
+                document.getElementById("alertNotice").classList.add("tryon-close");
+                alert.querySelector("h4").textContent = `${parseFloat(percent.toFixed(2))}%`;
               }
+            }else if(data.progress >= 100){
+              const userpage = confirm("Go to userpage for AI Viton Result?");
+              if(userpage) window.location.href="user.php";
             }
           }catch(err){
             console.error(err);

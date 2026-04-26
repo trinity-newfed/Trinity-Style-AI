@@ -36,18 +36,20 @@ $voucher = $conn
     <style>
         html{
             user-select: none;
+            overflow: hidden;
         }
         #head{
             top: 0;
             width: 100vw;
             height: 100svh;
-            max-width: 1500px;
-            max-height: 900px;
+            max-width: 2000px;
+            max-height: 1000px;
             position: relative;
             margin: auto;
             display: flex;
             gap: 2%;
             align-items: center;
+            overflow: hidden;
         }
         #header{
             position: sticky;

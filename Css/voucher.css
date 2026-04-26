@@ -8,6 +8,10 @@ html,body{
     user-select: none;
     scroll-behavior: smooth;
 }
+html::-webkit-scrollbar{
+            width: 0;
+            height: 0;
+}
 
 
 /*START MENU*/

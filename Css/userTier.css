@@ -8,6 +8,10 @@ html{
     user-select: none;
     scroll-behavior: smooth;
 }
+html::-webkit-scrollbar{
+            width: 0;
+            height: 0;
+}
 
 :root {
     --bronze-bg: linear-gradient(135deg, #e5c09e, #c58e65);

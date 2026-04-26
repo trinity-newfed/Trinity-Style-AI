@@ -164,6 +164,10 @@ button:hover {
             <label>Product Color</label>
             <input type="text" name="product_color" value="<?= $row['product_color'] ?>">
         </div>
+        <div class="form-group">
+            <label>Stocks</label>
+            <input type="text" name="product_stock" value="<?= $row['product_stock'] ?>">
+        </div>
         <div class="avatar">
             <img src="../<?= $row['product_img'] ?>">
         </div>
