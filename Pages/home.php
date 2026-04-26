@@ -2,6 +2,10 @@
 include "../Database/createdatabase.php";
 session_start();
 
+if(!isset($_SESSION['role'])){
+    $_SESSION['role'] = "guest";
+}
+
 $product = $conn
   ->query("SELECT * FROM products")
   ->fetch_all(MYSQLI_ASSOC);

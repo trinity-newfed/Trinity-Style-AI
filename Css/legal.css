@@ -1,6 +1,10 @@
 html, body{
     scroll-behavior: smooth;
 }
+html::-webkit-scrollbar{
+            width: 0;
+            height: 0;
+}
 .container{
     width: 100%;
     max-width: 1500px;

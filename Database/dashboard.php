@@ -183,6 +183,23 @@ foreach($userRank as $u){
     $u['user_tier'] == 2 ? $silver = $u['totalTier'] : 0;
     $u['user_tier'] == 1 ? $bronze = $u['totalTier'] : 0;
 }
+
+$result = $conn->query("SELECT u.id, u.email, o.created_at, SUM(o.order_final_price) AS totalsPayment
+                        FROM orders o
+                        JOIN userdata u 
+                        ON o.user_id = u.id
+                        WHERE o.order_state = 'delivered'
+                        AND MONTH(o.created_at) >= MONTH(NOW())
+                        AND YEAR(o.created_at) = $year
+                        GROUP BY u.id, u.email
+                        ORDER BY totalsPayment DESC
+                        LIMIT 5
+                     ");
+if(!$result){
+    die("SQL Error: " . $conn->error);
+}
+
+$userTop = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -195,6 +212,10 @@ foreach($userRank as $u){
         html{
             user-select: none;
             overflow-x: hidden;
+        }
+        html::-webkit-scrollbar{
+            width: 0;
+            height: 0;
         }
         #head{
             top: 0;
@@ -504,11 +525,32 @@ foreach($userRank as $u){
             cursor: pointer;
             opacity: .8;
             transition: .3s all;
+            
+        }
+        .line.first{
+            margin-left: 5%;
+            height: 80%;
+        }
+        .line.second{
+            margin-left: 5%;
+            height: 70%;
+        }
+        .line.third{
+            margin-left: 5%;
+            height: 60%;
+        }
+        .line.fourth{
+            margin-left: 5%;
+            height: 50%;
+        }
+        .line.fifth{
+            margin-left: 5%;
+            height: 40%;
         }
         .line:hover{
             opacity: 1;
         }
-        .line:hover .lineRevenue{
+        .line:hover .lineRevenue, .line:hover .lineName{
             opacity: 1;
             transition: .3s all;
         }
@@ -791,7 +833,7 @@ foreach($userRank as $u){
             background: black;
             color: white;
             cursor: pointer;
-            bottom: 5%;
+            bottom: 10%;
             left: 50%;
             transform: translateX(-50%);
         }
@@ -851,7 +893,7 @@ foreach($userRank as $u){
             height: 25px;
             display: flex;
             align-items: center;
-            gap: 3px;
+            gap: 1.5%;
         }
         .tier span{
             width: 60px;
@@ -862,7 +904,7 @@ foreach($userRank as $u){
         }
         .tier div{
             width: 0%;
-            max-width: 83%;
+            max-width: 80%;
             height: 100%;
             background: #00d7ea;
         }
@@ -897,6 +939,16 @@ foreach($userRank as $u){
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .userTop{
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: start;
+            align-items: end;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -1021,12 +1073,36 @@ foreach($userRank as $u){
                         </div>
                     <?php endif; ?>
                 </div>
+
                 <div id="s-user" style="display: none;" class="search-div">
-                    <input type="text" placeholder="Search" id="search-input-2" class="search">
+                    <?php if($_SESSION['role'] == "adminTrung"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Trung.png" alt="">
+                        </div>
+                    <?php elseif($_SESSION['role'] == "adminTan"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Tan.png" alt="">
+                        </div>
+                    <?php else: ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/Banners/BA.webp" alt="">
+                        </div>
+                    <?php endif; ?>
                 </div>
+
                 <div id="s-order" style="display: none;" class="search-div">
-                    <input type="text" placeholder="Search" id="search-input-3" class="search">
-                    <?php if(empty($orders)): ?>
+                    <?php if($_SESSION['role'] == "adminTrung"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Trung.png" alt="">
+                        </div>
+                    <?php elseif($_SESSION['role'] == "adminTan"): ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/AdminAvatar/Tan.png" alt="">
+                        </div>
+                    <?php else: ?>
+                        <div class="avatarContainer">
+                            <img src="../Pictures/Banners/BA.webp" alt="">
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -1075,40 +1151,40 @@ foreach($userRank as $u){
                 </div>
                 <div id="product" class="list-view">
                     <div class="lineChart">
-                        <div class="line" style="height: <?=$res['jan'] <= 0 ? 0 : ($res['jan'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['jan'] <= 0 ? 0 : ($res['jan'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['jan'])?>><?=round($res['jan'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['feb'] <= 0 ? 0 : ($res['feb'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['feb'] <= 0 ? 0 : ($res['feb'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['feb'])?>><?=round($res['feb'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['mar'] <= 0 ? 0 : ($res['mar'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['mar'] <= 0 ? 0 : ($res['mar'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['mar'])?>><?=round($res['mar'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['apr'] <= 0 ? 0 : ($res['apr'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['apr'] <= 0 ? 0 : ($res['apr'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['apr'])?>><?=round($res['apr'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['may'] <= 0 ? 0 : ($res['may'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['may'] <= 0 ? 0 : ($res['may'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['may'])?>><?=round($res['may'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['jun'] <= 0 ? 0 : ($res['jun'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['jun'] <= 0 ? 0 : ($res['jun'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['jun'])?>><?=round($res['jun'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['jul'] <= 0 ? 0 : ($res['jul'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['jul'] <= 0 ? 0 : ($res['jul'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['jul'])?>><?=round($res['jul'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['aug'] <= 0 ? 0 : ($res['aug'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['aug'] <= 0 ? 0 : ($res['aug'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['aug'])?>><?=round($res['aug'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['sep'] <= 0 ? 0 : ($res['sep'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['sep'] <= 0 ? 0 : ($res['sep'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['sep'])?>><?=round($res['sep'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['oct'] <= 0 ? 0 : ($res['oct'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['oct'] <= 0 ? 0 : ($res['oct'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['oct'])?>><?=round($res['oct'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['nov'] <= 0 ? 0 : ($res['nov'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['nov'] <= 0 ? 0 : ($res['nov'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['nov'])?>><?=round($res['nov'])?></span>
                         </div>
-                        <div class="line" style="height: <?=$res['dece'] <= 0 ? 0 : ($res['dece'] / 100000) * 100?>%">
+                        <div class="line" style="height: <?=$res['dece'] <= 0 ? 0 : ($res['dece'] / 1000000) * 100?>%">
                             <span class="lineRevenue" data-value=<?=round($res['dece'])?>><?=round($res['dece'])?></span>
                         </div>
                     </div>
@@ -1190,6 +1266,17 @@ foreach($userRank as $u){
                         </div>
                     </div>
                 </div>
+                <div class="userTop">
+                    <?php foreach($userTop as $top => $u): ?>
+                        <div class="line
+                            <?=$top == 0 ? 'first' : ''?>
+                            <?=$top == 1 ? 'second' : ''?>
+                            <?=$top == 2 ? 'third' : ''?>">
+                            <span class="lineName"><?=$u['email']?></span>
+                            <p style="color: white;">ID: <?=$u['id']?></p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
             </div>
             <div id="list" style="display: none;" class="listView order"></div>
         </div>
@@ -1207,6 +1294,7 @@ foreach($userRank as $u){
         const add_product = document.getElementById("add-product");
         const revenue = document.querySelector(".Grown p");
         const monthlyRevenue = document.querySelectorAll(".lineRevenue");
+        const named = document.querySelectorAll(".lineName");
         const yearData = document.getElementById("year");
         
         if(revenue.dataset.value.length > 6){
@@ -1219,7 +1307,13 @@ foreach($userRank as $u){
             }else if(monthly.dataset.value.length > 4){
                 monthly.textContent = (monthly.dataset.value / 1000).toFixed(1) + "K";
             }
-        })
+        });
+
+        named.forEach(name =>{
+            name.textContent = name.textContent.replace("@gmail.com", "");
+            const nameLength = name.textContent.replace("@gmail.com", "");
+            nameLength.length > 7 ? name.textContent = nameLength.substring(0, 6) + "..." : name.textContent = nameLength;
+        });
 
         h_product.classList.add("show");
         product.style.display = "flex";

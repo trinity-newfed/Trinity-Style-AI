@@ -8,7 +8,10 @@ html,body{
     user-select: none;
     scroll-behavior: smooth;
 }
-
+html::-webkit-scrollbar{
+            width: 0;
+            height: 0;
+}
 /*START MENU*/
 #menu{
     width: 100%;
@@ -834,7 +837,7 @@ html,body{
   text-align: center;
   display: flex;
   justify-content: center;
-  font-size: clamp(.9rem, 1.3vw, 2.25rem);
+  font-size: clamp(.9rem, 1vw, 2.25rem);
 }
 #alertNotice span{
   font-family: Arial, Helvetica, sans-serif;
