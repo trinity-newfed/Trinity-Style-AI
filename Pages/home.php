@@ -176,7 +176,7 @@ if(isset($_SESSION['error'])){
                         <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
                     </svg>
                 </button>
-                
+
                 <button id="featNext">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512" class="icon">
                         <path d="M247.1 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L179.2 256 41.9 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/>
@@ -227,13 +227,13 @@ if(isset($_SESSION['error'])){
                     $sideName = $sideProduct ? $sideProduct['product_name'] : $mainProduct['product_name'];
                 ?>
                 <div class="feat collection">
-                    <div class="feat-img-container fi-1">
+                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$mainProduct['id']?>'">
                         <img class="feat-img id1" src="../<?=$mainProduct['product_img']?>" alt="">
                         <img class="feat-img id2" src="../<?=$mainProduct['product_img2']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideProduct['product_img1']?>" alt="">
+                        <img src="../<?=$sideProduct['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideProduct['id']?>'">
                         <span>Winter Collection</span>
                         <p>$<?=$mainProduct['product_price']?></p>
                         <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$mainProduct['id']?>'">Try with AI</button>
@@ -249,13 +249,13 @@ if(isset($_SESSION['error'])){
                     $sideName = $sideFeat1 ? $sideFeat1['product_name'] : $feat1['product_name'];
                 ?>
                 <div class="feat id1">
-                    <div class="feat-img-container fi-1">
+                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat1['id']?>'">
                         <img class="feat-img id1" src="../<?=$feat1['product_img']?>" alt="">
                         <img class="feat-img id2" src="../<?=$feat1['product_img2']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat1['product_img1']?>" alt="">
+                        <img src="../<?=$sideFeat1['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat1['id']?>'">
                         <span>Basic T-shirt</span>
                         <p>$<?=$feat1['product_price']?></p>
                         <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat1['id']?>'">Try with AI</button>
@@ -271,13 +271,13 @@ if(isset($_SESSION['error'])){
                     $sideName = $sideFeat2 ? $sideFeat2['product_name'] : $feat2['product_name'];
                 ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1">
+                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat2['id']?>'">
                         <img class="feat-img id1" src="../<?=$feat2['product_img']?>" alt="">
                         <img class="feat-img id2" src="../<?=$feat2['product_img2']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat2['product_img1']?>" alt="">
+                        <img src="../<?=$sideFeat2['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat2['id']?>'">
                         <span>Basic T-shirt</span>
                         <p>$<?=$feat2['product_price']?></p>
                         <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat2['id']?>'">Try with AI</button>
@@ -293,13 +293,13 @@ if(isset($_SESSION['error'])){
                     $sideName = $sideFeat3 ? $sideFeat3['product_name'] : $feat3['product_name'];
                 ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1">
+                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat3['id']?>'">
                         <img class="feat-img id1" src="../<?=$feat3['product_img']?>" alt="">
                         <img class="feat-img id2" src="../<?=$feat3['product_img2']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat3['product_img1']?>" alt="">
+                        <img src="../<?=$sideFeat3['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat3['id']?>'">
                         <span>Basic T-shirt</span>
                         <p>$<?=$feat3['product_price']?></p>
                         <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat3['id']?>'">Try with AI</button>
