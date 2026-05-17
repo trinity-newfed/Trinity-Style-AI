@@ -383,7 +383,7 @@ html::-webkit-scrollbar{
     justify-content: center;
     align-items: center;
     border-top: 0;
-    font-size: clamp(.5rem, 1vw, 1.6rem);
+    font-size: clamp(.5rem, 1.5vw, 1.6rem);
 }
 .viewBtn{
     position: absolute;
@@ -641,21 +641,21 @@ html::-webkit-scrollbar{
 #body-2 h4{
     width: 80%;
     font-weight: bolder;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Montserrat", serif;
     max-width: 500px;
     font-size: 30px;
-    font-weight: 100;
-    letter-spacing: 3px;
+    font-weight: 300;
+    letter-spacing: 2px;
 }
 #body-2 span{
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Montserrat", serif;
     font-weight: normal;
     letter-spacing: 3px;
     color: #272727;
     stroke-width: .5px;
     width: 80%;
     max-width: 500px;
-    font-weight: 100;
+    font-weight: 300;
     line-height: 1.7;
 }
 #body-2 p{
@@ -774,6 +774,7 @@ html::-webkit-scrollbar{
     width: 100%;
     height: 100dvh;
     padding-bottom: 20px;
+    border-bottom: 1px solid rgba(245,238,230,0.65);
 }
 #featBtn{
     position: absolute;
@@ -806,7 +807,7 @@ html::-webkit-scrollbar{
     width: 96%;
     height: 100vh;
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     gap: 0;
     align-items: center;
     background: transparent;
@@ -819,12 +820,23 @@ html::-webkit-scrollbar{
     opacity: 1;
     visibility: visible !important;
 }
+.feat.active #featContent-Container{
+    transition-delay: .5s !important;
+    transition: .4s all;
+    opacity: 1;
+    transform: translateY(0);
+}
+.feat.active .feat-img-container{
+    transition: .4s all;
+    opacity: 1;
+    transform: translateX(0);
+}
 .feat.collection{
     padding: 20px;
     width: 96%;
     height: 100vh;
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     gap: 0;
     align-items: center;
     background: transparent;
@@ -855,6 +867,9 @@ html::-webkit-scrollbar{
     min-height: 300px;
     position: relative;
     margin: 0;
+    transition: .4s all;
+    opacity: 0;
+    transform: translateX(-10%);
 }
 .feat-img-container img{
     position: absolute;
@@ -877,6 +892,9 @@ html::-webkit-scrollbar{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    opacity: 0;
+    transition: .4s all;
+    transform: translateY(30%);
 }
 #featContent-Container img{
     width: 65%;
@@ -1205,7 +1223,7 @@ html::-webkit-scrollbar{
 
 /*START SEPERATE*/
 .territory{
-    width: 50%;
+    width: 60%;
     max-width: 2000px;
     display: flex;
     flex-direction: column;
@@ -1219,6 +1237,11 @@ html::-webkit-scrollbar{
 }
 .territory h2{
     font-weight: 300;
+    font-size: clamp(2rem, 4vw, 4rem);
+    margin: 0;
+}
+.territory h3{
+    font-weight: 200;
     font-size: clamp(2rem, 4vw, 4rem);
     margin: 0;
 }
@@ -1888,6 +1911,16 @@ html::-webkit-scrollbar{
 }
 
 @media(max-width: 768px){
+    #hero-text{
+        top: 70%;
+    }
+    #hero-text-2{
+        top: 60%;
+    }
+    #scroll-btn{
+        height: fit-content;
+        top: 80%;
+    }
     #menu.head::after{
         width: 0;
     }
@@ -1912,9 +1945,6 @@ html::-webkit-scrollbar{
         transition: .5s;
         transition-delay: .1s;
         opacity: 1;
-    }
-    #feat-product div:nth-child(2){
-        height: 90%;
     }
     #menu{
         justify-content: space-around;
@@ -1984,6 +2014,7 @@ html::-webkit-scrollbar{
     #category{
         overflow-x: auto;
         display: flex;
+        flex-direction: row;
         width: 95%;
         min-height: fit-content;
         gap: 10px;
@@ -1992,6 +2023,10 @@ html::-webkit-scrollbar{
     #category div{
         min-width: 250px;
         min-height: 400px;
+        transform: translateY(0) !important;
+    }
+    #category div label{
+        font-size: 20px;
     }
     #category::-webkit-scrollbar{
         width: 0;
@@ -2020,14 +2055,22 @@ html::-webkit-scrollbar{
         justify-content: center;
         align-items: center;
         width: 100%;
+        visibility: hidden;
     }
     #cta-tryon.b-show{
+        visibility: visible;
         opacity: 1;
-        transition-delay: 4s;
+        transition-delay: 4.5s;
         transform: translate(0, 0%);
     }
     #cta-tryon h3{
+        background: rgba(0, 0, 0, 0.025);
         font-size: 30px;
+    }
+    #cta-tryon p{
+        background: rgba(0, 0, 0, 0.025);
+        text-align: center;
+        font-weight: 300;
     }
     #cta-tryon button{
         width: 50%;
@@ -2054,6 +2097,12 @@ html::-webkit-scrollbar{
         max-width: none;
         width: 100%;
     }
+    #body-2 h4{
+        margin: 10px 0;
+    }
+    #body-2 p{
+        font-size: 13px;
+    }
     #body-2-img-container{
         height: 20dvh;
         padding: 20px 20px;
@@ -2071,5 +2120,15 @@ html::-webkit-scrollbar{
     #items-Container{
         margin: 20px;
         grid-template-columns: repeat(1, 1fr);
+    }
+    .feat.collection, .feat.id1, .feat.id2, .feat.id3{
+        position: absolute;
+        padding: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90vw;
+    }
+    #featContent-Container{
+        display: none;
     }
 }
