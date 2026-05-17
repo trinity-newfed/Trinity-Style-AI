@@ -76,7 +76,8 @@ html::-webkit-scrollbar{
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-family: "Montserrat", serif;
+    font-family: "Instrument Serif", serif;
+    letter-spacing: 2px;
     color: rgb(0, 0, 0);
     font-size: clamp(.75rem, 1.75vw, 2.5rem);
 }
