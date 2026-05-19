@@ -75,9 +75,14 @@ if(isset($_SESSION['error'])){
     </button>
 
 </section>
+
+<section id="categories">
+    <div id="categoriesImg-Container" class="animate-on-scroll">
+        <img src="../Pictures/Banners/BannerCategory.png" alt="">
+    </div>
+
     <div id="category-Container" class="animate-on-scroll">
         <div class="territory category animate-on-scroll">
-
             <span>CATEGORY</span>
             <h2>WARDROBE</h2>
             <p>Discover pieces that define your style</p>
@@ -85,38 +90,107 @@ if(isset($_SESSION['error'])){
 
         <div id="category" class="animate-on-scroll">
 
-            <div>
-                <img class="cateImg" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'" src="../Pictures/Icon/T-shirt.png" id="icon-1" alt="">
-                <label for="icon-1" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'">T-SHIRT</label>
-                <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'"><span class="btnSpan">Explore</span></button>
+            <div class="category-divs">
+                <div>
+                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'" src="../Pictures/Icon/T-shirt.png" id="icon-1" alt="">
+                    <label for="icon-1" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'">T-SHIRT</label>
+                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'"><span class="btnSpan">Explore</span></button>
+                </div>
+
+                <?php foreach($product as $p): 
+                    $T_shirt = $p['product_category'] === "men" && $p['product_name'] === "White Basic T-shirt";
+                ?>
+                <?php if($T_shirt): 
+                    $T_shirt = $p;    
+                ?>
+
+                    <div class="divImg2">
+                        <img src="../<?=$T_shirt['product_img']?>" alt="">
+                    </div>
+
+                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
-            <div>
-                <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Polo#product-header'" src="../Pictures/Icon/Polo.png" id="icon-2" alt="">
-                <label onclick="window.location.href='products.php?category=all&name=Polo#product-header'" for="icon-2">POLO</label>
-                <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Polo#product-header'"><span class="btnSpan">View All</span></button>
+            <div class="category-divs">
+                <div>
+                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Polo#product-header'" src="../Pictures/Icon/Polo.png" id="icon-2" alt="">
+                    <label onclick="window.location.href='products.php?category=all&name=Polo#product-header'" for="icon-2">POLO</label>
+                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Polo#product-header'"><span class="btnSpan">View All</span></button>
+                </div>
+
+                <?php foreach($product as $p): 
+                    $T_shirt = $p['product_category'] === "men" && $p['product_name'] === "White Basic Polo";
+                ?>
+                <?php if($T_shirt): 
+                    $T_shirt = $p;    
+                ?>
+
+                    <div class="divImg2">
+                        <img src="../<?=$T_shirt['product_img']?>" alt="">
+                    </div>
+
+                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
-            <div>
-                <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" src="../Pictures/Icon/Hoodie.png" id="icon-3" alt="">
-                <label onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" for="icon-3">HOODIE</label>
-                <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'"><span class="btnSpan">Explore</span></button>
+            <div class="category-divs none">
+                <div>
+                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" src="../Pictures/Icon/Hoodie.png" id="icon-3" alt="">
+                    <label onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" for="icon-3">HOODIE</label>
+                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'"><span class="btnSpan">Explore</span></button>
+                </div>
             </div>
 
-            <div>
-                <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" src="../Pictures/Icon/Blouse.png" id="icon-4" alt="">
-                <label onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" for="icon-4">BLOUSE</label>
-                <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'"><span class="btnSpan">View All</span></button>
+            <div class="category-divs">
+                <div>
+                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" src="../Pictures/Icon/Blouse.png" id="icon-4" alt="">
+                    <label onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" for="icon-4">BLOUSE</label>
+                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'"><span class="btnSpan">View All</span></button>
+                </div>
+
+                <?php foreach($product as $p): 
+                    $T_shirt = $p['product_category'] === "women" && $p['product_name'] === "Black Wrap Blouse";
+                ?>
+                <?php if($T_shirt): 
+                    $T_shirt = $p;    
+                ?>
+
+                    <div class="divImg2">
+                        <img src="../<?=$T_shirt['product_img']?>" alt="">
+                    </div>
+
+                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
-            <div>
-                <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" src="../Pictures/Icon/CropTop.jpeg" id="icon-5" alt="">
-                <label onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" for="icon-5">CROPTOP</label>
-                <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'"><span class="btnSpan">View All</span></button>
+            <div class="category-divs">
+                <div>
+                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" src="../Pictures/Icon/CropTop.jpeg" id="icon-5" alt="">
+                    <label onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" for="icon-5">CROPTOP</label>
+                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'"><span class="btnSpan">View All</span></button>
+                </div>
+
+                <?php foreach($product as $p): 
+                    $T_shirt = $p['product_category'] === "women" && $p['product_name'] === "White Tank Crop Top";
+                ?>
+                <?php if($T_shirt): 
+                    $T_shirt = $p;    
+                ?>
+
+                    <div class="divImg2 short">
+                        <img src="../<?=$T_shirt['product_img']?>" alt="">
+                    </div>
+
+                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
 
         </div>
     </div>
+    
+</section>
+
     
     <section id="body">
         <div id="body-content-container">
@@ -126,15 +200,7 @@ if(isset($_SESSION['error'])){
                         <source src="../Pictures/Banners/videoBanner.mp4" type="video/mp4">
                     </video>
 
-                    <div id="cta-tryon">
-
-                        <h3>See yourself in Trinity</h3>
-                        <p>Upload your photo and experience <br> virtual fiting powered by AI</p>
-                        <button onclick="window.location.href='products.php#product-section'">
-                            <span class="cta-tryon-text">Try Now</span>
-                        </button>
-
-                    </div>
+                    
                 </div>
 
             </div>
@@ -147,6 +213,39 @@ if(isset($_SESSION['error'])){
                     <path d="M169.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 306.7 54.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
                 </svg>
             </button>
+    </section>
+
+    <div class="marquee-box">
+        <div class="marquee-track">
+
+            <div class="marquee-item">
+                <span>SALE UP TO 50%</span>
+                <span>FREE DELIVERY FOR $700 ORDER</span>
+                <span>GIFT WRAP THE ORDER</span>
+                <span>LUXURIOUS GIFT COMBO</span>
+            </div>
+
+            <div class="marquee-item">
+                <span>SALE UP TO 50%</span>
+                <span>FREE DELIVERY FEE FOR $700 ORDER</span>
+                <span>GIFT WRAP THE ORDER</span>
+                <span>LUXURIOUS GIFT COMBO</span>
+            </div>
+        </div>
+    </div>
+
+    <section id="body-1" class="animate-on-scroll">
+        <img src="../Pictures/Banners/BannerAI-1.png" alt="">
+
+        <div id="cta-tryon">
+
+                        <h3>See yourself in Trinity</h3>
+                        <p>Upload your photo and experience <br> virtual fiting powered by AI</p>
+                        <button onclick="window.location.href='products.php#product-section'">
+                            <span class="cta-tryon-text">Try Now</span>
+                        </button>
+
+                    </div>
     </section>
     
     <section id="body-2">
@@ -256,9 +355,9 @@ if(isset($_SESSION['error'])){
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
                         <img src="../<?=$sideFeat1['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat1['id']?>'">
-                        <span>Basic T-shirt</span>
+                        <span>Logo Polo</span>
                         <p>$<?=$feat1['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat1['id']?>'">Try with AI</button>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat1['id']?>'">View Product</button>
                     </div>
 
                 </div>
@@ -278,9 +377,9 @@ if(isset($_SESSION['error'])){
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
                         <img src="../<?=$sideFeat2['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat2['id']?>'">
-                        <span>Basic T-shirt</span>
+                        <span>Lady Basic T-shirt</span>
                         <p>$<?=$feat2['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat2['id']?>'">Try with AI</button>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat2['id']?>'">View Product</button>
                     </div>
 
                 </div>
@@ -300,7 +399,7 @@ if(isset($_SESSION['error'])){
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
                         <img src="../<?=$sideFeat3['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat3['id']?>'">
-                        <span>Basic T-shirt</span>
+                        <span>Wrap Blouse</span>
                         <p>$<?=$feat3['product_price']?></p>
                         <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat3['id']?>'">Try with AI</button>
                     </div>
@@ -331,7 +430,7 @@ if(isset($_SESSION['error'])){
         </div>
         
         <div id="utility-menu">
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px">
+            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
                 <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
             </svg>
 
@@ -449,7 +548,32 @@ if(isset($_SESSION['error'])){
 </div>
 </section>
 
+<section id="footer-1">
+    <div class="footer-1-title">
+        <span>TRINITY</span>
+        <h4>FROM TRINITY TO YOU</h4>
+    </div>
+
+    <div class="footer1-imgContainer">
+        <div>
+            <img src="../Pictures/Banners/F1-I1.png" alt="">
+            <p>Woven from the finest fabrics</p>
+        </div>
+
+        <div>
+            <img src="../Pictures/Banners/F1-I2.png" alt="">
+            <p>Meticulously inspected to ensure perfection in every single piece before it reaches you</p>
+        </div>
+
+        <div>
+            <img src="../Pictures/Banners/F1-I3.png" alt="">
+            <p>Unbox a package crafted with passion, tailored for perfection, and delivered just for you</p>
+        </div>
+    </div>
+</section>
+
 <footer class="footer-2">
+    <img src="../Pictures/Banners/BannerFooter.png" alt="" style="max-width: 100%; filter: brightness(70%);">
   <div class="footer-container">
     <div class="footer-left">
       <p class="footer-label">CONTACT US</p>
@@ -626,10 +750,7 @@ if(isset($_SESSION['error'])){
                 setInterval(() => {
                     if(num < 3){
                         num++;
-                        if(num == 1){
-                            document.getElementById("body-content-container").classList.add("b-show");
-                            document.getElementById("cta-tryon").classList.add("b-show");
-                        }else if(num == 2){
+                        if(num == 2){
                             video.play();
                         }
                 }
@@ -764,7 +885,7 @@ if(isset($_SESSION['error'])){
 
         
 
-        const divs = category.querySelectorAll("div");
+        const divs = category.querySelectorAll(".category-divs");
 
         let currentIndex = 0;
         const totalDivs = divs.length;
