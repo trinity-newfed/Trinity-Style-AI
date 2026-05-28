@@ -6,10 +6,37 @@ if(!isset($_SESSION['role'])){
     $_SESSION['role'] = "guest";
 }
 
+$baseProduct = $conn->query("SELECT * FROM products")
+                    ->fetch_all(MYSQLI_ASSOC);
+
+
 $product = $conn
-  ->query("SELECT * FROM products")
+  ->query("SELECT products.id AS id,
+            products.product_name, products.product_group,
+            products.product_price, products.product_category,
+            products.product_type, products.product_describe,
+            products.product_size, products.product_img,
+            product_variant.product_price, product_variant.product_size,
+            product_variant.product_img, product_variant.product_img1,
+            product_variant.product_color
+
+            FROM products
+            JOIN product_variant
+            ON products.id = product_id
+            ")
   ->fetch_all(MYSQLI_ASSOC);
 
+$product_variant = $conn->query("SELECT 
+                                 product_variant.product_id, product_variant.product_price,
+                                 product_variant.product_img AS variant_img,
+                                 product_variant.product_color, product_variant.product_size,
+                                 product_variant.product_stock, products.product_name,
+                                 products.product_category
+
+                                 FROM product_variant
+                                 JOIN products
+                                 ON product_variant.product_id = products.id")
+                        ->fetch_all(MYSQLI_ASSOC);
 
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
@@ -25,6 +52,7 @@ if(isset($_SESSION['error'])){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trinity Style - Home</title>
+    <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/home.css">
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -282,133 +310,142 @@ if(isset($_SESSION['error'])){
                     </svg>
                 </button>
             </div>
-            <?php
-                $mainProduct = null;
-                $sideProduct = null;
-
-                $feat1 = null;
-                $sideFeat1 = null;
-
-                $feat2 = null;
-                $sideFeat2 = null;
-
-                $feat3 = null;
-                $sideFeat3 = null;
-
-                foreach($product as $p){
-                
-                if($p['product_category'] === "collections"){
-                    if($p['product_name'] === "Beige Coat") $mainProduct = $p;
-                    if($p['product_name'] === "Black Coat") $sideProduct = $p;
-                }
-
-                if($p['product_category'] === "men"){
-                    if($p['product_name'] === "White Logo Polo") $feat1 = $p;
-                    if($p['product_name'] === "Black Logo Polo") $sideFeat1 = $p;
-                }
-
-                if($p['product_category'] === "women"){
-                    if($p['product_name'] === "White Basic T-shirt") $feat2 = $p;
-                    if($p['product_name'] === "Black Basic T-shirt") $sideFeat2 = $p;
-                }
-
-                if($p['product_category'] === "women"){
-                    if($p['product_name'] === "White Wrap Blouse") $feat3 = $p;
-                    if($p['product_name'] === "Black Wrap Blouse") $sideFeat3 = $p;
-                }
-            } 
-            ?>
-
-                <?php if($mainProduct): 
-                    $sideImg = $sideProduct ? $sideProduct['product_img1'] : $mainProduct['product_img1'];
-                    $mainImg = $mainProduct ? $mainProduct['product_img'] : $sideProduct['product_img'];
-                    $mainName = $mainProduct ? $mainProduct['product_name'] : $sideProduct['product_name'];
-                    $sideName = $sideProduct ? $sideProduct['product_name'] : $mainProduct['product_name'];
+                <!--Newest Collection-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "collections") continue;
                 ?>
                 <div class="feat collection">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$mainProduct['id']?>'">
-                        <img class="feat-img id1" src="../<?=$mainProduct['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$mainProduct['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$item['id']?>'">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideProduct['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideProduct['id']?>'">
-                        <span>Winter Collection</span>
-                        <p>$<?=$mainProduct['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$mainProduct['id']?>'">Try with AI</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$ <?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-'">Try with AI</button>
                     </div>
-
                 </div>
-                <?php endif; ?>
-                
-                <?php if($feat1): 
-                    $sideImg = $sideFeat1 ? $sideFeat1['product_img1'] : $feat1['product_img1'];
-                    $mainImg = $feat1 ? $feat1['product_img'] : $sideFeat1['product_img'];
-                    $mainName = $feat1 ? $feat1['product_name'] : $sideFeat1['product_name'];
-                    $sideName = $sideFeat1 ? $sideFeat1['product_name'] : $feat1['product_name'];
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
+
+                <!--Basic T-shirt-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "men" || $item['product_name'] != "Basic T-shirt") continue;
                 ?>
                 <div class="feat id1">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat1['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat1['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat1['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat1['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat1['id']?>'">
-                        <span>Logo Polo</span>
-                        <p>$<?=$feat1['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat1['id']?>'">View Product</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
-                <?php endif; ?>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
 
-                <?php if($feat2): 
-                    $sideImg = $sideFeat2 ? $sideFeat1['product_img1'] : $feat2['product_img1'];
-                    $mainImg = $feat2 ? $feat2['product_img'] : $sideFeat2['product_img'];
-                    $mainName = $feat2 ? $feat2['product_name'] : $sideFeat2['product_name'];
-                    $sideName = $sideFeat2 ? $sideFeat2['product_name'] : $feat2['product_name'];
+                <!--Trinity Lady-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "women" || $item['product_name'] != "Classic Blouse") continue;
                 ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat2['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat2['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat2['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat2['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat2['id']?>'">
-                        <span>Lady Basic T-shirt</span>
-                        <p>$<?=$feat2['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat2['id']?>'">View Product</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
-                <?php endif; ?>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
 
-                <?php if($feat3): 
-                    $sideImg = $sideFeat3 ? $sideFeat1['product_img1'] : $feat3['product_img1'];
-                    $mainImg = $feat3 ? $feat3['product_img'] : $sideFeat3['product_img'];
-                    $mainName = $feat3 ? $feat3['product_name'] : $sideFeat3['product_name'];
-                    $sideName = $sideFeat3 ? $sideFeat3['product_name'] : $feat3['product_name'];
+
+                <!--Logo Polo-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "men" || $item['product_name'] != "Logo Polo") continue;
                 ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat3['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat3['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat3['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat3['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat3['id']?>'">
-                        <span>Wrap Blouse</span>
-                        <p>$<?=$feat3['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat3['id']?>'">Try with AI</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
-                <?php endif; ?>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
         </div>
     </section>
-<section id="menu">
+    
+    <section id="menu">
         <input type="checkbox" id="menu-toggle" hidden>
         <label class="hamburger" for="menu-toggle">
             <svg viewBox="0 0 32 32">
@@ -448,105 +485,111 @@ if(isset($_SESSION['error'])){
                     </label>
             <?php endif; ?>
         </div>
-<div id="fast-menu">
-    <div id="fast-menu-container">
-        <div class="menu-item">
-            <div class="menu-title"><span>TRINITY</span></div>
 
-            <div class="submenu">
-                <div class="submenu-item">T-shirt
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+        <div id="fast-menu">
+            <div id="fast-menu-container">
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Polo shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                        </div>
+
+                        <div class="submenu-item">Hoodie
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="submenu-item">Polo shirt
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY LADIES</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Blouse
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                        </div>
+
+                        <div class="submenu-item">Crop top
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="submenu-item">Hoodie
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
                 </div>
-        </div>
 
-        </div>
-    <div class="menu-item">
-        <div class="menu-title"><span>TRINITY LADIES</span></div>
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='userTier.php'"><span>TRINITY TIER</span></div>
+                </div>
 
-        <div class="submenu">
-            <div class="submenu-item">T-shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
+                </div>
 
-            <div class="submenu-item">Blouse
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
-            </div>
-
-            <div class="submenu-item">Crop top
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
-            </div>
-        </div>
-
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='userTier.php'"><span>TRINITY TIER</span></div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
-    </div>
-
-    <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
-            <?php else: ?>
+                <?php if(isset($_SESSION['username'])): ?>
+                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
+                <?php else: ?>
                     <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
                     <label for="login-input" id="label-login-input">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
                             <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
                         </svg> 
+
                         <p>Login</p>
                     </label>
-            <?php endif; ?>
-    </div>
-</div>
-
-<div id="menu-search">
-    <div id="search-Container">
-        <span>
-            <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
-            </svg>
-        </span>
-        <input type="text" id="searchBar" placeholder="Search..."/>
-    
-    </div>
-
-    
-    <div id="search-Items">
-        <p id="searchResult"></p>
-        <div id="items-Container">
-            <?php foreach($product as $p):?>
-                <div class="item" data-name="<?=$p['product_name']?>">
-                    <div class="item-Img">
-                        <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
-                    </div>
-
-                    <div>
-                        <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
-                        <span>$<?=$p['product_price']?></span>
-                    </div>
+                <?php endif; ?>
             </div>
-            <?php endforeach; ?> 
-        </div>   
-        <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
-    </div>
-</div>
-</section>
+        </div>
+
+        <div id="menu-search">
+            <div id="search-Container">
+                <span>
+                    <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                    </svg>
+                </span>
+
+                <input type="text" id="searchBar" placeholder="Search..."/>
+    
+            </div>
+
+    
+            <div id="search-Items">
+                <p id="searchResult"></p>
+                    <div id="items-Container">
+                    <?php foreach($baseProduct as $p):?>
+                        <div class="item" data-name="<?=$p['product_name']?>">
+                            <div class="item-Img">
+                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
+                            </div>
+
+                            <div>
+                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
+                                <span>$<?=$p['product_price']?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?> 
+            </div>   
+
+            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+        </div>
+
+    </section>
 
 <section id="footer-1">
     <div class="footer-1-title">
@@ -774,6 +817,10 @@ if(isset($_SESSION['error'])){
         bodyObserve.observe(body);
         footerObserve.observe(footer);
 
+
+
+        //Menu Toggle
+
         const fastMenuContainer = document.getElementById("fast-menu-container");
         const menuToggle = document.getElementById("menu-toggle");
         const hamburger = document.querySelector(".hamburger");
@@ -840,6 +887,9 @@ if(isset($_SESSION['error'])){
             }
         });
 
+
+        //Search bar
+
         const searchBar = document.getElementById("searchBar");
         const searchItems = document.getElementById("search-Items");
         const searchResult = document.getElementById("searchResult");
@@ -881,7 +931,7 @@ if(isset($_SESSION['error'])){
                 if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
                 else searchResult.textContent = "";
             }
-});
+        });
 
         
 

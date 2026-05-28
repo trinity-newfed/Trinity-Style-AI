@@ -8,10 +8,12 @@ $conn = new mysqli($host, $user, $password, $dbname);
 
 session_start();
 
+$id = $_POST['cartId'];
 
-if(isset($_GET['id']) && isset($_SESSION['user_id'])) {
+
+if(isset($_POST['cartId']) && isset($_SESSION['user_id'])) {
     $stmt = $conn->prepare("DELETE FROM cart WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("ii", $_GET['id'], $_SESSION['user_id']);
+    $stmt->bind_param("ii", $id, $_SESSION['user_id']);
     $stmt->execute();
 }
 

@@ -17,8 +17,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userID = $_SESSION['user_id'];
-$id = $_POST['cart_id'];
-$action = $_POST['action'];
+$id = $_POST['cart_id'] ?? "";
+$action = $_POST['action'] ?? "";
+$size = $_POST['cart_size'] ?? "";
+$color = $_POST['cart_color'] ?? "";
 
 if($action === "plus"){
     $stmt = $conn->prepare($sql = "UPDATE cart 
@@ -48,6 +50,18 @@ if($affected === 0){
     $stmt->close();
 }
 }
-header("Location: " . $_SERVER['HTTP_REFERER']);
-exit();
+
+
+if($action == "update"){
+    $stmt = $conn->prepare("UPDATE cart 
+                            SET product_color = ? 
+                            , cart_size = ? 
+                            WHERE user_id = ?
+                            AND id = ?");
+    $stmt->bind_param("ssii", $color, $size, $userID, $id);
+    $stmt->execute();
+    $stmt->close();
+}
+
+echo "$id, $color, $size"
 ?>

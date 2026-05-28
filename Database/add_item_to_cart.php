@@ -12,7 +12,7 @@ if($conn->connect_error){
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../Pages/log.php");
+    header("Location: ../Pages/reglog.php");
     exit();
 }
 

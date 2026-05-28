@@ -9,6 +9,28 @@ $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
+
+//PRODUCT SEARCH
+$product = $conn
+  ->query("SELECT products.id AS id,
+            products.product_name, products.product_group,
+            products.product_price, products.product_category,
+            products.product_type, products.product_describe,
+            products.product_size, 
+            
+            product_variant.product_price, product_variant.product_id AS variant_id,
+            product_variant.product_size, product_variant.product_img, 
+            product_variant.product_color
+
+            FROM products
+            JOIN product_variant
+            ON products.id = product_variant.product_id
+            ")
+  ->fetch_all(MYSQLI_ASSOC);
+
+$baseProduct = $conn->query("SELECT * FROM products")
+                    ->fetch_all(MYSQLI_ASSOC);
+
 //VOUNCHER FETCH
 if(isset($_SESSION['user_id'])){
 
@@ -46,18 +68,23 @@ if(isset($_SESSION['user_id'])){
     cart.product_id,
     products.product_name,
     products.product_price,
-    cart.product_color,
     products.product_category,
-    products.product_img,
-    products.product_stock,
     products.product_state,
     products.product_is_delete,
     cart.cart_size,
-    cart.quantity
-FROM cart
-JOIN products 
+    cart.quantity,
+    
+    product_variant.product_color AS variant_color,
+    product_variant.product_img AS variant_img,
+    product_variant.product_stock AS variant_stock
+    
+    FROM cart
+    JOIN products 
     ON cart.product_id = products.id
-WHERE cart.user_id = ?
+    JOIN product_variant 
+    ON cart.product_id = product_variant.product_id 
+    AND cart.product_color = product_variant.product_color
+    WHERE cart.user_id = ?
 ");
 
 $stmt->bind_param("i", $userID);
@@ -90,6 +117,8 @@ if(isset($_SESSION['user_id'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/cart.css">
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <title>Trinity Style - Cart</title>
@@ -98,114 +127,110 @@ if(isset($_SESSION['user_id'])){
     <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
 </head>
 <body>
-<section id="body">
+    <section id="body">
+
+        <!--Cart shopping header-->
         <div id="cart-header">
+
             <span>Shopping Cart</span>
-            <div style="z-index: 100; display: flex; align-items: center; gap: 10px;">
-            <label class="item-label">
-                <input type="checkbox" id="selectAll" hidden>
-            </label>
-            <p>Select All</p>
+
         </div>
-        </div>
-    <form action="../Database/checkout.php" method="POST" style="width: 100%; height: 100%; top: 12.5%; position: relative;">
+
+        <!--Items container-->
         <div id="cart-item-container">
+            <!--Item list-->
             <div id="item-list">
-                <div id="item-info">
-                    <span>Product</span>
-                    <span class="price">Price</span>
-                    <span>Quantity</span>
-                    <span>Total</span>
-                </div>
-                <?php if(empty($data)): ?>
-                    <span style="position: relative; top: 20%; min-width: fit-content; max-width: 20%; font-size: clamp(1rem, 1.5vw, 2rem); color: rgb(0, 0, 0);">Your bag is await</span>
-                    <span onclick="window.location.href='products.php'" style="min-width: fit-content; top: 20%; max-width: 20%; position: relative; top: 20%; font-size: clamp(0.7rem, 1vw, 1rem); color: rgba(0, 72, 255, .6); cursor: pointer;">[Discover more pieces]</span>
-                <?php else: ?>
-                <?php foreach($data as $d): ?>
-                <?php if($d['product_stock'] > 0 && $d['product_state'] != "inactive" && $d['product_is_delete'] != 1): ?>
-                <div class="items" data-stock="<?=$d['product_stock']?>">
-                    <div id="product-container">
-                        <div style="display: flex; max-width: 50%; align-items: center; justify-content: center; gap: 5%;">
-                            <label class="item-label">
-                                <input style="cursor: pointer;" type="checkbox" class="item-checkbox" name="cart_ids[]" value="<?=$d['cart_id']?>" hidden>
-                            </label>
-                            <div id="items-image-container"><img src="../<?=$d['product_img']?>" onclick="window.location.href='detail.php?id=<?=$d['product_id']?>'"></div>
-                        </div>
-                        <div style="display: flex; max-width: 50%;">
-                            <div id="items-info-container">
-                                <span class="item-name"><?=$d['product_name']?></span>
-                                <span style="color: rgba(0, 0, 0, 1); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
-                            <label style="cursor: pointer;" for="remove-input" id="label-for-remove-input" onclick="window.location.href='../Database/delete_item_cart.php?id=<?=$d['cart_id']?>'">Remove</label>
+                <?php foreach($data as $item): 
+                    $active = ($item['product_is_delete'] == 0 && $item['product_state'] == "active") ? 1 : 0;
+                ?>
+                    <div class="cartItem relative" data-stock=<?=$item['variant_stock']?> data-id="<?=$item['cart_id']?>" data-active="<?=$active?>">
+
+                        <div class="item-left">
+                            <div class="item-img-container relative">
+                                <span class="notice absolute w-[100%] text-red-700 hidden text-center z-[100] top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">OUT OF STOCK</span>
+                                <img src="../<?=$item['variant_img']?>" alt="">
+                            </div>
+
+                            <div class="item-info-container">
+                                <span class="item-name"><?=$item['product_name']?></span>
+                                <span class="items-price-container" data-price="<?=$item['product_price']?>"></span>
+                                
+                                <!--Item selection-->
+                                <div class="item-option">
+                                    <span class="hidden">COLOR</span>
+                                    
+                                    <div class="flex gap-[5px] w-fit md:w-[100%]">
+                                        <div class="colorContainer">
+                                            <div class="color" style="background: <?=$item['variant_color']?>"></div>
+
+                                            <select name="cart_color" class="cartColor" data-id="<?=$item['cart_id']?>">
+                                                <option value="<?=$item['variant_color']?>" data-img="../<?=$item['variant_img']?>"><?=ucfirst($item['variant_color'])?></option>
+
+                                                <?php foreach($product as $variant): ?>
+                                                    <?php 
+                                                        if ($variant['variant_id'] != $item['product_id']) continue; 
+                                                        if ($variant['product_color'] == $item['variant_color']) continue;
+                                                    ?>
+                                                        <option value="<?=$variant['product_color']?>" 
+                                                            data-img="../<?=$variant['product_img']?>">
+                                                            <?=ucfirst($variant['product_color'])?>
+                                                        </option>
+                                                <?php endforeach; ?>
+                                            
+                                            </select>
+                                        </div>
+
+                                        <div class="sizeContainer">
+                                            <select name="cart_size" class="cartSize" data-id="<?=$item['cart_id']?>">
+                                                <?php $sizes = ["S", "M", "L", "XL"];
+                                                  $currentSize = $item['cart_size'];
+                                                  foreach($sizes as $size):
+                                                  $selected = ($size === $currentSize) ? 'selected' : '';
+
+                                                ?>
+
+                                                <option value="<?=$size?>" <?=$selected?>><?=$size?></option>
+
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Item quantity-->
+                                <div id="items-quantity-container">
+                                    <span>QUANTITY</span>
+                                    <div>
+                                        <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$item['cart_id']?>" data-action="minus">
+                                            <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
+                                        </button>
+                                    
+                                        <span class="item-quantity" style="font-weight: 550;"><?=$item['quantity']?></span>
+
+                                        <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$item['cart_id']?>" data-action="plus">
+                                            <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
-                    </div>
-                    <div class="items-price-container" data-price="<?=$d['product_price']?>" style="font-size: clamp(0.7rem, 0.9vw, 1rem);">
-                    </div>
-                    <div id="items-quantity-container">
-                            <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="minus">
-                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
-                            </button>
-                        <span class="item-quantity" style="font-weight: 550;"><?=$d['quantity']?></span>
-                            <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="plus">
-                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
-                            </button>
-                    </div>
-                    <div class="items-total-container">
-                        <span style="font-size: clamp(0.7rem, 0.9vw, 1rem); position: relative;">0</span>
-                    </div>
-                </div>
-                <?php else: ?>
-                <div class="items out">
-                    <div id="product-container">
-                        <div style="display: flex; max-width: 50%; align-items: center; justify-content: center; gap: 5%;">
-                            <label class="item-label">
-                                <input style="cursor: pointer;" type="checkbox" class="" name="cart_ids[]" value="<?=$d['cart_id']?>" hidden>
-                            </label>
-                            <div id="items-image-container">
-                                <span class="stock">Temporarily unavailable</span>
-                                <img src="../<?=$d['product_img']?>" onclick="window.location.href='detail.php?id=<?=$d['product_id']?>'">
-                            </div>
-                        </div>
-                        <div style="display: flex; max-width: 50%;">
-                            <div id="items-info-container">
-                                <span class="item-name"><?=$d['product_name']?></span>
-                                <span style="color: rgba(0, 0, 0, 1); font-weight: 400;"><?=$d['product_color']?> / <?=$d['cart_size']?></span>
-                            <label style="cursor: pointer;" for="remove-input" id="label-for-remove-input" onclick="window.location.href='../Database/delete_item_cart.php?id=<?=$d['cart_id']?>'">Remove</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="items-price-container" data-price="<?=$d['product_price']?>" style="font-size: clamp(0.7rem, 0.9vw, 1rem);">
-                    </div>
-                    <div id="items-quantity-container">
-                            <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="minus" disabled>
-                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
-                            </button>
-                        <span class="item-quantity" style="font-weight: 550;"><?=$d['quantity']?></span>
-                            <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$d['cart_id']?>" data-action="plus" disabled>
-                                <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
-                            </button>
-                    </div>
-                    <div class="items-total-container">
-                        <span style="font-size: clamp(0.7rem, 0.9vw, 1rem); position: relative;">0</span>
-                    </div>
-                </div>
-                <?php endif; ?>
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-            <div id="info-list">
-                <div id="info-freeship">
-                    <div id="freeship-progress-bar">
-                        <div id="progress-bar">
-                            <div id="shipping-icon-container">
-                                <svg class="shipping-icon" viewBox="0 0 640 512" aria-hidden="true">
-                                    <path d="M64 96c0-35.3 28.7-64 64-64h288c35.3 0 64 28.7 64 64v32h50.7c17 0 33.3 6.7 45.3 18.7L621.3 192c12 12 18.7 28.3 18.7 45.3V384c0 35.3-28.7 64-64 64h-3.3c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H300.7c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H128c-35.3 0-64-28.7-64-64v-48H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h176c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24S10.7 96 24 96h40zm512 192v-50.7l-45.3-45.3H480v96h96zM256 424a40 40 0 1 0-80 0 40 40 0 1 0 80 0zm232 40a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
+
+                        <div class="item-right">
+                            <div class="deleteItem">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                                    <path d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"/>
                                 </svg>
                             </div>
+
+                            <div class="items-total-container"></div>
                         </div>
                     </div>
-                    <label id="shipping-label">Buy more to enjoy Free Shipping</label>
-                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!--Item information-->
+            <div id="info-list">
                 <div id="info-total-order">
                     <div class="info-total-order-span-container voucher">
                         <span>Voucher</span>
@@ -233,7 +258,7 @@ if(isset($_SESSION['user_id'])){
                                                         data-max="<?=$v['voucher_max']?>"
                                                         data-id="<?=$v['id']?>"
                                                         data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="1"><svg class="shipping-icon" viewBox="0 0 640 512" aria-hidden="true">
+                                                        data-ship="1"><svg class="shipping icon" viewBox="0 0 640 512" aria-hidden="true">
                                                                         <path d="M64 96c0-35.3 28.7-64 64-64h288c35.3 0 64 28.7 64 64v32h50.7c17 0 33.3 6.7 45.3 18.7L621.3 192c12 12 18.7 28.3 18.7 45.3V384c0 35.3-28.7 64-64 64h-3.3c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H300.7c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H128c-35.3 0-64-28.7-64-64v-48H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h176c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24S10.7 96 24 96h40zm512 192v-50.7l-45.3-45.3H480v96h96zM256 424a40 40 0 1 0-80 0 40 40 0 1 0 80 0zm232 40a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
                                                                       </svg>
                                                                       Free Ship
@@ -253,10 +278,12 @@ if(isset($_SESSION['user_id'])){
                         </div>
                         <?php endif; ?>
                     </div>
+
                     <div class="info-total-order-span-container delivery">
                         <span>Delivery fee</span>
                         <span id="deli-fee" style="text-align: center;"></span>
                     </div>
+
                     <div class="info-total-order-span-container total">
                         <span>Grand Total</span>
                         <?php if(empty($data)): ?>
@@ -264,41 +291,46 @@ if(isset($_SESSION['user_id'])){
                         <?php else: ?>
                         <span id="final-total">$0</span>
                         <?php endif; ?>
-                    </div>       
+                    </div> 
+                          
                     <button type="submit" id="order-btn">Purchase</button>
                 </div>
             </div>
+
         </div>
-    </form>
     </section>
+
     <section id="menu">
+        <input type="checkbox" id="menu-toggle" hidden>
+        <label class="hamburger" for="menu-toggle">
+            <svg viewBox="0 0 32 32">
+                <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                <path class="line" d="M7 16 27 16"></path>
+            </svg>
+        </label>
+
         <div id="text-menu">
-            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
+            
             <div id="text">
                 <span onclick="window.location.href='../Pages/'">Home</span>
                 <span onclick="window.location.href='products.php?#product-section'">Shop</span>
                 <span onclick="window.location.href='products.php?#product-section'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
+
+            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
         </div>
-        <input type="checkbox" id="menu-toggle" hidden>
+        
         <div id="utility-menu">
-            <label class="hamburger" for="menu-toggle">
-                    <svg viewBox="0 0 32 32">
-                        <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
-                        <path class="line" d="M7 16 27 16"></path>
-                    </svg>
-            </label>
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" onclick="window.location.href='cart.php'">
-                <path d="M223.5-103.5Q200-127 200-160t23.5-56.5Q247-240 280-240t56.5 23.5Q360-193 360-160t-23.5 56.5Q313-80 280-80t-56.5-23.5Zm400 0Q600-127 600-160t23.5-56.5Q647-240 680-240t56.5 23.5Q760-193 760-160t-23.5 56.5Q713-80 680-80t-56.5-23.5ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z"/>
+            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
             </svg>
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <p onclick="window.location.href='user.php'" id="menu-Username" style="cursor: pointer;"><?=$_SESSION['username']?></p>
-                <?php if(!empty($_SESSION['img'])): ?>
-                    <div id="user-account" onclick="window.location.href='user.php'">
-                        <img id="user-avatar" src="../upload/<?= htmlspecialchars($_SESSION['img']) ?>" alt="avatar">
-                    </div>
-                <?php endif; ?>
+
+            <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+            </svg>
+            <?php if(isset($_SESSION['username'])): ?>
+                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
             <?php else: ?>
                     <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
                     <label for="login-input">
@@ -308,51 +340,113 @@ if(isset($_SESSION['user_id'])){
                     </label>
             <?php endif; ?>
         </div>
-<div id="fast-menu">
-    <div class="menu-item">
-        <div class="menu-title">TRINITY</div>
-            <div class="submenu">
-                <div class="submenu-item">T-shirt
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Polo shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
-            </div>
-            <div class="submenu-item">Hoodie
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+
+        <div id="fast-menu">
+            <div id="fast-menu-container">
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Polo shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                        </div>
+
+                        <div class="submenu-item">Hoodie
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY LADIES</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Blouse
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                        </div>
+
+                        <div class="submenu-item">Crop top
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='userTier.php'"><span>TRINITY TIER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
+                </div>
+
+                <?php if(isset($_SESSION['username'])): ?>
+                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
+                <?php else: ?>
+                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
+                    <label for="login-input" id="label-login-input">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
+                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
+                        </svg> 
+
+                        <p>Login</p>
+                    </label>
+                <?php endif; ?>
             </div>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title">TRINITY LADIES</div>
-        <div class="submenu">
-            <div class="submenu-item">T-shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
+
+        <div id="menu-search">
+            <div id="search-Container">
+                <span>
+                    <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                    </svg>
+                </span>
+
+                <input type="text" id="searchBar" placeholder="Search..."/>
+    
             </div>
-            <div class="submenu-item">Blouse
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
-            </div>
-            <div class="submenu-item">Crop top
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
-            </div>
+
+    
+            <div id="search-Items">
+                <p id="searchResult"></p>
+                    <div id="items-Container">
+                    <?php foreach($baseProduct as $p):?>
+                        <div class="item" data-name="<?=$p['product_name']?>">
+                            <div class="item-Img">
+                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
+                            </div>
+
+                            <div>
+                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
+                                <span>$<?=$p['product_price']?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>  
+            </div>   
+
+            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
-    </div>
-</div>
-</section>
+
+    </section>
+
+
 <footer class="footer-2">
   <div class="footer-container">
     <div class="footer-left">
@@ -405,6 +499,10 @@ if(isset($_SESSION['user_id'])){
 </footer>
 <input type="hidden" value="<?=$address?>" id="to" disabled>
     <script>
+
+        const finalTotal = document.getElementById("final-total");
+
+
         const priceDisplay = document.querySelectorAll(".items-price-container");
         if(priceDisplay){
             priceDisplay.forEach(pDisplay =>{
@@ -413,17 +511,18 @@ if(isset($_SESSION['user_id'])){
         }
 
         //QUANTITY BTN
-    const operationBtn = document.querySelectorAll(".operation-button");
-    operationBtn.forEach(btn =>{
+        const operationBtn = document.querySelectorAll(".operation-button");
+        operationBtn.forEach(btn =>{
         btn.addEventListener('click', function(){
+            
             const id = this.dataset.id;
             const action = this.dataset.action;
-            const item = this.closest(".items");
+            const item = this.closest(".cartItem");
             const quantities = item.querySelector(".item-quantity");
 
             let quantity = parseInt(quantities.textContent);
 
-            if(action === "plus" && item.dataset.stock > (quantity + 1)){
+            if(action == "plus" && item.dataset.stock > (quantity + 1)){
                 quantity++;
                 fetch('../Database/cart_update.php', {
                 method: 'POST',
@@ -435,24 +534,24 @@ if(isset($_SESSION['user_id'])){
                 .then(() => {btn.disabled = false;
                         calculateFinalTotal();
                 });  
-            }else if(action === "minus" && quantity > 1){
+            }else if(action == "minus" && quantity > 1){
                 quantity--;
                 fetch('../Database/cart_update.php', {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: `cart_id=${id}&action=${action}`
                 })
                 .then(() => {btn.disabled = false;
                         calculateFinalTotal();
                 });  
-            }else if(action === "minus" && quantity == 1){
+            }else if(action == "minus" && quantity == 1){
                 location.reload();
                 fetch('../Database/cart_update.php', {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: `cart_id=${id}&action=${action}`
                 })
@@ -464,17 +563,138 @@ if(isset($_SESSION['user_id'])){
             quantities.textContent = quantity;                        
         });
     });
+
+        //COLOR & SIZE SELECT
+        const colorSelect = document.querySelectorAll('.cartColor');
+        const sizeSelect = document.querySelectorAll('.cartSize');
+        
+
+        function cartUpdate(item){
+            const id = item.querySelector('.cartColor').dataset.id;
+            const cartColor = item.querySelector('.cartColor').value.toLowerCase();
+            const cartSize = item.querySelector('.cartSize').value;
+            const colorIndicator = item.querySelector('.color');
+
+            if(colorIndicator){
+                colorIndicator.style.backgroundColor = cartColor; 
+            }
+
+            fetch('../Database/cart_update.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `cart_id=${id}&cart_color=${cartColor}&cart_size=${cartSize}&action=update`
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error)
+            })
+
+        }
+
+        colorSelect.forEach(color =>{
+            color.addEventListener('change', function(){
+                const img = this.closest(".cartItem").querySelector(".item-img-container img").src = this.options[this.selectedIndex].dataset.img;
+                const item = this.closest(".cartItem");
+                setTimeout(() => {
+                    location.reload();
+                }, 100);
+                cartUpdate(item);
+            });
+        });
+
+        sizeSelect.forEach(size =>{
+            size.addEventListener('change', function(){
+                const item = this.closest(".cartItem");
+                cartUpdate(item);
+            });
+        });
+
+        //DELETE ITEM 
+        document.querySelectorAll(".deleteItem").forEach(del =>{del.addEventListener('click', function(e){
+            const id = this.closest(".cartItem").dataset.id;
+            let confirmDEL = confirm("Do you want to delete this piece?");
+            if(confirmDEL){
+                fetch('../Database/delete_item_cart.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `cartId=${id}`
+                })
+                .then(() => location.reload())
+                .catch(error =>{
+                    console.log("Failed to delete");
+                })
+            }else{
+                e.preventDefault();
+            }
+        });
+        })
+
+        //CHECKOUT BUTTON
+        document.querySelector('#order-btn').addEventListener('click', function(){
+            const ids = [];
+            const sizes = [];
+            const colors = [];
+
+            document.querySelectorAll('.cartItem').forEach(item => {
+                const id = item.dataset.id;
+        
+                const active = parseInt(item.dataset.active, 10) || 0;
+                const stock = parseInt(item.dataset.stock, 10) || 0;
+        
+                const size = item.dataset.size || 'L'; 
+                const color = item.dataset.color || 'Black';
+
+                if(active === 1 && stock > 0){
+                    ids.push(id);
+                    sizes.push(size);
+                    colors.push(color);
+                }
+            });
+
+            if(ids.length === 0){
+                alert("Giỏ hàng không có sản phẩm nào đủ điều kiện hoặc còn hàng để thanh toán!");
+                return;
+            }
+
+            const voucherId = document.querySelector('#voucher-select')?.value || null;
+
+            fetch('../Database/checkout.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    cart_ids: ids,
+                    cart_size: sizes,
+                    cart_color: colors,
+                    id: voucherId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success'){
+                    window.location.href = data.redirect; 
+                }else{
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error("Lỗi kết nối:", error));
+        });
+
+        
         //USERNAME
         const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
         let username1 = email.split("@")[0] || "";
         let displayName = username1.length > 6
         ? username1.substring(0, 6) + "..."
         : username1;
-        const userWelcome = document.getElementById("menu-Username");
-        const finalTotal = document.getElementById("final-total");
+        const userWelcome = document.querySelectorAll(".menu-Username");
         
         if(userWelcome){
-            userWelcome.textContent = "Hi, " + displayName;
+            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
         }
 
         const dropDown = document.getElementById("main-voucher");
@@ -556,26 +776,31 @@ function calculateFinalTotal(){
     const selectedVoucher = document.querySelector("#voucher-select option:checked");
     const finalTotalDisplay = document.getElementById("final-total");
     const deliFeeDisplay = document.getElementById("deli-fee");
-    const progressBar = document.getElementById("progress-bar");
-    const shippingLabel = document.getElementById("shipping-label");
     const mainVoucher = document.getElementById("main-voucher");
 
     let total = 0;
-    const items = document.querySelectorAll(".items");
+    const items = document.querySelectorAll(".cartItem");
     
 
     //FOREACH ITEM
-    items.forEach(item => {
-        const checkbox = item.querySelector(".item-checkbox");
-        const itemsTotalSpan = item.querySelector(".items-total-container span");
+    items.forEach(item =>{
+        const itemsTotalSpan = item.querySelector(".items-total-container");
         const price = parseFloat(item.querySelector(".items-price-container").textContent.replace("$", ""));
         const quantity = parseInt(item.querySelector(".item-quantity").textContent);
         
         const itemTotal = price * quantity;
-        if (itemsTotalSpan) itemsTotalSpan.textContent = "$" + itemTotal;
-
-        if(checkbox && checkbox.checked){
+        if (itemsTotalSpan) itemsTotalSpan.textContent = "Item total: $" + itemTotal;
             total += itemTotal;
+
+        if(item.dataset.stock <= 0){
+            item.style.opacity = "0.7";
+            item.querySelector(".notice").classList.remove("hidden");
+            item.querySelector(".notice").textContent = "OUT OF STOCK";
+        }
+        if(item.dataset.active == 0){
+            item.style.opacity = "0.7";
+            item.querySelector(".notice").classList.remove("hidden");
+            item.querySelector(".notice").textContent = "TEMPORARILY UNAVAILABLE";
         }
     });
 
@@ -634,22 +859,6 @@ function calculateFinalTotal(){
     if(deliFeeDisplay){
         deliFeeDisplay.textContent = finalShippingFee === 0 ? "$0" : "$" + finalShippingFee.toLocaleString();
     }
-
-    //SHIPPING PROGRESS
-    if(progressBar){
-        const progressPercent = Math.min((total / FREE_SHIP_THRESHOLD) * 100, 100);
-        progressBar.style.width = total > 0 ? `${Math.max(progressPercent, 10)}%` : "10%";
-    }
-    //SHIPPING LABEL 
-    if(shippingLabel){
-        if(total >= FREE_SHIP_THRESHOLD){
-            shippingLabel.textContent = "Complimentary Shipping";
-        }else if(total > 0){
-            shippingLabel.textContent = `Add $${(FREE_SHIP_THRESHOLD - total).toFixed(0)} more to enjoy Complimentary Shipping`;
-        }else{
-            shippingLabel.textContent = "Evelate your order to receive Complimentary Shipping";
-        }
-    }
 }
 const vouchers = document.querySelectorAll(".voucher-list .voucher");
 
@@ -670,23 +879,18 @@ vouchers.forEach(voucher => {
         }
         calculateFinalTotal();
     });
-});
-    
+});        
+            
+        //Menu toggle
 
+        const fastMenuContainer = document.getElementById("fast-menu-container");
+        const menuToggle = document.getElementById("menu-toggle");
+        const hamburger = document.querySelector(".hamburger");
 
-        //CHECKBOX EACH ITEMS
-        document.querySelectorAll(".item-checkbox").forEach(checkbox =>{
-            checkbox.addEventListener('change', calculateFinalTotal);
-        });
-        calculateFinalTotal();
-
-        const selectAll = document.getElementById("selectAll");
-        selectAll.addEventListener('change', function(){
-            const checkboxes = document.querySelectorAll(".item-checkbox");
-            checkboxes.forEach(checkbox =>{
-                checkbox.checked = selectAll.checked;
-            });
-            calculateFinalTotal();
+        document.addEventListener('click', function(e){
+            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
+                menuToggle.checked = false;
+            }
         });
 
         const menuTitles = document.querySelectorAll(".menu-title");
@@ -702,6 +906,93 @@ vouchers.forEach(voucher => {
                     e.stopPropagation();
                     item.classList.toggle("active");
             });
+        });
+
+        //Search bar
+
+        const search = document.querySelector(".icon.search");
+        const menuSearch = document.getElementById("menu-search");
+        const searchContainer = document.getElementById("search-Container");
+
+        search.addEventListener('click', ()=>{
+            document.getElementById("menu").classList.toggle("active");
+
+            userWelcome ? userWelcome.forEach(user => user.classList.toggle("active")) : null;
+
+            const lines = document.querySelectorAll(".line");
+            lines.forEach(line => line.classList.toggle("active"));
+
+            const icons = document.getElementById("menu").querySelectorAll(".icon path");
+            icons.forEach(icon => icon.classList.toggle("active"));
+
+            const spans = document.getElementById("menu").querySelectorAll("span");
+            spans.forEach(span => span.classList.toggle("active"));
+
+            document.getElementById("menu-search").classList.toggle("active");
+            document.getElementById("search-Container").classList.toggle("active");
+        });
+
+        document.addEventListener('click', function(e){
+            if(!searchContainer.contains(e.target) && e.target !== search){
+                document.getElementById("menu").classList.remove("active");
+
+                userWelcome ? userWelcome.forEach(user => user.classList.remove("active")) : null;
+
+                const lines = document.querySelectorAll(".line");
+                lines.forEach(line => line.classList.remove("active"));
+
+                const icons = document.getElementById("menu").querySelectorAll(".icon path");
+                icons.forEach(icon => icon.classList.remove("active"));
+
+                const spans = document.getElementById("menu").querySelectorAll("span");
+                spans.forEach(span => span.classList.remove("active"));
+                document.getElementById("menu-search").classList.remove("active");
+                document.getElementById("search-Container").classList.remove("active");
+            }
+        });
+
+
+        const searchBar = document.getElementById("searchBar");
+        const searchItems = document.getElementById("search-Items");
+        const searchResult = document.getElementById("searchResult");
+        const searchBtn = document.getElementById("searchBtn");
+
+        searchBar.addEventListener('keyup', () => {
+            const items = document.querySelectorAll(".item");
+            const searchKey = searchBar.value.toLowerCase().trim();
+
+            if(searchKey.length > 0){
+                searchItems.classList.add("active");
+
+            }else{
+
+                searchItems.classList.remove("active");
+                searchResult.textContent = "";
+                return;
+            }
+
+            let hasResult = false;
+
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                if(name.includes(searchKey) || searchKey === "all"){
+                    item.style.display = "";
+                    hasResult = true;    
+
+                }else{
+                    item.style.display = "none";
+                }
+            });
+
+            if(hasResult){
+                searchBtn.style.display = "";
+                if(searchKey.length >= 3) searchResult.textContent = "Result for: " + searchKey;
+
+            }else{
+                searchBtn.style.display = "none";
+                if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
+                else searchResult.textContent = "";
+            }
         });
 
 
