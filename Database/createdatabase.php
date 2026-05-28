@@ -27,6 +27,18 @@ $conn->query("CREATE TABLE IF NOT EXISTS products(
     product_category ENUM('collections','men','women','accesories'),
     product_type VARCHAR(255),
     product_describe VARCHAR(255),
+    product_size VARCHAR(255),
+    product_img VARCHAR(255),
+    product_img1 VARCHAR(255),
+    product_img2 VARCHAR(255),
+    product_stock INT DEFAULT 999,
+    product_is_delete TINYINT(1) DEFAULT 0,
+    product_state ENUM('active','inactive') DEFAULT 'active'
+    )");
+$conn->query("CREATE TABLE IF NOT EXISTS product_variant(
+    id INT(10) AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    product_price DECIMAL(10,2),
     product_color VARCHAR(255),
     product_size VARCHAR(255),
     product_img VARCHAR(255),

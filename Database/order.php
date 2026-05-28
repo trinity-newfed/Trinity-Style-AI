@@ -39,6 +39,8 @@ $policy->close();
 $usernameShort = strtoupper(substr($username, 0, 3));
 $orderCode = $usernameShort . date('YmdHis');
 $cart_ids = $_SESSION['checkout_cart_ids'] ?? [];
+$size = $_SESSION['checkout_size'];
+$color = $_SESSION['checkout_color'];
 
 $from = [106.5775, 10.8908];
 $address = $conn->prepare("SELECT user_address FROM userdata

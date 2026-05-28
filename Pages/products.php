@@ -10,10 +10,39 @@ session_start();
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
 
+$baseProduct = $conn->query("SELECT * FROM products")
+                    ->fetch_all(MYSQLI_ASSOC);
+
 $product = $conn
-  ->query("SELECT * FROM products")
+  ->query("SELECT products.id AS id,
+            products.id AS id,
+            products.product_name, 
+            products.product_group,
+            products.product_price, 
+            products.product_category,
+            products.product_type, 
+            products.product_describe,
+            product_variant.product_stock,
+            product_variant.product_img,
+            product_variant.product_color
+
+            FROM products
+            JOIN product_variant
+            ON products.id = product_id
+            ")
   ->fetch_all(MYSQLI_ASSOC);
 
+$product_variant = $conn->query("SELECT 
+                                 product_variant.product_id, product_variant.product_price,
+                                 product_variant.product_img AS variant_img,
+                                 product_variant.product_color, product_variant.product_size,
+                                 product_variant.product_stock, products.product_name,
+                                 products.product_category
+
+                                 FROM product_variant
+                                 JOIN products
+                                 ON product_variant.product_id = products.id")
+                        ->fetch_all(MYSQLI_ASSOC);
 
 $sql = $conn->prepare("SELECT * FROM user_policy_agreement
                        WHERE user_id = ?");
@@ -27,330 +56,62 @@ if($agreement->num_rows > 0){
 }
 $sql->close();
 ?>
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trinity Style - Products</title>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRINITY - Ready To Wear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/products.css">
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
-  </head>
-  <body>
-<div id="alertNotice">
-      <button id="closeAlertBtn">&times;</button>
-      <h4></h4>
-      <span></span>
-  <div id="alert-div">
-    <button class="alertBtn" id="OK-btn">OK</button>
-    <button class="alertBtn" id="CANCEL-btn">CANCEL</button>
-  </div>
-  <form style="display: none;" id="tryon-form" action="http://127.0.0.1:5000/api/generate" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="user_id" value="<?=$_SESSION['user_id']?>">
-    <input type="file" id="try-on-input" name="person" hidden required>
-    <input type="hidden" name="cloth" id="cloth">
-    <input type="hidden" name="product_id" id="p_id">
-    <label id="fileChoose" for="try-on-input">Choose your file</label>
-    <button id="genBtn" type="submit">Generate</button>
-    <div id="progress-container">
-      <span style="position: absolute;"></span>
-      <div id="progress"></div>
-    </div>
-  </form>
-  <?php if($agree == 1): ?>
-  <form action="../Database/user_policy_agree.php" id="agreementForm" method="POST">
-    <input type="checkbox" name="policy_id" value="ai_usage" id="agreeAI" style="position: absolute; bottom: 3%; left: 1%;" required checked>
-    <span for="agreeAI" style="position: absolute; bottom: 5%; left: 7.5%; font-size: clamp(.7rem, .8vw, 2rem);">I accept <a href="../legal/ai-usage-policy.php">Trinity AI service</a> policy</span>
-  </form>
-  <?php else: ?>
-  <form action="../Database/user_policy_agree.php" id="agreementForm" method="POST">
-    <input type="checkbox" name="policy_id" value="ai_usage" id="agreeAI" style="position: absolute; bottom: 3%; left: 1%;" required>
-    <span for="agreeAI" style="position: absolute; bottom: 5%; left: 7.5%; font-size: clamp(.7rem, .8vw, 2rem);">I accept <a href="../legal/ai-usage-policy.php">Trinity AI service</a> policy</span>
-  </form>
-  <?php endif; ?>
-</div>
-    <div class="head" id="head">
-      <div class="banner">
-        <div class="banner-left">
-          <div class="banner-content">
-            <p class="sub-title">Spring / Summer 2026</p>
-            <h1>
-              Minimalist <br />
-              & Timeless
-            </h1>
-            <p class="description">
-              Explore the newest collection and experience minimal style, celebrating pure beauty and delicate craftsmanship with a single needle and thread
-            </p>
-            <a href="#product-section" class="btn-shop">View Details</a>
-          </div>
-        </div>
-        <div class="banner-right"></div>
-      </div>
-    </div>
-<div class="body">
-  <section class="product-section" id="product-section">
-        <div class="product-collection">
-          <p class="product-subtitle">Collection</p>
-          <h2 class="product-title">High Fashion</h2>
-          <div class="line"></div>
-          <div class="product-container">
-          <?php foreach($product as $p): ?>
-            <?php if($p['product_category'] == "collections"): ?>
-            <?php if($p['product_stock'] > 0 && $p['product_state'] != "inactive" && $p['product_is_delete'] != 1): ?>
-            <div id="product-<?=$p['id']?>" class="product-card fixed" data-img="../<?=$p['product_img']?>" 
-                                      data-name="<?=$p['product_name']?>" 
-                                      data-price="<?=$p['product_price']?>"
-                                      data-id="<?=$p['id']?>"
-                                      data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>"
-                                      data-stock="<?=$p['product_stock']?>"
-                                      <?php 
-                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
-                                        $sql->bind_param("i", $p['id']);
-                                        $sql->execute();
-                                        $result = $sql->get_result();
-                                        $row = $result->fetch_assoc();
-                                      ?>
-                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
-                                      data-active="1">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-serif-custom {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
 
-              <div class="image-box">
-                <img
-                  src="../<?=$p['product_img']?>"
-                  alt="Product"
-                />
-                <div class="image-overlay">
-                  <button class="details-btn">View Details</button>
-                </div>
-              </div>
+<body class="bg-white text-black antialiased" id="body">
+    
+    <section id="menu" class="head">
+        <input type="checkbox" id="menu-toggle" hidden>
+        <label class="hamburger" for="menu-toggle">
+            <svg viewBox="0 0 32 32">
+                <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                <path class="line" d="M7 16 27 16"></path>
+            </svg>
+        </label>
 
-              <div class="info-box">
-                <span class="brand">TRINITY</span>
-                <h2 class="title"><?=$p['product_name']?></h2>
-
-                <div class="price-wrapper">
-                  <span class="new-price">$<?=$p['product_price']?></span>
-                </div>
-              </div>
-            </div>
-            <?php else: ?>
-            <div id="product-<?=$p['id']?>" class="product-card fixed out" data-img="../<?=$p['product_img']?>" 
-                                      data-name="<?=$p['product_name']?>" 
-                                      data-price="<?=$p['product_price']?>"
-                                      data-id="<?=$p['id']?>"
-                                      data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>"
-                                      data-stock="<?=$p['product_stock']?>"
-                                      <?php 
-                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
-                                        $sql->bind_param("i", $p['id']);
-                                        $sql->execute();
-                                        $result = $sql->get_result();
-                                        $row = $result->fetch_assoc();
-                                      ?>
-                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
-                                      data-active="0">
-
-              <div class="image-box">
-                <p class="stock">Temporarily unavailable</p>
-                <img
-                  src="../<?=$p['product_img']?>"
-                  alt="Product"
-                />
-                <div class="image-overlay">
-                  <button class="details-btn">View Details</button>
-                </div>
-              </div>
-
-              <div class="info-box">
-                <span class="brand">TRINITY</span>
-                <h2 class="title"><?=$p['product_name']?></h2>
-
-                <div class="price-wrapper">
-                  <span class="new-price">$<?=$p['product_price']?></span>
-                </div>
-              </div>
-            </div>
-            <?php endif; ?>
-            <?php endif; ?>
-          <?php endforeach; ?>
-          </div>
-        </div>
-        <div class="product-header" id="product-header">
-          <p class="product-subtitle">Shop Wardrobe</p>
-            <h2 class="product-title">ALL</h2>
-            <div class="line"></div>
-            <select name="" id="sort" style="width: fit-content; height: 30px; margin-top: 5px;">
-              <option value="">--Sort--</option>
-              <option value="price_desc">Highest</option>
-              <option value="price_asc">Lowest</option>
-              <option value="name_asc">A to Z</option>
-              <option value="name_desc">Z to A</option>
-            </select>
-        </div>
-        <div class="product-container" id="normal">
-          <?php foreach($product as $p): ?>
-            <?php if($p['product_category'] != "collections"): ?>
-            <?php if($p['product_stock'] > 0 && $p['product_state'] != "inactive" && $p['product_is_delete'] != 1): ?>
-            <div id="product-<?=$p['id']?>" class="product-card" data-img="../<?=$p['product_img']?>" 
-                                      data-name="<?=$p['product_name']?>" 
-                                      data-price="<?=$p['product_price']?>"
-                                      data-id="<?=$p['id']?>"
-                                      data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>"
-                                      data-stock="<?=$p['product_stock']?>"
-                                      <?php 
-                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
-                                        $sql->bind_param("i", $p['id']);
-                                        $sql->execute();
-                                        $result = $sql->get_result();
-                                        $row = $result->fetch_assoc();
-                                      ?>
-                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
-                                      data-active="1">
-              <div class="image-box">
-                <img
-                  src="../<?=$p['product_img']?>"
-                  alt="Product"
-                />
-                <div class="image-overlay">
-                  <button class="details-btn">View Details</button>
-                </div>
-              </div>
-
-              <div class="info-box">
-                <span class="brand">TRINITY</span>
-                <h2 class="title"><?=$p['product_name']?></h2>
-
-                <div class="price-wrapper">
-                  <span class="new-price">$<?=$p['product_price']?></span>
-                </div>
-              </div>
-            </div>
-            <?php else: ?> 
-            <div id="product-<?=$p['id']?>" class="product-card out" data-img="../<?=$p['product_img']?>" 
-                                      data-name="<?=$p['product_name']?>" 
-                                      data-price="<?=$p['product_price']?>"
-                                      data-id="<?=$p['id']?>"
-                                      data-category="<?=$p['product_category']?>"
-                                      data-category="<?=$p['product_category']?>"
-                                      data-color="<?=$p['product_color']?>"
-                                      data-stock="<?=$p['product_stock']?>"
-                                      <?php 
-                                        $sql = $conn->prepare("SELECT quantity FROM cart WHERE product_id = ?");
-                                        $sql->bind_param("i", $p['id']);
-                                        $sql->execute();
-                                        $result = $sql->get_result();
-                                        $row = $result->fetch_assoc();
-                                      ?>
-                                      data-cartQuantity="<?=$row['quantity'] ?? 0?>"
-                                      data-active="0">
-              <div class="image-box">
-                <p class="stock">Temporarily unavailable</p>
-                <img
-                  src="../<?=$p['product_img']?>"
-                  alt="Product"
-                />
-                <div class="image-overlay">
-                  <button class="details-btn">View Details</button>
-                </div>
-              </div>
-
-              <div class="info-box">
-                <span class="brand">TRINITY</span>
-                <h2 class="title"><?=$p['product_name']?></h2>
-
-                <div class="price-wrapper">
-                  <span class="new-price">$<?=$p['product_price']?></span>
-                </div>
-              </div>
-            </div>
-            <?php endif; ?> 
-            <?php endif; ?>
-          <?php endforeach; ?>
-          </div>
-        </div>
-  </section>
-</div>
-
-
-<div id="product-modal">
-  <div class="modal-container">
-    <div class="modal-left">
-      <img id="modal-img" src="" alt="">
-    </div>
-    <div class="modal-right">
-      <span class="close-modal">&times;</span>
-      <p class="modal-brand">TRINITY</p>
-      <h2 id="modal-name"></h2>
-      <p id="modal-price"></p>
-      <div class="size-select">
-        <p>Size</p>
-        <div class="sizes">
-          <label for="S-size-<?=$p['id']?>">S</label>
-          <label for="M-size-<?=$p['id']?>">M</label>        
-          <label for="L-size-<?=$p['id']?>">L</label>        
-          <label for="XL-size-<?=$p['id']?>">XL</label>
-        </div>
-      </div>
-          <div id="form-container">
-            <form action="../Database/add_item_to_cart.php" method="POST" style="display: grid;" id="addCartForm"> 
-                    <input type="hidden" name="user_id" value="<?=htmlspecialchars($userID)?>">    
-                    <input type="hidden" name="product_id" id="modal-product-id">
-                    <input type="hidden" name="product_category" id="modal-product-category">
-                    <input type="hidden" name="product_color" id="modal-product-color">
-                    <input type="hidden" name="product_name" id="modal-product-name">
-                    <input type="hidden" name="product_type" id="modal-product-type">
-                    <input type="radio" name="cart_size" value="S" id="S-size-<?=$p['id']?>" hidden checked>
-                    <input type="radio" name="cart_size" value="M" id="M-size-<?=$p['id']?>" hidden>
-                    <input type="radio" name="cart_size" value="L" id="L-size-<?=$p['id']?>" hidden>
-                    <input type="radio" name="cart_size" value="XL" id="XL-size-<?=$p['id']?>" hidden> 
-                    <button class="modal-add add-cart-btn-big" type="submit">ADD TO CART</button>
-          </form>
-      <div style="align-self: end; position: relative;" id="Try-on-form">
-        <button class="modal-try" type="submit">Try with AI✨</button>
-        <div id="tooltip-explain">
-          <h3>Virtual AI Try On</h3>
-          <span>This is an feature for customers to try on our product</span>
-        </div>
-        </div>
-          </div>
-      <div id="modal-detail" onclick="window.location.href='Trinity-Style-AI/Pages/detail.php?id=<?=$p['id']?>'">Details</div>
-    </div>
-  </div>
-  </div>  
-</div>
-<section id="menu">
         <div id="text-menu">
-            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
+            
             <div id="text">
                 <span onclick="window.location.href='../Pages/'">Home</span>
-                <span onclick="window.location.href='#product-section'">Shop</span>
+                <span onclick="window.location.href='products.php?#product-section'">Shop</span>
                 <span onclick="window.location.href='products.php?#product-section'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
+
+            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
         </div>
-        <input type="checkbox" id="menu-toggle" hidden>
+        
         <div id="utility-menu">
-            <label class="hamburger" for="menu-toggle">
-                    <svg viewBox="0 0 32 32">
-                        <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
-                        <path class="line" d="M7 16 27 16"></path>
-                    </svg>
-            </label>
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" onclick="window.location.href='cart.php'">
-                <path d="M223.5-103.5Q200-127 200-160t23.5-56.5Q247-240 280-240t56.5 23.5Q360-193 360-160t-23.5 56.5Q313-80 280-80t-56.5-23.5Zm400 0Q600-127 600-160t23.5-56.5Q647-240 680-240t56.5 23.5Q760-193 760-160t-23.5 56.5Q713-80 680-80t-56.5-23.5ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z"/>
+            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
+            </svg>
+
+            <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
             </svg>
             <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" id="menu-Username" style="cursor: pointer;"><?=$_SESSION['username']?></p>
-                <?php if(!empty($_SESSION['img'])): ?>
-                    <div id="user-account" onclick="window.location.href='user.php'">
-                        <img id="user-avatar" src="../upload/<?= htmlspecialchars($_SESSION['img']) ?>" alt="avatar">
-                    </div>
-                <?php endif; ?>
+                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
             <?php else: ?>
                     <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
                     <label for="login-input">
@@ -360,521 +121,750 @@ $sql->close();
                     </label>
             <?php endif; ?>
         </div>
-<div id="fast-menu">
-    <div class="menu-item">
-        <div class="menu-title">TRINITY</div>
-            <div class="submenu">
-                <div class="submenu-item">T-shirt
-                    <div class="sub-sub" data-category="men" data-name="Basic T-shirt" onclick="window.location.href='#product-header'">Basic</div>
-                    <div class="sub-sub" data-category="men" data-name="Oversize T-shirt" onclick="window.location.href='#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Polo shirt
-                <div class="sub-sub" data-category="men" data-name="Basic Polo" onclick="window.location.href='#product-header'">Basic</div>
-                <div class="sub-sub" data-category="men" data-name="Logo Polo" onclick="window.location.href='#product-header'">Logo</div>
-            </div>
-            <div class="submenu-item">Hoodie
-                <div class="sub-sub" data-category="men" data-name="Signature" onclick="window.location.href='#product-header'">Signature</div>
+
+        <div id="fast-menu">
+            <div id="fast-menu-container">
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Polo shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                        </div>
+
+                        <div class="submenu-item">Hoodie
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY LADIES</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Blouse
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                        </div>
+
+                        <div class="submenu-item">Crop top
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='userTier.php'"><span>TRINITY TIER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
+                </div>
+
+                <?php if(isset($_SESSION['username'])): ?>
+                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
+                <?php else: ?>
+                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
+                    <label for="login-input" id="label-login-input">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
+                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
+                        </svg> 
+
+                        <p>Login</p>
+                    </label>
+                <?php endif; ?>
             </div>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title">TRINITY LADIES</div>
-        <div class="submenu">
-            <div class="submenu-item">T-shirt
-                <div class="sub-sub" data-category="women" data-name="Basic T-shirt" onclick="window.location.href='#product-header'">Basic</div>
-                <div class="sub-sub" data-category="women" data-name="Oversize T-shirt" onclick="window.location.href='#product-header'">Logo</div>
+
+        <div id="menu-search">
+            <div id="search-Container">
+                <span>
+                    <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                    </svg>
+                </span>
+
+                <input type="text" id="searchBar" placeholder="Search..."/>
+    
             </div>
-            <div class="submenu-item">Blouse
-                <div class="sub-sub" data-category="women" data-name="Classic Blouse" onclick="window.location.href='#product-header'">Classic</div>
-                <div class="sub-sub" data-category="women" data-name="Wrap Blouse" onclick="window.location.href='#product-header'">Wrap</div>
-            </div>
-            <div class="submenu-item">Crop top
-                <div class="sub-sub" data-category="women" data-name="Basic CropTop" onclick="window.location.href='#product-header'">Basic</div>
-                <div class="sub-sub" data-category="women" data-name="Tank CropTop" onclick="window.location.href='#product-header'">Tank</div>
+
+    
+            <div id="search-Items">
+                <p id="searchResult"></p>
+                    <div id="items-Container">
+                    <?php foreach($baseProduct as $p):?>
+                        <div class="item" data-name="<?=$p['product_name']?>">
+                            <div class="item-Img">
+                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
+                            </div>
+
+                            <div>
+                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
+                                <span>$<?=$p['product_price']?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?> 
+            </div>   
+
+            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+        </div>
+
+    </section>
+
+    <section id="head" class="relative bg-[#E5E5E5] overflow-hidden min-h-[500px] md:h-[100vh] flex items-center">
+        <div class="absolute inset-0 bg-cover bg-center opacity-90" style="background-image: url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200');"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center py-20 z-10">
+            <h1 class="text-4xl md:text-7xl font-serif-custom tracking-widest uppercase mb-4 text-gray-900">
+                READY-TO-WEAR
+            </h1>
+            <p class="text-sm md:text-base text-gray-700 max-w-md mx-auto mb-8 font-light tracking-wide">
+                Contemporary silhouettes<br>crafted for the modern individual.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 text-xs tracking-widest uppercase">
+                <a href="#" class="bg-black text-white px-8 py-3.5 hover:bg-transparent border-black transition">Explore Collection</a>
+                <a href="#" class="border border-black text-black px-8 py-3.5 hover:bg-black hover:text-white transition">New Arrivals</a>
             </div>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
-    </div>
-</div>
-</section>
-<footer class="footer-2">
-  <div class="footer-container">
-    <div class="footer-left">
-      <p class="footer-label">CONTACT US</p>
-      <h2 class="footer-title">
-        Let’s Discuss Your <br> Style. With Us
-      </h2>
+    </section>
 
-      <button class="footer-btn" onclick="window.location.href='contact.php'">
-        Schedule a call now →
-      </button>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="flex justify-between items-baseline mb-8">
+            <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">Featured Collection</h2>
+            <a href="#" class="text-xs uppercase tracking-widest text-gray-500 hover:text-black underline underline-offset-4">View All</a>
+        </div>
 
-      <p class="footer-email-label">OR EMAIL US AT</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
+            <?php foreach($baseProduct as $base): ?>
+                <?php if($base['product_category'] !== "collections") continue; ?>
+                
+            
+            <div class="group cursor-pointer">
+                <div class="relative bg-[#F3F3F3] aspect-[3/4] mb-4 overflow-hidden">
+                    <span class="absolute top-2 left-2 bg-white text-[9px] uppercase tracking-widest px-2 py-0.5 z-10">Limited</span>
+                    <img src="../<?=$base['product_img']?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Product">
+                </div>
+                <h3 class="text-xs uppercase tracking-wider text-gray-900">TRINITY <?=$base['product_name']?></h3>
+                <p class="text-xs text-gray-600 mt-1">$ <?=$base['product_price']?></p>
+            </div>
 
-      <div class="footer-email">
-        triple3tbusiness@gmail.com
-        <span>📋</span>
-      </div>
+            <?php endforeach; ?>
+
+            <?php foreach($product as $key => $item): ?>
+                <?php if($item['product_category'] !== "collections") continue; ?>
+    
+                    <div class="group cursor-pointer"
+                         data-id="<?=$item['id']?>" 
+                         data-img="../<?=$item['product_img']?>"
+                         data-name="<?=$item['product_color']?> <?=$item['product_name']?>"
+                         data-price="<?=$item['product_price']?>"
+                         data-category="<?=$item['product_category']?>"
+                         data-color="<?=$item['product_color']?>"
+                         data-stock="<?=$item['product_stock']?>">
+
+                        <div class="bg-[#F3F3F3] aspect-[3/4] mb-4 overflow-hidden">
+                            <img src="../<?=$item['product_img']?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Product">
+                        </div>
+
+                        <h3 class="text-xs uppercase tracking-wider text-gray-900"><?=$item['product_color']?> <?=$item['product_name']?></h3>
+                        <p class="text-xs text-gray-600 mt-1">$<?=$item['product_price']?></p>
+
+                        <?php foreach($product_variant as $variant): 
+                        ?>
+                            <?php if($variant['product_id'] == $item['id']): 
+                                $activeClass = ($variant['product_color'] === $item['product_color']) ? 'active' : '';
+                            ?>
+                                <div class="variants <?=$activeClass?>" 
+                                     data-id="<?=$variant['product_id']?>"
+                                     data-variant="<?=$variant['product_color']?>"
+                                     data-img="../<?=$variant['variant_img']?>" 
+                                     data-name="<?=$variant['product_color']?> <?=$variant['product_name']?>"
+                                     data-price="<?=$variant['product_price']?>"
+                                     data-category="<?=$variant['product_category']?>"
+                                     data-color="<?=$variant['product_color']?>"
+                                     data-stock="<?=$variant['product_stock']?>">
+                                </div>
+                            <?php endif; ?>
+                        <?php 
+                          endforeach;
+                        ?>
+                    </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 bg-[#F9F9F9] items-center">
+        <div class="h-96 md:h-[600px] w-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800');"></div>
+        <div class="p-12 md:p-24 text-center md:text-left">
+            <h2 class="text-3xl font-serif-custom tracking-widest uppercase mb-4">Tailoring Redefined</h2>
+            <p class="text-xs text-gray-600 tracking-wide max-w-sm mb-8 leading-relaxed">
+                Precision cuts, elevated textures, and timeless forms designed beyond seasonal trends.
+            </p>
+            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">Discover More</a>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">Best Sellers</h2>
+            <div class="flex space-x-2">
+                <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path></svg></button>
+                <button class="next p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path></svg></button>
+            </div>
+        </div>
+
+        <div class="flex overflow-x-auto gap-x-5 max-w-[100%] scrollbar-hide hide">
+            <?php 
+                $index = -1;
+                foreach($baseProduct as $item): 
+                $index = $index + 1;
+                $formattedNum = str_pad($index, 2, '0', STR_PAD_LEFT);
+            ?>
+                <?php if($item['product_category'] === "collections") continue; ?>
+                <div class="group cursor-pointer w-[calc((100%-80px)/5)] shrink-0 min-w-[160px] product transition-all duration-500"
+                    <?php 
+                        foreach($product_variant as $variant):
+                        if($variant['product_id'] == $item['id']):
+                    ?>
+                     data-id="<?=$item['id']?>" 
+                     data-img="../<?=$item['product_img']?>"
+                     data-name="<?=$item['product_name']?>"
+                     data-price="<?=$item['product_price']?>"
+                     data-color="<?=$variant['product_color']?>"
+                     data-category="<?=$item['product_category']?>"
+                     data-stock="<?=$item['product_stock']?>"
+                    <?php 
+                        endif; 
+                        endforeach;
+                    ?>
+                     >
+                    
+                    <div class="text-[10px] text-gray-400 mb-1"><?=$formattedNum?></div>
+                        <div class="relative bg-[#F3F3F3] aspect-[3/4] mb-3">
+                            <img src="../<?=$item['product_img']?>" class="w-full h-full object-cover" alt="">
+                        </div>
+
+                        <h3 class="text-[11px] uppercase tracking-wider"><?=$item['product_name']?></h3>
+                        <p class="text-[11px] text-gray-500 mt-0.5">$ <?=$item['product_price']?></p>
+
+                        <?php foreach($product_variant as $variant): 
+                        ?>
+                            <?php if($variant['product_id'] == $item['id']): 
+                                $activeClass = ($variant['product_color'] === "white") ? 'active' : '';
+                            ?>
+                                <div class="variants <?=$activeClass?>" 
+                                     data-id="<?=$variant['product_id']?>"
+                                     data-variant="<?=$variant['product_color']?>"
+                                     data-img="../<?=$variant['variant_img']?>" 
+                                     data-name="<?=$variant['product_color']?> <?=$variant['product_name']?>"
+                                     data-price="<?=$variant['product_price']?>"
+                                     data-category="<?=$variant['product_category']?>"
+                                     data-color="<?=$variant['product_color']?>"
+                                     data-stock="<?=$variant['product_stock']?>">
+                                </div>
+                            <?php endif; ?>
+                        <?php 
+                          endforeach;
+                        ?>
+                    </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?q=80&w=600');"></div>
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600');"></div>
+        <div class="p-4">
+            <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
+            <hr class="w-12 border-black mb-6">
+            <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
+                A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
+            </p>
+            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">View Collection</a>
+        </div>
+    </section>
+
+    <footer class="bg-[#F6F6F6] pt-16 pb-8 border-t border-gray-200 text-xs tracking-wide">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            <div>
+                <h4 class="font-serif-custom text-base tracking-widest uppercase mb-4">Trinity</h4>
+                <p class="text-gray-500 leading-relaxed mb-4">Minimal contemporary fashion label focused on tailoring and refined essentials.</p>
+                <div class="flex space-x-4 text-gray-600">
+                    <a href="#" class="hover:text-black">IG</a>
+                    <a href="#" class="hover:text-black">FB</a>
+                    <a href="#" class="hover:text-black">PT</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Navigation</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black">New In</a></li>
+                    <li><a href="#" class="hover:text-black">Ready To Wear</a></li>
+                    <li><a href="#" class="hover:text-black">Men</a></li>
+                    <li><a href="#" class="hover:text-black">Editorial</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-black">Contact</a></li>
+                    <li><a href="#" class="hover:text-black">Shipping</a></li>
+                    <li><a href="#" class="hover:text-black">Returns</a></li>
+                    <li><a href="#" class="hover:text-black">FAQs</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Newsletter</h4>
+                <p class="text-gray-500 mb-4 leading-relaxed">Subscribe to receive updates, access to exclusive deals, and more.</p>
+                <form class="flex border-b border-black py-1">
+                    <input type="email" placeholder="Enter your email" class="bg-transparent flex-1 focus:outline-none text-xs placeholder-gray-400">
+                    <button type="submit" class="uppercase tracking-widest font-semibold hover:opacity-70">Subscribe</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between text-[11px] text-gray-400">
+            <p>© 2026 TRINITY. All rights reserved.</p>
+            <div class="flex space-x-4 mt-2 md:mt-0">
+                <a href="#" class="hover:text-black">Privacy Policy</a>
+                <a href="#" class="hover:text-black">Terms & Conditions</a>
+            </div>
+        </div>
+    </footer>
+
+
+    <div id="product-modal">
+
+        <div class="modal-container">
+            <div class="modal-left">
+                <img id="modal-img" src="" alt="Product Image">
+            </div>
+
+            <div class="modal-right">
+                <span class="close-modal">&times;</span>
+                <p class="modal-brand">TRINITY</p>
+                <h2 id="modal-name"></h2>
+                <p id="modal-price"></p>
+
+                <div class="size-select">
+                    <p>Size</p>
+                    <div class="sizes">
+                        <label for="S-size">S</label>
+                        <label for="M-size">M</label>        
+                        <label for="L-size">L</label>        
+                        <label for="XL-size">XL</label>
+                    </div>
+                </div>
+
+                <div class="color-select">
+                    <p>Color</p>
+                    <div class="colors grid grid-cols-3 md:grid-cols-4 sm:gx-3"></div>
+                </div>
+
+                <div id="form-container">
+                    <form id="addCartForm">     
+                        <input type="hidden" name="product_id" id="modal-product-id">
+                        <input type="hidden" name="product_category" id="modal-product-category">
+                        <input type="hidden" name="product_color" id="modal-product-color">
+
+                        <input type="radio" name="cart_size" value="S" id="S-size" hidden checked>
+                        <input type="radio" name="cart_size" value="M" id="M-size" hidden>
+                        <input type="radio" name="cart_size" value="L" id="L-size-" hidden>
+                        <input type="radio" name="cart_size" value="XL" id="XL-size" hidden> 
+
+                        <button class="modal-add add-cart-btn-big">ADD TO CART</button>
+                    </form>
+
+                    <div id="Try-on-form">
+                        <button class="modal-try" type="button">Try with AI✨</button>
+                        <div id="tooltip-explain">
+                            <h3>Virtual AI Try On</h3>
+                            <span>This is an feature for customers to try on our product</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modal-detail" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">Details</div>
+            </div>
+        </div>
+
     </div>
-
-    <div class="footer-right">
-      <div class="footer-col">
-        <p class="footer-col-title">QUICK LINKS</p>
-        <a href="../Pages/">Home</a>
-        <a href="products.php">Products</a>
-        <a href="cart.php">Cart</a>
-        <a href="voucher.php">Vouchers</a>
-        <a href="userTier.php">User Tier</a>
-        <a href="about.php">About Us</a>
-      </div>
-      <div class="footer-col">
-        <p class="footer-col-title">INFORMATION</p>
-        <a href="../legal/term-of-service.php">Terms of Service</a>
-        <a href="../legal/privacy-policy.php">Privacy Policy</a>
-        <a href="../legal/delivery-policy.php">Delivery Policy</a>
-        <a href="../legal/ai-usage-policy.php">AI Usage Policy</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>Copyright (c) 2026 trinity-newfed</p>
-    <div class="footer-social">
-      <span>f</span>
-      <span>t</span>
-      <span>ig</span>
-      <span>in</span>
-    </div>
-  </div>
-</footer>
 
 <script>
-      const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-      let username1 = email.split("@")[0] || "";
-      let displayName = username1.length > 6
-      ? username1.substring(0, 6) + "..."
-      : username1;
-      const userWelcome = document.getElementById("menu-Username");
-      const isLogin = <?=isset($_SESSION['user_id']) ? 'true' : 'false'?>;
-      const products = document.querySelectorAll(".product-card");
-      const conModal = document.querySelector(".modal-container");
-      const modal = document.getElementById("product-modal");
-      const modalImg = document.getElementById("modal-img");
-      const modalName = document.getElementById("modal-name");
-      const modalPrice = document.getElementById("modal-price");
-      const closeBtn = document.querySelector(".close-modal");
-      const modalProductId = document.getElementById("modal-product-id");
-      const modalProductCategory = document.getElementById("modal-product-category");
-      const modalProductColor = document.getElementById("modal-product-color");
-      const modalProductName = document.getElementById("modal-product-name");
-      const modalProductType = document.getElementById("modal-product-type");
-      const try_on = document.getElementById("Try-on-form");
-      const try_on_input = document.getElementById("cloth");
-      const addCart = document.querySelectorAll(".add-cart-btn-big");
-      const sizeAdd = document.querySelectorAll(".sizes label");
-      const alert = document.getElementById("alertNotice");
-      const alertName = document.querySelector("#alertNotice h4");
-      const alertContent = document.querySelector("#alertNotice span");
-      const alertOkBtn = document.getElementById("OK-btn");
-      const alertCancelBtn = document.getElementById("CANCEL-btn");
-      const formTryOn = document.getElementById("tryon-form");
-      const filter = document.querySelectorAll(".sub-sub");
-      const params = new URLSearchParams(window.location.search);
-      const category = params.get("category");
-      const name = params.get("name");
-      const sortSelect = document.getElementById("sort");
-      const agreeForm = document.getElementById("agreementForm");
-      const checked = document.getElementById("agreeAI");
-      const inputId = document.getElementById("p_id");
-      
-      if(checked){
-        if(checked.checked != true){
-        genBtn.disabled = true;
-        genBtn.style.background = "gray";
-      }else{
-        genBtn.disabled = false;
-      }
+        //Username
+        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
+        let username1 = email.split("@")[0] || "";
+        let displayName = username1.length > 6
+        ? username1.substring(0, 6) + "..."
+        : username1;
+        const userWelcome = document.querySelectorAll(".menu-Username");
 
-      checked.addEventListener('change', function(){
-        if(checked.checked == true){
-          genBtn.disabled = false;
-          genBtn.style.background = "";
-        }else{
-          genBtn.disabled = true;
-          genBtn.style.background = "gray";
+        if(userWelcome){
+            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
         }
-      });
+        
+        //Head observe
+        const headObserve = new IntersectionObserver(entries =>{
+            entries.forEach(entry =>{
+                if(entry.isIntersecting){
+                    document.getElementById("menu").style.background = "transparent";
+                    document.getElementById("menu").style.backdropFilter = "blur(0px)";
+                    document.getElementById("menu").style.transition = ".3s all";
+                    document.getElementById("menu").classList.add("head");
+                    userWelcome ? userWelcome.forEach(user => user.style.color = "") : null;
 
-      agreeForm.addEventListener("submit", async function(e){
-        e.preventDefault();
-        const formData = new FormData(agreeForm);
-        try{
-          const res = await fetch("../Database/user_policy_agree.php",{
-            method: "POST",
-            body: formData
-          });
-        const text = await res.text();
-        }catch(err){
-        console.error(err);
-        }
-      });
+                    const lines = document.querySelectorAll(".line");
+                    lines.forEach(line => line.style.stroke = "white");
 
-      genBtn.addEventListener('click', function(){
-        agreeForm.requestSubmit();
-      });
-      }
+                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
+                    icons.forEach(icon => icon.style.fill = "white");
 
-      
-      if(userWelcome){
-            userWelcome.textContent = "Hi, " + displayName;
-      }
+                    const spans = document.getElementById("menu").querySelectorAll("span");
+                    spans.forEach(span => span.style.color = "white");
 
-      sizeAdd.forEach(label =>
-        label.addEventListener('click', ()=>{
-          sizeAdd.forEach(label =>{
-            label.style.color = "black";
-            label.style.background = "white";
-          });
-        label.style.color = "white";
-        label.style.background = "black";
-        })
-      )
+                }else{
+                    document.getElementById("menu").classList.remove("head");
 
-      const detailBtn = document.getElementById("modal-detail");
-      let currentProductId = null;
+                    userWelcome ? userWelcome.forEach(user => user.style.color = "black") : null;
 
-      products.forEach(product => {
-        const viewBtn = product.querySelector(".details-btn");
-            viewBtn.addEventListener('click', ()=>{
-              modalImg.src = product.dataset.img;
-              modalName.textContent = product.dataset.name;
-              modalPrice.textContent = "$" + product.dataset.price;
-              modalProductId.value = product.dataset.id;
-              modalProductCategory.value = product.dataset.category;
-              modalProductColor.value = product.dataset.color;
-              modalProductName.value = product.dataset.name;
-              modalProductType.value = "default";
-              currentProductId = product.dataset.id;
-              try_on_input.value = product.dataset.img;
-              inputId.value = product.dataset.id;;
-              if(product.dataset.stock <= product.dataset.cartquantity || product.dataset.active == 0){
-                addCart.forEach(btn =>{
-                  btn.disabled = true;
-                  btn.style.background = "#333";
-                  btn.textContent = "Limit reached for this item";
-                });
-              }else{
-                addCart.forEach(btn =>{
-                  btn.disabled = false;
-                  btn.style.background = "";
-                  btn.textContent = "Add to cart";
-                });
-              }
-              modal.style.setProperty("display", "flex", "important");
+                    const lines = document.querySelectorAll(".line");
+                    lines.forEach(line => line.style.stroke = "black");
+
+                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
+                    icons.forEach(icon => icon.style.fill = "black");
+
+                    const spans = document.getElementById("menu").querySelectorAll("span");
+                    spans.forEach(span => span.style.color = "");
+
+                    document.getElementById("menu").style.background = "";
+                    document.getElementById("menu").style.backdropFilter = "blur(10px)";
+                }
             });
-      });
-
-
-
-
-      const title = document.querySelector("#product-header .product-title");
-      filter.forEach(fil =>{
-        fil.addEventListener('click', ()=>{
-          const fType = fil.dataset.category;
-          const fName = fil.dataset.name;
-          title.textContent = fName;
-          products.forEach(product =>{
-            const pType = product.dataset.category;
-            const pName = product.dataset.name;
-            const show = pType === "collections" ||
-            ((fType === "all" || pType === fType) && pName.includes(fName));
-            product.style.display = show ? "" : "none";
-          });
+        }, {
+            threshold: 0.7
         });
-      });
+        headObserve.observe(head);
 
-      if(name){
-        title.textContent = name;
-        products.forEach(product =>{
-          const pType = product.dataset.category;
-          const pName = product.dataset.name;
-          const show =
-          pType === "collections" || ((category === "all" || pType === category) && pName.includes(name));
-          product.style.display = show ? "" : "none";
-        });
-      }
+        //Search bar
+        const searchBar = document.getElementById("searchBar");
+        const searchItems = document.getElementById("search-Items");
+        const searchResult = document.getElementById("searchResult");
+        const searchBtn = document.getElementById("searchBtn");
 
+        searchBar.addEventListener('keyup', () => {
+            const items = document.querySelectorAll(".item");
+            const searchKey = searchBar.value.toLowerCase().trim();
 
-      let timer;
-      const forms = document.getElementById("addCartForm");
-      addCart.forEach(btn =>{
-        btn.addEventListener('click', function(e){
-        e.preventDefault();
-        clearTimeout(timer);
-        if(!isLogin){
-          alert.classList.add("alert");
-          closeAlert.style.opacity = "1";
-          closeAlert.style.visibility = "visible";
-          agreeForm.style.display = "none";
-          closeAlert.onclick = () =>{
-            alert.classList.remove("alert");
-          }
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "Please login first to use this feature!";
-          alertOkBtn.onclick = () =>{
-            window.location.href = "reglog.php";
-          };
-          alertCancelBtn.onclick = () =>{
-            alert.classList.remove("alert");
-          };
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-          }, 5000);
-          return;
-        }else{
-          fetch("../Database/add_item_to_cart.php", {
-          method: "POST",
-          body: new FormData(forms)
-        })
-        .then(res => res.text())
-        .then(data => {
-          clearTimeout(timer);
-          alert.classList.add("alert");
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "This piece has been reserved for you";
-          alertOkBtn.textContent = "View";
-          document.getElementById("fileChoose").style.display = "none";
-          document.getElementById("genBtn").style.display = "none";
-          agreeForm.style.display = "none";
-          document.getElementById("progress-container").style.display = "none";
-          if(alert.classList.contains("tryon") || alert.classList.contains("tryon-close")){
-            alert.classList.add("temp");
-            alert.classList.remove("tryon");
-            alert.classList.remove("tryon-close");
-          }
-          alertOkBtn.onclick = () => {
-            window.location.href = "cart.php";
-          };
-          alertCancelBtn.style.display = "none";
-          alertOkBtn.style.display = "";
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-          }, 5000);
-        });
-        }
-        });
-      });
+            if(searchKey.length > 0){
+                searchItems.classList.add("active");
 
-      modal.addEventListener('click', function(e){
-        if(e.target === modal){
-          modal.style.display = "none";
-          alert.classList.remove("alert");
-          if(alert.classList.contains("tryon")){
-            alert.classList.remove("tryon");
-            alert.classList.add("tryon-close");
-          }
-        }
-      });
+            }else{
 
-      detailBtn.onclick = function(){
-        if(currentProductId){
-          window.location.href = "detail.php?id=" + currentProductId;
-        }
-      };
-
-      closeBtn.addEventListener('click', ()=>{
-        modal.style.display = "none";
-      });
-
-      try_on.addEventListener('click', function(e){
-        clearTimeout(timer);
-        if(!isLogin){
-          alert.classList.add("alert");
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "Please login first to use this feature!";
-          closeAlert.style.opacity = "1";
-          closeAlert.style.visibility = "visible";
-          agreeForm.style.display = "none";
-          closeAlert.onclick = () =>{
-            alert.classList.remove("alert");
-          }
-          alertOkBtn.onclick =  ()=>{
-            window.location.href = "reglog.php";
-          };
-          alertCancelBtn.onclick = ()=>{
-            alert.classList.remove("alert");
-          };
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-            }, 5000);
-        }else if(isLogin){
-          clearTimeout(timer);
-          timer = null;
-            if(!alert.classList.contains("tryon-close") && !alert.classList.contains("tryon")){
-              alertName.textContent = "TRINITY VIRTUAL AI TRY ON";
-              alertContent.textContent = "";
-              alertOkBtn.style.display = "none";
-              formTryOn.style.display = "flex";
-              closeAlert.style.opacity = "1";
-              closeAlert.style.visibility = "visible";
-              alertCancelBtn.textContent = "Stop";
-              document.getElementById("fileChoose").style.display = "";
-              document.getElementById("genBtn").style.display = "";
-              agreeForm.style.display = "";
-              if(alert.classList.contains("temp")){
-                document.getElementById("progress-container").style.display = "flex";
-                document.getElementById("fileChoose").style.display = "none";
-                document.getElementById("genBtn").style.display = "none";
-                agreeForm.style.display = "none";
-              }
-              alertCancelBtn.style.display = "";
-              closeAlert.onclick = () =>{
-                alert.classList.remove("alert");
-              }
-              alert.classList.add("alert");
-              alertCancelBtn.onclick = ()=>{
-                
-              };
+                searchItems.classList.remove("active");
+                searchResult.textContent = "";
+                return;
             }
-        }
-      });
 
-      const closeAlert = document.getElementById("closeAlertBtn");
+            let hasResult = false;
 
-      closeAlert.addEventListener('click', ()=>{
-        if(alert.classList.contains("tryon")){
-          alert.classList.remove("tryon");
-          alert.classList.add("tryon-close");
-        }
-      });
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                if(name.includes(searchKey) || searchKey === "all"){
+                    item.style.display = "";
+                    hasResult = true;    
 
-      alert.addEventListener('click', function(e){
-        if(alert.classList.contains("tryon-close") && e.target != closeAlert){
-            alert.classList.add("tryon");
-            alert.classList.remove("tryon-close");
-        }
-      });
-      
+                }else{
+                    item.style.display = "none";
+                }
+            });
 
-      const menuTitles = document.querySelectorAll(".menu-title");
-        menuTitles.forEach(title =>{
-          title.addEventListener("click", ()=>{
-            const parent = title.parentElement;
-            parent.classList.toggle("active");
-        });
-      });
-      const submenuItems = document.querySelectorAll(".submenu-item");
-        submenuItems.forEach(item =>{
-          item.addEventListener("click",(e)=>{
-            e.stopPropagation();
-            item.classList.toggle("active");
-        });
-      });
-      const menu = document.getElementById("menu-toggle");
-        menu.addEventListener('click', ()=>{
-          document.getElementById("fast-menu").classList.toggle("open");
-      });
+            if(hasResult){
+                searchBtn.style.display = "";
+                if(searchKey.length >= 3) searchResult.textContent = "Result for: " + searchKey;
 
-
-      const form = document.querySelector("#tryon-form");
-
-        form.addEventListener("submit", async function(e){
-          e.preventDefault();
-          document.getElementById("progress-container").style.display = "flex";
-          document.getElementById("fileChoose").style.display = "none";
-          document.getElementById("genBtn").style.display = "none";
-          agreeForm.style.display = "none";
-          document.getElementById("alertNotice").classList.remove("alert");
-          document.getElementById("alertNotice").classList.add("tryon");
-          const formData = new FormData(this);
-          const res = await fetch("http://127.0.0.1:5000/api/generate",{
-          method: "POST",
-          body: formData
-      });
-      const data = await res.json();
-      if(data.status === "success"){
-        const goUser = confirm("Redirect to user page for result?");
-      if(goUser){
-        window.location.href = data.redirect;
-      }
-      }
-      });
-      
-      const user_id = <?php echo json_encode($userID); ?>;
-      let abc = 0;
-      let animationInterval = null;
-
-      if(user_id){
-        setInterval(async () =>{
-          try{
-            const res = await fetch(`http://localhost:5000/api/progress/${user_id}`);
-            const data = await res.json();
-
-            if(data.progress < 2){
-              document.querySelector("#progress-container span").classList.add("animation");
-            } 
-            else if(data.progress > 2){
-              let percent = data.progress + data.progress / 5; 
-              document.getElementById("progress").style.width = `${percent}%`;
-              if(alert.classList.contains("tryon-close")){  
-                alert.querySelector("h4").style.opacity = "1";
-                alert.querySelector("h4").style.visibility = "visible";
-                alert.querySelector("h4").textContent = `${parseFloat(percent.toFixed(2))}%`;
-              }else if(!alert.classList.contains("tryon-close") && !alert.classList.contains("tryon")){
-                document.getElementById("tryon-form").style.display = "";
-                document.getElementById("progress-container").style.display = "grid";
-                document.getElementById("fileChoose").style.display = "none";
-                document.getElementById("genBtn").style.display = "none";
-                alertOkBtn.style.display = "none";
-                alertCancelBtn.textContent = "Stop";
-                agreeForm.style.display = "none";
-                document.getElementById("alertNotice").classList.remove("alert");
-                document.getElementById("alertNotice").classList.add("tryon-close");
-                alert.querySelector("h4").textContent = `${parseFloat(percent.toFixed(2))}%`;
-              }
-            }else if(data.progress >= 100){
-              const userpage = confirm("Go to userpage for AI Viton Result?");
-              if(userpage) window.location.href="user.php";
+            }else{
+                searchBtn.style.display = "none";
+                if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
+                else searchResult.textContent = "";
             }
-          }catch(err){
-            console.error(err);
-          }
-        }, 3000);
-      }
+        });
+
+        //Card modal popup
+        const products = document.querySelectorAll(".group.cursor-pointer");
+
+        const conModal = document.querySelector(".modal-container");
+        const modal = document.getElementById("product-modal");
+        const modalImg = document.getElementById("modal-img");
+        const modalName = document.getElementById("modal-name");
+        const modalPrice = document.getElementById("modal-price");
+        const modalColor = document.querySelector(".colors");
+
+        const modalProductId = document.getElementById("modal-product-id");
+        const modalProductCategory = document.getElementById("modal-product-category");
+        const modalProductColor = document.getElementById("modal-product-color");
+        const modalAddCart = document.querySelector(".modal-add");
+        const sizeAdd = document.querySelectorAll(".sizes label");
+        
+
+        products.forEach(product => {
+            product.addEventListener('click', function(){
+
+              //Size reset
+              sizeAdd.forEach(size =>{
+                size.style.color = "black";
+                size.style.background = "white";
+              });
+
+              //Stock
+              if(this.dataset.stock <= 0){
+                modalAddCart.disabled = true;
+                modalAddCart.style.background = "gray";
+                modalAddCart.textContent = "OUT OF STOCK";
+              }else{
+                modalAddCart.disabled = false;
+                modalAddCart.style.background = "";
+                modalAddCart.textContent = "ADD TO CART";
+              }
+
+              //Modal info
+              let modalId = "";
+              const modalVariant = this.querySelectorAll(".variants");
+              modalImg.src = this.dataset.img;
+              modalId.value = this.dataset.id;
+              modalName.textContent = this.dataset.name.toUpperCase();
+              modalPrice.textContent = "$" + this.dataset.price;
+              modalProductId.value = this.dataset.id;
+              modalProductCategory.value = this.dataset.category;
+              modalProductColor.value = this.dataset.color;
+              modal.style.setProperty("display", "flex", "important");
+
+
+              //Render label color
+              let htmlModal = "";
+              modalVariant.forEach((variant) =>{
+
+
+                const isActive = variant.classList.contains("active");
+
+                const activeClasses = isActive ? "color active bg-black text-white border-black" : "color bg-white text-black hover:bg-black hover:text-white";
+
+                const inlineStyle = isActive ? "color: white; background: black;" : "color: black; background: white;";
+
+                htmlModal += `
+                    <label class="${activeClasses} color text-xs md:text-sm uppercase border-solid border-black/20 border p-1 md:p-2 mr-2 mb-2 text-center cursor-pointer transition-all duration-300 hover:bg-black hover:text-white"
+                           data-id="${variant.dataset.id}"
+                           data-variant="${variant.dataset.variant}"
+                           data-img="${variant.dataset.img}"
+                           data-name="${variant.dataset.name}"
+                           data-price="${variant.dataset.price}"
+                           data-stock="${variant.dataset.stock}">${variant.dataset.variant}</label>
+                `;
+              });
+
+              modalColor.innerHTML = htmlModal;
+
+
+              //Size select
+              let modalSize = "S";
+              sizeAdd.forEach(label =>
+                    label.addEventListener('click', ()=>{
+                        modalSize = label.textContent;
+                        sizeAdd.forEach(label =>{
+                            label.style.color = "black";
+                            label.style.background = "white";
+                            
+                        });
+
+                        label.style.color = "white";
+                        label.style.background = "black";
+                    })
+                );
+
+              //Color select
+              const colorAdd = document.querySelectorAll(".colors label");
+
+                colorAdd.forEach(color => {
+                    color.addEventListener('click', ()=>{
+                        colorAdd.forEach(color =>{
+                            color.style.color = "black";
+                            color.style.background = "white";
+                        });
+
+                    color.style.color = "white";
+                    color.style.background = "black";
+                    });
+                });
 
 
 
+                //Color button change
+                const outerColorBtn = document.querySelectorAll(".colors label");
 
-  const container = document.getElementById("normal");
+                outerColorBtn.forEach(Btn =>{
+                    Btn.addEventListener('click', function(e){
+                        e.stopPropagation();
 
-  sortSelect.addEventListener("change", () => {
-  let normalProducts = Array.from(container.querySelectorAll(".product-card"));
-  let value = sortSelect.value;
-  normalProducts.sort((a, b) => {
-    let priceA = parseFloat(a.dataset.price || 0);
-    let priceB = parseFloat(b.dataset.price || 0);
-    let nameA = (a.dataset.name || "").toLowerCase();
-    let nameB = (b.dataset.name || "").toLowerCase();
-    switch(value){
-      case "price_asc": return priceA - priceB;
-      case "price_desc": return priceB - priceA;
-      case "name_asc": return nameA.localeCompare(nameB);
-      case "name_desc": return nameB.localeCompare(nameA);
-      default: return 0;
-    }
-  });
-  container.innerHTML = "";
-  normalProducts.forEach(p => container.appendChild(p));
-  });
+                        //Stock
+                        if(this.dataset.stock <= 0){
+                            modalAddCart.disabled = true;
+                            modalAddCart.style.background = "gray";
+                            modalAddCart.textContent = "OUT OF STOCK";
+                        }else{
+                            modalAddCart.disabled = false;
+                            modalAddCart.style.background = "";
+                            modalAddCart.textContent = "ADD TO CART";
+                        } 
 
+                        const vImg = this.dataset.img;
+                        const baseName = this.dataset.name;
+                        const vColor = this.dataset.variant;
+
+                        modalImg.src = vImg;
+                        modalName.textContent = baseName.toUpperCase();
+                        modalPrice.textContent = "$" + product.dataset.price;
+                        modalProductId.value = product.dataset.id;
+                        modalProductCategory.value = product.dataset.category;
+                        modalProductColor.value = vColor;
+
+                        modal.style.setProperty("display", "flex", "important");
+
+                    });
+                });
+
+                //Add cart
+                modalAddCart.addEventListener('click', function(e){
+                    e.preventDefault();
+                    console.log(modalProductColor.value);
+                    fetch('../Database/add_item_to_cart.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `product_category=${modalProductCategory.value}&product_color=${modalProductColor.value}&cart_size=${modalSize}&product_id=${parseInt(modalProductId.value)}`
+                    })
+                    .catch(error => {
+                        console.error('Error updating cart:', error);
+                    });
+                });
+
+            });
+        });        
+
+        //Card modal close
+        const closeBtn = document.querySelector(".close-modal");
+        closeBtn.addEventListener('click', ()=>{
+            modal.style.display = "none";
+        });
+
+        modal.addEventListener('click', function(e){
+            if(!conModal.contains(e.target)) modal.style.display = "none";
+        });
+
+
+        //Button Next - Previous
+        document.querySelector(".next").addEventListener('click', function(){
+            const products = document.querySelectorAll(".product");
+            products.forEach(product =>{
+                const width = product.offsetWidth;
+                let gap = 100;
+                product.style.transform = `translateX(-${(width*5) + gap}px)`;
+            });
+        });
+
+        document.querySelector(".previous").addEventListener('click', function(){
+            const products = document.querySelectorAll(".product");
+            products.forEach(product =>{
+                const width = product.offsetWidth;
+                let gap = 100;
+                product.style.transform = `translateX(${0}px)`;
+            });
+        });
+
+        
+
+
+        //Fast menu 
+        const fastMenuContainer = document.getElementById("fast-menu-container");
+        const menuToggle = document.getElementById("menu-toggle");
+        const hamburger = document.querySelector(".hamburger");
+
+        document.addEventListener('click', function(e){
+            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
+                menuToggle.checked = false;
+            }
+        });
+
+        const menuTitles = document.querySelectorAll(".menu-title");
+            menuTitles.forEach(title =>{
+                title.addEventListener("click", ()=>{
+                    const parent = title.parentElement;
+                    parent.classList.toggle("active");
+            });
+        });
+        const submenuItems = document.querySelectorAll(".submenu-item");
+            submenuItems.forEach(item =>{
+                item.addEventListener("click",(e)=>{
+                    e.stopPropagation();
+                    item.classList.toggle("active");
+            });
+        });
+
+        const search = document.querySelector(".icon.search");
+        const menuSearch = document.getElementById("menu-search");
+        const searchContainer = document.getElementById("search-Container");
+
+        search.addEventListener('click', ()=>{
+            document.getElementById("menu").classList.toggle("active");
+
+            userWelcome ? userWelcome.forEach(user => user.classList.toggle("active")) : null;
+
+            const lines = document.querySelectorAll(".line");
+            lines.forEach(line => line.classList.toggle("active"));
+
+            const icons = document.getElementById("menu").querySelectorAll(".icon path");
+            icons.forEach(icon => icon.classList.toggle("active"));
+
+            const spans = document.getElementById("menu").querySelectorAll("span");
+            spans.forEach(span => span.classList.toggle("active"));
+
+            document.getElementById("menu-search").classList.toggle("active");
+            document.getElementById("search-Container").classList.toggle("active");
+        });
+
+        document.addEventListener('click', function(e){
+            if(!searchContainer.contains(e.target) && e.target !== search){
+                document.getElementById("menu").classList.remove("active");
+
+                userWelcome ? userWelcome.forEach(user => user.classList.remove("active")) : null;
+
+                const lines = document.querySelectorAll(".line");
+                lines.forEach(line => line.classList.remove("active"));
+
+                const icons = document.getElementById("menu").querySelectorAll(".icon path");
+                icons.forEach(icon => icon.classList.remove("active"));
+
+                const spans = document.getElementById("menu").querySelectorAll("span");
+                spans.forEach(span => span.classList.remove("active"));
+                document.getElementById("menu-search").classList.remove("active");
+                document.getElementById("search-Container").classList.remove("active");
+            }
+        });
 </script>
-  </body>
+</body>
 </html>

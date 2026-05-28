@@ -42,6 +42,7 @@ $sql = "SELECT
         orders.order_name,
         orders.order_original_price,
         orders.order_final_price,
+        orders.created_at,
         order_items.product_name,
         order_items.img,    
         order_items.quantity
@@ -77,6 +78,26 @@ foreach($data as $d){
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    montserrat: ['Montserrat', 'sans-serif'],
+                },
+                colors: {
+                    gold: {
+                        light: '#E6CA65',
+                        DEFAULT: '#D4AF37',
+                        dark: '#B1953B',
+                    }
+                }
+            }
+        }
+    }
+</script>
+    <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/user.css">
     <title>Trinity Style - User</title>
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
@@ -90,149 +111,99 @@ foreach($data as $d){
   <body>
 <section id="head">
 <section id="menu">
-        <div id="text-menu">
-            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
-            <div id="text">
-                <span onclick="window.location.href='../Pages/'">Home</span>
-                <span onclick="window.location.href='products.php?#product-section'">Shop</span>
-                <span onclick="window.location.href='products.php?#product-section'">Collection</span>
-                <span onclick="window.location.href='contact.php'">Contact</span>
-            </div>
-        </div>
         <input type="checkbox" id="menu-toggle" hidden>
-        <div id="utility-menu">
-            <label class="hamburger" for="menu-toggle">
-                    <svg viewBox="0 0 32 32">
-                        <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
-                        <path class="line" d="M7 16 27 16"></path>
-                    </svg>
-            </label>
-            <svg class="icon" viewBox="0 0 640 512" aria-hidden="true" onclick="window.location.href='cart.php'">
-                <path fill="currentColor" d="M24 0C10.7 0 0 10.7 0 24s10.7 24 24 24h45.3c3.9 0 7.2 2.8 7.9 6.6l52.1 286.3C135.5 375.1 165.3 400 200.1 400H456c13.3 0 24-10.7 24-24s-10.7-24-24-24H200.1c-11.6 0-21.5-8.3-23.6-19.7l-5.1-28.3h303.6c30.8 0 57.2-21.9 62.9-52.2L568.9 85.9C572.6 66.2 557.5 48 537.4 48H124.7l-.4-2C119.5 19.4 96.3 0 69.2 0H24zm184 512a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm224 0a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"/>
+        <label class="hamburger" for="menu-toggle">
+            <svg viewBox="0 0 32 32">
+                <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                <path class="line" d="M7 16 27 16"></path>
             </svg>
+        </label>
+
+        <div id="text-menu" class="userPHP">
+
+            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
+            
+            <div id="text" class="userPHP">
+                <span onclick="window.location.href='#'" class="orderBlock">Order</span>
+                <span onclick="window.location.href='#'" class="profileBlock">Profile</span>
+            </div>
+
+            
+        </div>
+        
+        <div id="utility-menu">
+            
             <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" id="menu-Username" style="cursor: pointer;"><?=$_SESSION['username']?></p>
+                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
             <?php else: ?>
                     <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
                     <label for="login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 448 512">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user" viewBox="0 0 448 512">
                             <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
                         </svg>
                     </label>
             <?php endif; ?>
+
+            <?php if(!empty($user['img']) || $user['img'] != null): ?>
+                <img src="../<?=$user['img']?>" class="w-[40px] h-[40px] object-scale-down rounded-full border border-solid border-black-400" alt="">
+            <?php else: ?>
+                <img class="w-[40px] h-[40px] object-scale-down rounded-full border border-solid border-black-400" src="../Pictures/Banners/BA.webp" alt="">
+            <?php endif; ?>
         </div>
-<div id="fast-menu">
-    <div class="menu-item">
-        <div class="menu-title">TRINITY</div>
-            <div class="submenu">
-                <div class="submenu-item">T-shirt
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Polo shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
-            </div>
-            <div class="submenu-item">Hoodie
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
-            </div>
-        </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title">TRINITY LADIES</div>
-        <div class="submenu">
-            <div class="submenu-item">T-shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Blouse
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
-            </div>
-            <div class="submenu-item">Crop top
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+
+        <div id="fast-menu">
+            <div id="fast-menu-container">
+                <div class="menu-item">
+                    <div class="orderBlock menu-title"><span>Order</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="profileBlock menu-title"><span>Profile</span></div>
+                </div>
+
+
             </div>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
-    </div>
-</div>
-</section>
+
+        <div id="menu-search">
+            <div id="search-Container">
+                <span>
+                    <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                    </svg>
+                </span>
+
+                <input type="text" id="searchBar" placeholder="Search..."/>
+    
+            </div>
+
+    
+            <div id="search-Items">
+                <p id="searchResult"></p>
+                    <div id="items-Container">
+                    <?php foreach($baseProduct as $p):?>
+                        <div class="item" data-name="<?=$p['product_name']?>">
+                            <div class="item-Img">
+                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
+                            </div>
+
+                            <div>
+                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
+                                <span>$<?=$p['product_price']?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?> 
+            </div>   
+
+            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+        </div>
+
+    </section>
+
 </section>
     <section class="body">
       <div class="user-box">
-        <div class="user-information">
-            <svg class="icon" id="edit" style="position: absolute; right: 15%; top: 2%;" fill="white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M256.1 248a120 120 0 1 0 0-240 120 120 0 1 0 0 240zm-29.7 56c-98.5 0-178.3 79.8-178.3 178.3 0 16.4 13.3 29.7 29.7 29.7l196.5 0 10.9-54.5c4.3-21.7 15-41.6 30.6-57.2l67.3-67.3c-28-18.3-61.4-28.9-97.4-28.9l-59.4 0zM332.3 466.9l-11.9 59.6c-.2 .9-.3 1.9-.3 2.9 0 8 6.5 14.6 14.6 14.6 1 0 1.9-.1 2.9-.3l59.6-11.9c12.4-2.5 23.8-8.6 32.7-17.5l118.9-118.9-80-80-118.9 118.9c-8.9 8.9-15 20.3-17.5 32.7zm267.8-123c22.1-22.1 22.1-57.9 0-80s-57.9-22.1-80 0l-28.8 28.8 80 80 28.8-28.8z"/></svg>
-          <?php if(isset($_SESSION['username'])): ?>
-          <div class="user-avatar">
-            <?php if(empty($user['img'])): ?>
-                <img src="../Pictures/Banners/BA.webp" alt="">
-            <?php else: ?>
-              <img style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" src="../<?=htmlspecialchars($user['img'])?>" alt="">
-            <?php endif; ?>
-          </div>
-          <div class="user-name"><?=$_SESSION['username']?></div>
-          <?php if(empty($user)): ?>
-            <div class="user-tier" onclick="window.location.href='userTier.php'"></div>
-          <?php else: ?>
-            <?php if($user['user_tier'] == "1"): ?>
-                <div class="user-tier" style="color: white;" onclick="window.location.href='userTier.php'">New Member</div>
-            <?php elseif($user['user_tier'] == "2"): ?>
-                <div class="user-tier" style="color: silver; background: #2d3036;" onclick="window.location.href='userTier.php'">Silver</div>
-            <?php elseif($user['user_tier'] == "3"): ?>
-                <div class="user-tier" style="color: gold; background: #504420;" onclick="window.location.href='userTier.php'">Gold</div>
-            <?php elseif($user['user_tier'] == "4"): ?>
-                <div class="user-tier" style="color: lightblue; background: #202e50;" onclick="window.location.href='userTier.php'">Diamond</div>
-            <?php endif; ?>
-          <?php endif; ?>
-          <div class="line1">_________________________</div>
-          <div class="user-details">
-            <div class="info-row">
-              <span>Sex:</span>
-              <?php if(empty($user)): ?>
-              <span></span>
-              <?php else: ?>
-              <span><?=$user['user_sex']?></span>
-              <?php endif; ?>
-            </div>
-            <div class="info-row">
-              <span>Hotline:</span>
-              <?php if(empty($user)): ?>
-              <span></span>
-              <?php else: ?>
-              <span><?=$user['user_hotline']?></span>
-              <?php endif; ?>
-            </div>
-            <div class="info-row">
-              <span>Email:</span>
-              <?php if(empty($user)): ?>
-              <span></span>
-              <?php else: ?>
-              <span><?=$user['email']?></span>
-              <?php endif; ?>
-            </div>
-            <div class="info-row">
-              <span>Address: </span>
-              <?php if(empty($user)): ?>
-              <span></span>
-              <?php else: ?>
-              <span><?=$user['user_address']?></span>
-              <?php endif; ?>
-            </div>
-          </div>
-          <div class="user-setting" onclick="window.location.href='logout.php'">
-            Log out
-          </div>
-          <?php endif; ?>
-        </div>
+        
         <div class="user-cart">
           <div class="title">
             <p>Your Orders</p>
@@ -240,140 +211,86 @@ foreach($data as $d){
                 <option value="Success">Success</option>
                 <option value="Delivery">Delivery</option>
                 <option value="Delivered">Delivered</option>
-                <option value="Cancel">Cancel</option>
+                <option value="Cancel">Cancelled</option>
                 <option value="All">All</option>
             </select>
           </div>
-          <div class="line2"></div>
-          <div id="order-history">
-        <?php if(!empty($groupedOrders)): ?>
+
+        <div id="order-history" class="hidden">
+            <?php if(!empty($groupedOrders)): ?>
             <?php foreach($groupedOrders as $order_id => $order): 
                 $info = $order['order_info']; 
                 $state = strtolower($info['order_state']);
+                $time = date('j-n', strtotime($info['created_at']));
                 $count++;
             ?>
-            <div class="order-block" onclick="window.location.href='orderItem.php?id=<?=$info['id']?>'">
-            <div class="order-state" style="width: 100%; display: flex; justify-content: space-around; align-items: center;">
-                <h3 class="order-name">#<?= htmlspecialchars($info['order_name']) ?></h3>
-                
-                <?php if($state == "success"): ?>
-                    <span class="state" style="color: #16a34a; background: #e6f9ed;"><?=$info['order_state']?></span>
-                <?php elseif($state == "cancel"): ?>
-                    <span class="state" style="color: #dc2626; background: #ffeaea;"><?=$info['order_state']?></span>
-                <?php elseif($state == "delivery"): ?>
-                    <span class="state" style="color: #f59e0b; background: #fff4e5;"><?=$info['order_state']?></span>
-                <?php elseif($state == "delivered"): ?>
-                    <span class="state" style="color: #6b7280c7; background: #f3f4f6;"><?=$info['order_state']?></span>
-                <?php endif; ?>
+            <div class="order-block bg-white-300 p-5 justify-around" onclick="window.location.href='orderItem.php?id=<?=$info['id']?>'">
+            
+            <div class="order-state rounded-[5px] w-[100%] h-fit py-4 bg-[whitesmoke] opacity-[0.9] justify-start px-2 flex flex-col">
+                <span class="state font-medium text-sm"><?=ucfirst($info['order_state'])?></span>
+                <span class="text-xs"><?=$time?></span>
             </div>
             
-                <div class="order-img">
-                    <img src="../<?= htmlspecialchars($info['img']) ?>" alt="">
-                    <div class="order-img-info">
-                        <h3><?= htmlspecialchars($info['product_name']) ?></h3>
-                        <span style="text-align: end; color: gray; text-decoration-line: line-through; font-size: clamp(.8rem, .9vw, 1.1rem);">
-                            <?= number_format($info['order_original_price']) ?>$
-                        </span>
-                        <span style="font-size: clamp(.9rem, 1vw, 1.2rem); text-align: end;">
-                            Order totals (<?= $order['total_items'] ?> items): <?= number_format($info['order_final_price']) ?>$
-                        </span>
-                    </div>
+                <div class="order-img mt-[20px]">
+                    <img class="bg-[whitesmoke] opacity-[0.9]" src="../<?= htmlspecialchars($info['img'])?>" alt="">
                 </div>
+
+                
+
                     <div class="order-info">
-                        <form action="../Database/reOrder.php" method="POST" style="width: 35%; height: 55%; margin-right: 5%;">
-                            <input type="hidden" name="order_id" value="<?=$info['id']?>">
-                            <button class="re-order" type="submit">Re-Buy</button>
-                        </form>
+                        <div class="order-img-info w-[100%] h-[80%]">
+                            <div>
+                                <span class="font-medium"><?=$order['total_items']?> item</span>
+                                <h3 class="order-name font-light text-xs">#<?= htmlspecialchars($info['order_name']) ?></h3>
+                            </div>
+
+                            <span class="font-medium text-lg">$<?=number_format($info['order_final_price'])?></span>
+                        </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <h3 class="h3-alert">Nothing here...</h3>
-        <?php endif; ?>
-          </div>
-          <p class="user-cart-alert"></p>
-          <div class="user-history-AI">
-            <p class="user-history-text">Try on history</p>
-            <div class="line2"></div>
-            <div id="try-on-container">
-        <?php if(!empty($tryonData)): ?>
-            <?php foreach($tryonData as $to): ?>
-              <div class="line3">
-                <span style="display: flex; align-items: center; justify-content: center; width: 55%;">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0-10.4-31.2C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>
-                    Virtual Try On AI
-                </span>
-                <img src="../AI/static/outputs/user_<?=$_SESSION['user_id']?>/<?=$to['result_img']?>" alt="">
-                <div style="text-align: center; display: flex; width: 90%; height: 20%; justify-content: space-around; align-items: center; gap: 5%;">
-                    <?=$to['created_at']?>
-                    <form action="../Database/detele_user_tryon.php" method="POST">
-                        <input type="text" name="id" value="<?=$to['id']?>" hidden>
-                        <button type="submit" style="text-align: center; display: flex; justify-content: space-around; align-items: center;">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 448 512"><path d="M136.7 5.9C141.1-7.2 153.3-16 167.1-16l113.9 0c13.8 0 26 8.8 30.4 21.9L320 32 416 32c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 8.7-26.1zM32 144l384 0 0 304c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-304zm88 64c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24zm104 0c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24zm104 0c-13.3 0-24 10.7-24 24l0 192c0 13.3 10.7 24 24 24s24-10.7 24-24l0-192c0-13.3-10.7-24-24-24z"/></svg>    
-                        Delete</button>
+
+
+                    <form action="../Database/reOrder.php" class="w-[100%] flex justify-center h-[60px]" method="POST">
+                        <input type="hidden" name="order_id" value="<?=$info['id']?>">
+                        <button class="re-order w-[100%] h-[100%] border-black-100 border border-solid rounded-[5px]" type="submit">Re-Buy</button>
                     </form>
                 </div>
-              </div>
+                
             <?php endforeach; ?>
             <?php else: ?>
-                <h3 class="h3-alert">Nothing here...</h3>
-        <?php endif; ?>
-            </div>
-            <p class="user-cart-alert"></p>
-          </div>
+            <h3 class="h3-alert">Nothing here...</h3>
+            <?php endif; ?>
+            
         </div>
-      </div>
+
+        <div id="profile" class="hidden relative flex-col w-[100%] h-[600px] p-2 sm:p-5 px-[10px] sm:px-[50px] mt-[20px] justify-start gap-[50px]">
+            <div class="flex flex-col w-[100%] p-5 bg-[whitesmoke] rounded-[5px] gap-1">
+                <h4 class="font-medium">Basic Information</h4>
+                <span class="text-sm opacity-[0.5]">Email</span>
+                <span><?=$user['email']?></span>
+                <span class="text-sm opacity-[0.5]">Sex</span>
+                <span><?=$user['user_sex']?></span>
+            </div>
+
+            <div class="flex flex-col p-5 bg-[whitesmoke] rounded-[5px] h-[50%] gap-1">
+                <h4 class="font-medium">Address</h4>
+                <span><?=$user['user_address']?></span>
+                <span><?=$user['user_hotline']?></span>
+            </div>
+
+            <button onclick="window.location.href='logout.php'" class="justify-self-start w-fit p-2 border border-solid rounded-[5px] cursor-pointer border-b">Log out</button>
+
+            <div class="border-b border-black-300 h-[1px] left-[0] right-[0] px-2 sm:px-5 bottom-[0]"></div>
+        </div>
+    </div>
     </section>
-    <footer class="footer-2">
-  <div class="footer-container">
-    <div class="footer-left">
-      <p class="footer-label">CONTACT US</p>
-      <h2 class="footer-title">
-        Let’s Discuss Your <br> Style. With Us
-      </h2>
-
-      <button class="footer-btn" onclick="window.location.href='contact.php'">
-        Schedule a call now →
-      </button>
-
-      <p class="footer-email-label">OR EMAIL US AT</p>
-
-      <div class="footer-email">
-        triple3tbusiness@gmail.com
-        <span>📋</span>
-      </div>
-    </div>
-
-    <div class="footer-right">
-      <div class="footer-col">
-        <p class="footer-col-title">QUICK LINKS</p>
-        <a href="../Pages/">Home</a>
-        <a href="products.php">Products</a>
-        <a href="cart.php">Cart</a>
-        <a href="voucher.php">Vouchers</a>
-        <a href="userTier.php">User Tier</a>
-        <a href="about.php">About Us</a>
-      </div>
-      <div class="footer-col">
-        <p class="footer-col-title">INFORMATION</p>
-        <a href="../legal/term-of-service.php">Terms of Service</a>
-        <a href="../legal/privacy-policy.php">Privacy Policy</a>
-        <a href="../legal/delivery-policy.php">Delivery Policy</a>
-        <a href="../legal/ai-usage-policy.php">AI Usage Policy</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>Copyright (c) 2026 trinity-newfed</p>
-    <div class="footer-social">
-      <span>f</span>
-      <span>t</span>
-      <span>ig</span>
-      <span>in</span>
-    </div>
-  </div>
-</footer>
+    <footer class="footer-2 flex flex-col justify-around">
+        <div class="border-t border-black-300"></div>
+        <div class="w-[50%] sm:w-[40%] grid grid-cols-1 sm:grid-cols-3 gap-y-0 sm:gap-y-2 mt-[20px]">
+            <span class="text-[#B1953B] font-[montserrat] font-light text-xs underline">Warranty Policy</span>
+            <span class="text-[#B1953B] font-[montserrat] font-light text-xs underline">Privacy Policy</span>
+            <span class="text-[#B1953B] font-[montserrat] font-light text-xs underline">Term of Service</span>
+        </div>
+    </footer>
 <div id="product-modal">
   <div class="modal-container">
     <button id="closeModal">&times;</button>
@@ -446,12 +363,15 @@ foreach($data as $d){
 
     <script>
       const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-      let username1 = email.split("@")[0] || "";
-      let displayName = username1.length > 6
-      ? username1.substring(0, 6) + "..."
-      : username1;
-      const userWelcome = document.getElementById("menu-Username");
-      const menuTitles = document.querySelectorAll(".menu-title");
+        let username1 = email.split("@")[0] || "";
+        let displayName = username1.length > 6
+        ? username1.substring(0, 6) + "..."
+        : username1;
+        const userWelcome = document.querySelectorAll(".menu-Username");
+        if(userWelcome){
+            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
+        }
+
       const imgPopup = document.querySelectorAll(".line3 img");
       const modal = document.getElementById("product-modal");
       const conModal = document.querySelector(".modal-container");
@@ -470,8 +390,59 @@ foreach($data as $d){
         }else{
             block.style.display = "none";
         }
-    });
-});
+        });
+      });
+
+        const fastMenuContainer = document.getElementById("fast-menu-container");
+        const menuToggle = document.getElementById("menu-toggle");
+        const hamburger = document.querySelector(".hamburger");
+
+        document.addEventListener('click', function(e){
+            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
+                menuToggle.checked = false;
+            }
+        });
+
+      //Order & Profile toggle
+
+      document.querySelector(".orderBlock").classList.add("active");
+      let action = "";
+
+      function OrderProfileToggle(){
+        if(action == "order"){
+            document.getElementById("order-history").style.display = "grid";
+            document.getElementById("profile").style.display = "none";
+            document.getElementById("order-state-option").style.display = "";
+            document.querySelector(".title p").textContent = "Your Orders";
+            document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
+            document.querySelectorAll(".orderBlock").forEach(order => order.classList.add("active"));
+            menuToggle.checked = false;
+        }else{
+            document.getElementById("order-history").style.display = "none";
+            document.getElementById("profile").style.display = "flex";
+            document.querySelector(".title p").textContent = "Profile";
+            document.getElementById("order-state-option").style.display = "none";
+            document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
+            document.querySelectorAll(".profileBlock").forEach(profile => profile.classList.add("active"));
+            menuToggle.checked = false;
+        }
+      }
+
+      document.querySelectorAll(".profileBlock").forEach(profile =>{
+        profile.addEventListener('click', function(){
+            action = "profile";
+            OrderProfileToggle(action);
+            this.classList.add("active");
+        })
+      });
+
+      document.querySelectorAll(".orderBlock").forEach(order =>{
+        order.addEventListener('click', function(){
+            action = "order";
+            OrderProfileToggle(action);
+            this.classList.add("active");
+        })
+      });
         
         const Blocks = document.querySelectorAll(".order-block");
         Blocks.forEach(blocks =>{
@@ -499,23 +470,6 @@ foreach($data as $d){
 
         modal.addEventListener('click', function(e){
             if(e.target === modal) modal.style.display = "none";
-        });
-
-        imgEdit.addEventListener('click', ()=>{
-            document.getElementById("edit-info").style.display = "flex";
-        });
-
-        edit.addEventListener('click', ()=>{
-            document.getElementById("edit-info").style.display = "flex";
-        });
-
-        document.getElementById("closeEdit").addEventListener('click', ()=>{
-            document.getElementById("edit-info").style.display = "none";
-        });
-
-        const modalEdit = document.getElementById("edit-info");
-        modalEdit.addEventListener('click', function(e){
-            if(e.target === modalEdit) document.getElementById("edit-info").style.display = "none";
         });
 
         const fileInput = document.getElementById("edit-avatar");
@@ -580,24 +534,7 @@ async function search(input, listId){
   });
 }
 
-
-      if(userWelcome){
-            userWelcome.textContent = "Hi, " + displayName;
-        }
-        menuTitles.forEach(title =>{
-                title.addEventListener("click", ()=>{
-                    const parent = title.parentElement;
-                    parent.classList.toggle("active");
-            });
-        });
-        const submenuItems = document.querySelectorAll(".submenu-item");
-            submenuItems.forEach(item =>{
-                item.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.toggle("active");
-            });
-        });
-
+        
 
 const user_id = <?php echo json_encode($userID); ?>;
 
