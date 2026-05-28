@@ -827,7 +827,6 @@ html::-webkit-scrollbar{
     width: 100vw;
     font-family: "Montserrat", serif;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: linear-gradient(to right, #1a1a1a, #8e8e93, #f2f2f7);
 }
 #footer span{
     font-size: clamp(1rem, 1.5vw, 2rem);
@@ -877,7 +876,7 @@ html::-webkit-scrollbar{
     height: 100vh;
     display: flex;
     justify-content: center;
-    gap: 0;
+    gap: 10%;
     align-items: center;
     background: transparent;
     border-radius: 0;
@@ -906,7 +905,7 @@ html::-webkit-scrollbar{
     height: 100vh;
     display: flex;
     justify-content: center;
-    gap: 0;
+    gap: 10%;
     align-items: center;
     background: transparent;
     border-radius: 0;

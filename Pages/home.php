@@ -6,6 +6,10 @@ if(!isset($_SESSION['role'])){
     $_SESSION['role'] = "guest";
 }
 
+$baseProduct = $conn->query("SELECT * FROM products")
+                    ->fetch_all(MYSQLI_ASSOC);
+
+
 $product = $conn
   ->query("SELECT products.id AS id,
             products.product_name, products.product_group,
@@ -13,7 +17,8 @@ $product = $conn
             products.product_type, products.product_describe,
             products.product_size, products.product_img,
             product_variant.product_price, product_variant.product_size,
-            product_variant.product_img, product_variant.product_color
+            product_variant.product_img, product_variant.product_img1,
+            product_variant.product_color
 
             FROM products
             JOIN product_variant
@@ -21,8 +26,17 @@ $product = $conn
             ")
   ->fetch_all(MYSQLI_ASSOC);
 
-$baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
+$product_variant = $conn->query("SELECT 
+                                 product_variant.product_id, product_variant.product_price,
+                                 product_variant.product_img AS variant_img,
+                                 product_variant.product_color, product_variant.product_size,
+                                 product_variant.product_stock, products.product_name,
+                                 products.product_category
+
+                                 FROM product_variant
+                                 JOIN products
+                                 ON product_variant.product_id = products.id")
+                        ->fetch_all(MYSQLI_ASSOC);
 
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
@@ -296,9 +310,10 @@ if(isset($_SESSION['error'])){
                     </svg>
                 </button>
             </div>
+                <!--Newest Collection-->
                 <?php 
                     foreach($product as $item): 
-                    if($item['product_category'] != "collections") continue; 
+                    if($item['product_category'] != "collections") continue;
                 ?>
                 <div class="feat collection">
                     <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$item['id']?>'">
@@ -307,60 +322,126 @@ if(isset($_SESSION['error'])){
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideProduct['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideProduct['id']?>'">
-                        <span>Winter Collection</span>
-                        <p>$<?=$mainProduct['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$mainProduct['id']?>'">Try with AI</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$ <?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-'">Try with AI</button>
                     </div>
-
                 </div>
-                <?php endforeach; ?>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
 
+                <!--Basic T-shirt-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "men" || $item['product_name'] != "Basic T-shirt") continue;
+                ?>
                 <div class="feat id1">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat1['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat1['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat1['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat1['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat1['id']?>'">
-                        <span>Logo Polo</span>
-                        <p>$<?=$feat1['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat1['id']?>'">View Product</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
 
+                <!--Trinity Lady-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "women" || $item['product_name'] != "Classic Blouse") continue;
+                ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat2['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat2['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat2['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat2['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat2['id']?>'">
-                        <span>Lady Basic T-shirt</span>
-                        <p>$<?=$feat2['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat2['id']?>'">View Product</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
 
 
+                <!--Logo Polo-->
+                <?php 
+                    foreach($product as $item): 
+                    if($item['product_category'] != "men" || $item['product_name'] != "Logo Polo") continue;
+                ?>
                 <div class="feat id2">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$feat3['id']?>'">
-                        <img class="feat-img id1" src="../<?=$feat3['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$feat3['product_img2']?>" alt="">
+                    <div class="feat-img-container fi-1">
+                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
+                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
                     </div>
 
                     <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <img src="../<?=$sideFeat3['product_img1']?>" onclick="window.location.href='detail.php?id=<?=$sideFeat3['id']?>'">
-                        <span>Wrap Blouse</span>
-                        <p>$<?=$feat3['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$feat3['id']?>'">Try with AI</button>
+                        <?php 
+                            foreach($product_variant as $variant): 
+                            if($variant['product_id'] != $item['id']) continue;
+                            if($variant['product_color'] == $item['product_color']) continue;
+                        ?>
+                        <img src="../<?=$variant['variant_img']?>">
+                        <?php 
+                            break;
+                            endforeach; 
+                        ?>
+
+                        <span><?=$item['product_name']?></span>
+                        <p>$<?=$item['product_price']?></p>
+                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
                     </div>
 
                 </div>
+                <?php 
+                    break;
+                    endforeach; 
+                ?>
         </div>
     </section>
     

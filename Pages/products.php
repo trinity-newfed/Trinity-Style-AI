@@ -228,7 +228,10 @@ $sql->close();
     </section>
 
     <section id="head" class="relative bg-[#E5E5E5] overflow-hidden min-h-[500px] md:h-[100vh] flex items-center">
-        <div class="absolute inset-0 bg-cover bg-center opacity-90" style="background-image: url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200');"></div>
+        <div class="absolute bg-[black] z-[100] w-[100%] h-[100%] animate-1"></div>
+        <div class="absolute inset-0 bg-cover bg-center opacity-90">
+            <img class="object-cover w-[100%] h-[100%] animate-2" src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200" alt="">
+        </div>
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center py-20 z-10">
             <h1 class="text-4xl md:text-7xl font-serif-custom tracking-widest uppercase mb-4 text-gray-900">
@@ -250,12 +253,12 @@ $sql->close();
             <a href="#" class="text-xs uppercase tracking-widest text-gray-500 hover:text-black underline underline-offset-4">View All</a>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8 collections animate-on-scroll">
             <?php foreach($baseProduct as $base): ?>
                 <?php if($base['product_category'] !== "collections") continue; ?>
                 
             
-            <div class="group cursor-pointer">
+            <div class="group cursor-pointer collections-child">
                 <div class="relative bg-[#F3F3F3] aspect-[3/4] mb-4 overflow-hidden">
                     <span class="absolute top-2 left-2 bg-white text-[9px] uppercase tracking-widest px-2 py-0.5 z-10">Limited</span>
                     <img src="../<?=$base['product_img']?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Product">
@@ -269,7 +272,7 @@ $sql->close();
             <?php foreach($product as $key => $item): ?>
                 <?php if($item['product_category'] !== "collections") continue; ?>
     
-                    <div class="group cursor-pointer"
+                    <div class="group cursor-pointer collections-child"
                          data-id="<?=$item['id']?>" 
                          data-img="../<?=$item['product_img']?>"
                          data-name="<?=$item['product_color']?> <?=$item['product_name']?>"
@@ -329,7 +332,7 @@ $sql->close();
             </div>
         </div>
 
-        <div class="flex overflow-x-auto gap-x-5 max-w-[100%] scrollbar-hide hide">
+        <div class="flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
             <?php 
                 $index = -1;
                 foreach($baseProduct as $item): 
@@ -337,7 +340,7 @@ $sql->close();
                 $formattedNum = str_pad($index, 2, '0', STR_PAD_LEFT);
             ?>
                 <?php if($item['product_category'] === "collections") continue; ?>
-                <div class="group cursor-pointer w-[calc((100%-80px)/5)] shrink-0 min-w-[160px] product transition-all duration-500"
+                <div class="products-child group cursor-pointer w-[calc((100%-80px)/5)] shrink-0 min-w-[160px] product transition-all duration-500"
                     <?php 
                         foreach($product_variant as $variant):
                         if($variant['product_id'] == $item['id']):
@@ -605,6 +608,24 @@ $sql->close();
             }
         });
 
+        //Animate class add on Viewport
+        document.addEventListener("DOMContentLoaded", function () {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting){
+                        entry.target.classList.add("animate");
+                        observer.unobserve(entry.target); 
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.15
+            });
+
+            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
+            elementsToAnimate.forEach(element => observer.observe(element));
+        });
+
         //Card modal popup
         const products = document.querySelectorAll(".group.cursor-pointer");
 
@@ -620,7 +641,6 @@ $sql->close();
         const modalProductColor = document.getElementById("modal-product-color");
         const modalAddCart = document.querySelector(".modal-add");
         const sizeAdd = document.querySelectorAll(".sizes label");
-        
 
         products.forEach(product => {
             product.addEventListener('click', function(){
@@ -781,6 +801,8 @@ $sql->close();
         document.querySelector(".next").addEventListener('click', function(){
             const products = document.querySelectorAll(".product");
             products.forEach(product =>{
+                product.style.animation = "none";
+                product.style.opacity = "1";
                 const width = product.offsetWidth;
                 let gap = 100;
                 product.style.transform = `translateX(-${(width*5) + gap}px)`;
@@ -790,6 +812,8 @@ $sql->close();
         document.querySelector(".previous").addEventListener('click', function(){
             const products = document.querySelectorAll(".product");
             products.forEach(product =>{
+                product.style.animation = "none";
+                product.style.opacity = "1";
                 const width = product.offsetWidth;
                 let gap = 100;
                 product.style.transform = `translateX(${0}px)`;

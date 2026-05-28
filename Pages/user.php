@@ -121,7 +121,7 @@ foreach($data as $d){
 
         <div id="text-menu" class="userPHP">
 
-            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
+            <div id="logo" class="userPHP" onclick="window.location.href='../Pages/'">TRINITY</div>
             
             <div id="text" class="userPHP">
                 <span onclick="window.location.href='#'" class="orderBlock">Order</span>
@@ -205,15 +205,51 @@ foreach($data as $d){
       <div class="user-box">
         
         <div class="user-cart">
-          <div class="title">
-            <p>Your Orders</p>
-            <select id="order-state-option">
-                <option value="Success">Success</option>
-                <option value="Delivery">Delivery</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancel">Cancelled</option>
-                <option value="All">All</option>
-            </select>
+          <div class="title px-4 sm:px-2">
+            <p class="w-[50px] sm:w-[150px]">Your Orders</p>
+            <div class="flex gap-x-2 sm:gap-x-5 pl-1">
+                <div id="order-state-option" class="flex justify-between items-center relative">
+                    <span>Success</span>
+                    <div class="w-fit h-fit flex justify-center items-center">
+                        <svg class="svg select transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                            <path d="M169.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L192 205.3 54.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/>
+                        </svg>
+                    </div>
+
+                    <div class="absolute top-[50px] left-[0] w-[100%] flex flex-col justify-start items-start p-1 sm:p-2 opacity-0  transition-all duration-300 h-[0px] overflow-hidden select-animate select bg-white z-[100] border rounded-[10px]">
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 hover:bg-[whitesmoke]">Success</span>
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 hover:bg-[whitesmoke]">Cancelled</span>
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 hover:bg-[whitesmoke]">Delivery</span>
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 hover:bg-[whitesmoke]">Delivered</span>
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 hover:bg-[whitesmoke]">All</span>
+                    </div>
+                </div>
+
+                <div id="order-state-layout" class="cursor-pointer flex z-[101] justify-between items-center relative border-b border-[rgba(0,0,0,0.3)] w-[55px]">
+                    <span>View</span>
+                    <div class="w-fit h-fit flex justify-center items-center">
+                        <svg class="svg layout transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                            <path d="M169.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L192 205.3 54.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/>
+                        </svg>
+                    </div>
+
+                    <div class="absolute max-h-fit w-fit top-[50px] left-[0] w-[100%] flex flex-col justify-start items-start p-1 sm:p-2 opacity-0  transition-all duration-300 h-[0px] overflow-hidden select-animate layout bg-white z-[100] border rounded-[10px]">
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 flex justify-between items-center text-end gap-1 hover:bg-[whitesmoke] active">
+                            View
+                            <svg xmlns="http://www.w3.org/2000/svg" height="19px" viewBox="0 -960 960 960" width="19px" fill="#000000">
+                                <path d="M171.27-171.27v-617.46h617.46v617.46H171.27Zm569.5-47.96v-236.89H504.08v236.89h236.69Zm0-521.54H504.08v236.69h236.69v-236.69Zm-521.54 0v236.69h236.89v-236.69H219.23Zm0 521.54h236.89v-236.89H219.23v236.89Z"/>
+                            </svg>
+                        </span>
+
+                        <span class="z-[100] text-start w-[100%] rounded-[5px] p-1 flex justify-between items-end text-end gap-1 hover:bg-[whitesmoke]">
+                            List
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#000000">
+                                <path d="M304-592.04V-640h483.92v47.96H304Zm0 135.62v-47.96h483.92v47.96H304Zm0 135.61v-47.96h483.92v47.96H304ZM198.75-589.73q-9.4 0-18.04-8.5-8.63-8.49-8.63-18.92 0-10.11 8.65-17.63 8.66-7.53 18.81-7.53 10.15 0 18.04 7.42 7.88 7.42 7.88 18.39 0 9.78-7.68 18.27-7.68 8.5-19.03 8.5Zm0 135.23q-9.4 0-18.04-8.54-8.63-8.54-8.63-18.72 0-10.77 8.65-18.45 8.66-7.67 18.81-7.67 10.15 0 18.04 7.52 7.88 7.53 7.88 19.19 0 9.62-7.68 18.15-7.68 8.52-19.03 8.52Zm.02 136.31q-9.39 0-18.04-8.4-8.65-8.4-8.65-18.58 0-10.72 8.65-18.56 8.66-7.85 18.81-7.85 10.15 0 18.04 7.71 7.88 7.71 7.88 19.1 0 9.78-7.67 18.18-7.68 8.4-19.02 8.4Z"/>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+            </div>
           </div>
 
         <div id="order-history" class="hidden">
@@ -224,15 +260,21 @@ foreach($data as $d){
                 $time = date('j-n', strtotime($info['created_at']));
                 $count++;
             ?>
-            <div class="order-block bg-white-300 p-5 justify-around" onclick="window.location.href='orderItem.php?id=<?=$info['id']?>'">
-            
-            <div class="order-state rounded-[5px] w-[100%] h-fit py-4 bg-[whitesmoke] opacity-[0.9] justify-start px-2 flex flex-col">
-                <span class="state font-medium text-sm"><?=ucfirst($info['order_state'])?></span>
+            <div class="order-block bg-[#F9F9F9] p-5 justify-around">
+                <button class="absolute right-[20px] z-[100] hidden cursor-pointer reBuy-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#A96424">
+                        <path d="M263.33-429.62q-21.04 0-35.61-14.78-14.56-14.78-14.56-35.81 0-21.04 14.78-35.61 14.77-14.56 35.81-14.56 21.04 0 35.61 14.78 14.56 14.78 14.56 35.81 0 21.04-14.78 35.61-14.78 14.56-35.81 14.56Zm216.46 0q-21.04 0-35.61-14.78-14.56-14.78-14.56-35.81 0-21.04 14.78-35.61 14.78-14.56 35.81-14.56 21.04 0 35.61 14.78 14.56 14.78 14.56 35.81 0 21.04-14.78 35.61-14.78 14.56-35.81 14.56Zm216.46 0q-21.04 0-35.61-14.78-14.56-14.78-14.56-35.81 0-21.04 14.78-35.61 14.78-14.56 35.81-14.56 21.04 0 35.61 14.78 14.56 14.78 14.56 35.81 0 21.04-14.78 35.61-14.77 14.56-35.81 14.56Z"/>
+                    </svg>
+                </button>
+            <div class="order-state max-w-[350px] m-auto border-1 rounded-[5px] w-[100%] h-fit py-4 bg-[whitesmoke] opacity-[0.9] justify-start px-2 flex flex-col">
+                <div>
+                    <span class="state font-medium text-sm"><?=ucfirst($info['order_state'])?></span>
+                </div>
                 <span class="text-xs"><?=$time?></span>
             </div>
             
-                <div class="order-img mt-[20px]">
-                    <img class="bg-[whitesmoke] opacity-[0.9]" src="../<?= htmlspecialchars($info['img'])?>" alt="">
+                <div class="order-img mt-[20px]" onclick="window.location.href='orderItem.php?id=<?=$info['id']?>'">
+                    <img class="bg-[whitesmoke] border-1 opacity-[0.9]" src="../<?= htmlspecialchars($info['img'])?>" alt="">
                 </div>
 
                 
@@ -249,7 +291,7 @@ foreach($data as $d){
                     </div>
 
 
-                    <form action="../Database/reOrder.php" class="w-[100%] flex justify-center h-[60px]" method="POST">
+                    <form action="../Database/reOrder.php" class="w-[100%] flex justify-center h-[60px]" method="POST" id="blockForm">
                         <input type="hidden" name="order_id" value="<?=$info['id']?>">
                         <button class="re-order w-[100%] h-[100%] border-black-100 border border-solid rounded-[5px]" type="submit">Re-Buy</button>
                     </form>
@@ -263,7 +305,7 @@ foreach($data as $d){
         </div>
 
         <div id="profile" class="hidden relative flex-col w-[100%] h-[600px] p-2 sm:p-5 px-[10px] sm:px-[50px] mt-[20px] justify-start gap-[50px]">
-            <div class="flex flex-col w-[100%] p-5 bg-[whitesmoke] rounded-[5px] gap-1">
+            <div class="flex flex-col w-[100%] p-5 bg-white rounded-[5px] gap-1">
                 <h4 class="font-medium">Basic Information</h4>
                 <span class="text-sm opacity-[0.5]">Email</span>
                 <span><?=$user['email']?></span>
@@ -271,7 +313,7 @@ foreach($data as $d){
                 <span><?=$user['user_sex']?></span>
             </div>
 
-            <div class="flex flex-col p-5 bg-[whitesmoke] rounded-[5px] h-[50%] gap-1">
+            <div class="flex flex-col p-5 bg-white rounded-[5px] h-[50%] gap-1">
                 <h4 class="font-medium">Address</h4>
                 <span><?=$user['user_address']?></span>
                 <span><?=$user['user_hotline']?></span>
@@ -283,7 +325,7 @@ foreach($data as $d){
         </div>
     </div>
     </section>
-    <footer class="footer-2 flex flex-col justify-around">
+    <footer class="footer-2 h-[200px] flex flex-col justify-around relative m-auto bottom-[0]">
         <div class="border-t border-black-300"></div>
         <div class="w-[50%] sm:w-[40%] grid grid-cols-1 sm:grid-cols-3 gap-y-0 sm:gap-y-2 mt-[20px]">
             <span class="text-[#B1953B] font-[montserrat] font-light text-xs underline">Warranty Policy</span>
@@ -362,7 +404,7 @@ foreach($data as $d){
 </div>
 
     <script>
-      const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
+        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
         let username1 = email.split("@")[0] || "";
         let displayName = username1.length > 6
         ? username1.substring(0, 6) + "..."
@@ -372,26 +414,106 @@ foreach($data as $d){
             userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
         }
 
-      const imgPopup = document.querySelectorAll(".line3 img");
-      const modal = document.getElementById("product-modal");
-      const conModal = document.querySelector(".modal-container");
-      const closeModal = document.getElementById("closeModal");
-      const imgEdit = document.querySelector(".user-avatar");
-      const edit = document.getElementById("edit");
+        const imgPopup = document.querySelectorAll(".line3 img");
+        const modal = document.getElementById("product-modal");
+        const conModal = document.querySelector(".modal-container");
+        const closeModal = document.getElementById("closeModal");
+        const imgEdit = document.querySelector(".user-avatar");
+        const edit = document.getElementById("edit");
 
-      const select = document.getElementById("order-state-option");
-      select.addEventListener("change", function (){
-      const state = this.value.toLowerCase();
-      const orderBlocks = document.querySelectorAll(".order-block");
-      orderBlocks.forEach(block =>{
-        const blockState = block.querySelector(".state").textContent.toLowerCase();
-        if(blockState.includes(state) || state == "all"){
-            block.style.display = "";
-        }else{
-            block.style.display = "none";
-        }
+        //Select order state
+
+        const select = document.getElementById("order-state-option");
+        select.addEventListener("click", function (){
+            this.querySelector(".select-animate").classList.toggle("active");
+            this.querySelector(".svg").classList.toggle("active");
+            const currentState = this.querySelector("span").textContent;
+
+            this.querySelector(".select-animate").querySelectorAll("span").forEach(span =>{
+                span.classList.remove("active");
+                if(span.textContent == currentState) span.classList.add("active");
+                span.addEventListener('click', function(){
+                    select.querySelector("span").textContent = this.textContent;
+                });
+            });
+
+            const orderBlocks = document.querySelectorAll(".order-block");
+            orderBlocks.forEach(block =>{
+                const state = select.querySelector("span").textContent.toLowerCase();
+                const blockState = block.querySelector(".state").textContent.toLowerCase();
+                if(blockState.includes(state) || state == "all"){
+                    block.style.display = "";
+                }else{
+                    block.style.display = "none";
+                }
+            });
         });
-      });
+
+        const Blocks = document.querySelectorAll(".order-block");
+        Blocks.forEach(blocks =>{
+            const blockStates = blocks.querySelector(".state").textContent.toLowerCase();
+            if(blockStates == "success"){
+                blocks.style.display = "";
+            }else{
+                blocks.style.display = "none";
+            }
+        });
+
+        //Select order layout
+        const layout = document.getElementById("order-state-layout");
+        layout.addEventListener('click', function(){
+            this.querySelector(".select-animate").classList.toggle("active");
+            this.querySelector(".svg").classList.toggle("active");
+            const currentState = this.querySelector("span").textContent;
+            
+            const div = this.querySelector(".select-animate");
+            div.querySelectorAll("span").forEach(span =>{
+                
+                if(span.textContent == currentState) span.classList.add("active");
+                span.addEventListener('click', function(){
+                    div.querySelectorAll("span").forEach(s => s.classList.remove("active"));
+                    layout.querySelector("span").textContent = this.textContent;
+                    
+                    setTimeout(() => {
+                        if(layout.querySelector("span").textContent.includes("List")){
+                            Blocks.forEach(block => block.classList.add("list"));
+                            document.getElementById("order-history").classList.add("list");
+                        }
+                            
+                        else{
+                            Blocks.forEach(block => block.classList.remove("list"));
+                            document.getElementById("order-history").classList.remove("list");
+                        }
+                    }, 100);
+                });
+            });
+        });
+ 
+        //Close Select state
+        document.addEventListener('click', function(e){
+            if(!select.contains(e.target)){
+                select.querySelector(".select-animate.select").classList.remove("active");
+                select.querySelector(".svg.select").classList.remove("active");
+            }
+        });
+
+        document.addEventListener('click', function(e){
+            if(!layout.contains(e.target)){
+                layout.querySelector(".select-animate.layout").classList.remove("active");
+                layout.querySelector(".svg.layout").classList.remove("active");
+            }
+        });
+
+        //Rebuy - list layout toggle
+        document.querySelectorAll(".reBuy-toggle").forEach(reBuy => {
+            reBuy.addEventListener('click', function() {
+                const form = this.closest(".order-block").querySelector("#blockForm");
+                if(form.style.display === "none" || form.style.display === "") form.style.display = "flex";
+                else form.style.display = "none";
+            });
+        });
+
+        //Menu close
 
         const fastMenuContainer = document.getElementById("fast-menu-container");
         const menuToggle = document.getElementById("menu-toggle");
@@ -403,57 +525,51 @@ foreach($data as $d){
             }
         });
 
-      //Order & Profile toggle
+        //Order & Profile toggle
 
-      document.querySelector(".orderBlock").classList.add("active");
-      let action = "";
+        document.querySelector(".orderBlock").classList.add("active");
+        let action = "";
 
-      function OrderProfileToggle(){
-        if(action == "order"){
-            document.getElementById("order-history").style.display = "grid";
-            document.getElementById("profile").style.display = "none";
-            document.getElementById("order-state-option").style.display = "";
-            document.querySelector(".title p").textContent = "Your Orders";
-            document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
-            document.querySelectorAll(".orderBlock").forEach(order => order.classList.add("active"));
-            menuToggle.checked = false;
-        }else{
-            document.getElementById("order-history").style.display = "none";
-            document.getElementById("profile").style.display = "flex";
-            document.querySelector(".title p").textContent = "Profile";
-            document.getElementById("order-state-option").style.display = "none";
-            document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
-            document.querySelectorAll(".profileBlock").forEach(profile => profile.classList.add("active"));
-            menuToggle.checked = false;
-        }
-      }
-
-      document.querySelectorAll(".profileBlock").forEach(profile =>{
-        profile.addEventListener('click', function(){
-            action = "profile";
-            OrderProfileToggle(action);
-            this.classList.add("active");
-        })
-      });
-
-      document.querySelectorAll(".orderBlock").forEach(order =>{
-        order.addEventListener('click', function(){
-            action = "order";
-            OrderProfileToggle(action);
-            this.classList.add("active");
-        })
-      });
-        
-        const Blocks = document.querySelectorAll(".order-block");
-        Blocks.forEach(blocks =>{
-            const blockStates = blocks.querySelector(".state").textContent.toLowerCase();
-            if(blockStates == "success"){
-                blocks.style.display = "";
+        function OrderProfileToggle(){
+            if(action == "order"){
+                document.getElementById("order-history").style.display = "grid";
+                document.getElementById("profile").style.display = "none";
+                document.getElementById("order-state-option").style.display = "";
+                document.getElementById("order-state-layout").style.display = "";
+                document.querySelector(".title p").textContent = "Your Orders";
+                document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
+                document.querySelectorAll(".orderBlock").forEach(order => order.classList.add("active"));
+                menuToggle.checked = false;
             }else{
-                blocks.style.display = "none";
+                document.getElementById("order-history").style.display = "none";
+                document.getElementById("profile").style.display = "flex";
+                document.querySelector(".title p").textContent = "Profile";
+                document.getElementById("order-state-option").style.display = "none";
+                document.getElementById("order-state-layout").style.display = "none";
+                document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
+                document.querySelectorAll(".profileBlock").forEach(profile => profile.classList.add("active"));
+                menuToggle.checked = false;
             }
+        }
+
+        document.querySelectorAll(".profileBlock").forEach(profile =>{
+            profile.addEventListener('click', function(){
+                action = "profile";
+                OrderProfileToggle(action);
+                this.classList.add("active");
+            })
         });
 
+        document.querySelectorAll(".orderBlock").forEach(order =>{
+            order.addEventListener('click', function(){
+                action = "order";
+                OrderProfileToggle(action);
+                this.classList.add("active");
+            })
+        });
+        
+        
+        //Popup img edit
         if(imgPopup){
             imgPopup.forEach(img =>{
                 img.addEventListener('click', ()=>{
