@@ -19,6 +19,8 @@ if($conn->query($sql)){
 }
 $conn->select_db($dbname);
 
+
+//Product Table
 $conn->query("CREATE TABLE IF NOT EXISTS products(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR(100),
@@ -35,6 +37,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS products(
     product_is_delete TINYINT(1) DEFAULT 0,
     product_state ENUM('active','inactive') DEFAULT 'active'
     )");
+
+//Variant Table
 $conn->query("CREATE TABLE IF NOT EXISTS product_variant(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
@@ -48,12 +52,17 @@ $conn->query("CREATE TABLE IF NOT EXISTS product_variant(
     product_is_delete TINYINT(1) DEFAULT 0,
     product_state ENUM('active','inactive') DEFAULT 'active'
     )");
+
+//Sold Table
 $conn->query("CREATE TABLE IF NOT EXISTS product_sold(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     product_id INT,
     sold INT DEFAULT 0,
+    product_color VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
     )");
+
+//Cart Table
 $conn->query("CREATE TABLE IF NOT EXISTS cart(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -61,8 +70,11 @@ $conn->query("CREATE TABLE IF NOT EXISTS cart(
     product_color VARCHAR(100),
     cart_size ENUM('S','M','L','XL') DEFAULT 'S',
     product_id INT,
-    quantity INT
+    quantity INT,
+    UNIQUE KEY unique_cart_item (user_id, product_id, product_category, product_color, cart_size)
     )");
+
+//Orders Table
 $conn->query("CREATE TABLE IF NOT EXISTS orders(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(100),
@@ -76,6 +88,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS orders(
     order_state ENUM('success','cancel','delivery','delivered'),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+//Order (items) Table
 $conn->query("CREATE TABLE IF NOT EXISTS order_items(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
     order_id VARCHAR(100),
@@ -87,6 +101,8 @@ $conn->query("CREATE TABLE IF NOT EXISTS order_items(
     size VARCHAR(100),
     quantity INT(10)
     )");
+
+//User Table
 $conn->query("CREATE TABLE IF NOT EXISTS userdata(
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(40) UNIQUE NOT NULL,
@@ -100,6 +116,19 @@ $conn->query("CREATE TABLE IF NOT EXISTS userdata(
     user_limit_password INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+//Contact User
+$conn->query("CREATE TABLE IF NOT EXISTS contact(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(40) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(100),
+    hotline VARCHAR(20),
+    more VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+//Otp Table
 $conn->query("CREATE TABLE IF NOT EXISTS user_otp(
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(40) UNIQUE NOT NULL,
@@ -108,11 +137,15 @@ $conn->query("CREATE TABLE IF NOT EXISTS user_otp(
     max_otp INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+//Policy Table
 $conn->query("CREATE TABLE IF NOT EXISTS user_policy_agreement(
     user_id VARCHAR(255),
     policy_id ENUM('terms','privacy','ai_usage','delivery'),
     agree_at TIMESTAMP
     )");
+
+//Vouchers Table
 $conn->query("CREATE TABLE IF NOT EXISTS vouchers(
     id INT AUTO_INCREMENT PRIMARY KEY,
     voucher_discount INT,
@@ -125,18 +158,16 @@ $conn->query("CREATE TABLE IF NOT EXISTS vouchers(
     end_date VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+//User Voucher Table
 $conn->query("CREATE TABLE IF NOT EXISTS user_voucher(
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(100),
     voucher_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
-$conn->query("CREATE TABLE IF NOT EXISTS used_voucher(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(100),
-    voucher_id VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
+
+//Tryon Table
 $conn->query("CREATE TABLE IF NOT EXISTS tryon(
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(255),

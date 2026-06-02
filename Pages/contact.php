@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact Us</title>
+<title>Connect - TRINITY</title>
 <link rel="stylesheet" href="../Css/contact.css">
 <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
 </head>
@@ -57,5 +57,7 @@ triple3tbusiness@gmail.com
 </div>
 </div>
 </div>
+
+<script src="../asset/contact.js"></script>
 </body>
 </html>

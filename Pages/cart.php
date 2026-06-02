@@ -1,127 +1,18 @@
-<?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
-
-session_start();
-$username = $_SESSION['username'] ?? null;
-$userID = $_SESSION['user_id'] ?? null;
-
-//PRODUCT SEARCH
-$product = $conn
-  ->query("SELECT products.id AS id,
-            products.product_name, products.product_group,
-            products.product_price, products.product_category,
-            products.product_type, products.product_describe,
-            products.product_size, 
-            
-            product_variant.product_price, product_variant.product_id AS variant_id,
-            product_variant.product_size, product_variant.product_img, 
-            product_variant.product_color
-
-            FROM products
-            JOIN product_variant
-            ON products.id = product_variant.product_id
-            ")
-  ->fetch_all(MYSQLI_ASSOC);
-
-$baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
-
-//VOUNCHER FETCH
-if(isset($_SESSION['user_id'])){
-
-    $userID = $_SESSION['user_id'];
-
-    $stmt = $conn->prepare("SELECT
-    vouchers.id AS id,
-    vouchers.voucher_condition,
-    vouchers.voucher_discount,
-    vouchers.voucher_type,  
-    vouchers.voucher_max,
-    user_voucher.voucher_id
-FROM vouchers
-JOIN user_voucher
-    ON vouchers.id = user_voucher.voucher_id
-WHERE user_id = ?
-");
-
-    $stmt->bind_param("i", $userID);
-    $stmt->execute();
-    $voucher = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-}else{
-    $voucher = [];
-}
-
-
-
-//CART FETCH
-if(isset($_SESSION['user_id'])){
-
-    $userID = $_SESSION['user_id'];
-
-    $stmt = $conn->prepare("SELECT 
-    cart.id AS cart_id,
-    cart.product_id,
-    products.product_name,
-    products.product_price,
-    products.product_category,
-    products.product_state,
-    products.product_is_delete,
-    cart.cart_size,
-    cart.quantity,
-    
-    product_variant.product_color AS variant_color,
-    product_variant.product_img AS variant_img,
-    product_variant.product_stock AS variant_stock
-    
-    FROM cart
-    JOIN products 
-    ON cart.product_id = products.id
-    JOIN product_variant 
-    ON cart.product_id = product_variant.product_id 
-    AND cart.product_color = product_variant.product_color
-    WHERE cart.user_id = ?
-");
-
-$stmt->bind_param("i", $userID);
-$stmt->execute();
-$data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-
-
-} else {
-    $data = [];
-}
-$address = 0;
-if(isset($_SESSION['user_id'])){
-    $userId = $_SESSION['user_id'];
-    $distance = $conn->prepare("SELECT user_address FROM userdata
-                            WHERE id = ?");
-    $distance->bind_param("i", $userId);
-    $distance->execute();
-    $userAddress = $distance->get_result();
-
-    if($userAddress->num_rows > 0){
-        $row = $userAddress->fetch_assoc();
-        $address = $row['user_address'];
-    }
-}
-
-?>
+<?php require "../component/cart/header.php" ?>
+<?php require "../component/cartItem.php" ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--TAILWIND CSS & CSS-->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/cart.css">
+
+    <!--GG FONT & ICON-->
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
-    <title>Trinity Style - Cart</title>
+    <title>Shopping Bag - TRINITY</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
@@ -140,93 +31,7 @@ if(isset($_SESSION['user_id'])){
         <div id="cart-item-container">
             <!--Item list-->
             <div id="item-list">
-                <?php foreach($data as $item): 
-                    $active = ($item['product_is_delete'] == 0 && $item['product_state'] == "active") ? 1 : 0;
-                ?>
-                    <div class="cartItem relative" data-stock=<?=$item['variant_stock']?> data-id="<?=$item['cart_id']?>" data-active="<?=$active?>">
-
-                        <div class="item-left">
-                            <div class="item-img-container relative">
-                                <span class="notice absolute w-[100%] text-red-700 hidden text-center z-[100] top-[50%] left-[50%] translate-y-[-50%] translate-x-[-50%]">OUT OF STOCK</span>
-                                <img src="../<?=$item['variant_img']?>" alt="">
-                            </div>
-
-                            <div class="item-info-container">
-                                <span class="item-name"><?=$item['product_name']?></span>
-                                <span class="items-price-container" data-price="<?=$item['product_price']?>"></span>
-                                
-                                <!--Item selection-->
-                                <div class="item-option">
-                                    <span class="hidden">COLOR</span>
-                                    
-                                    <div class="flex gap-[5px] w-fit md:w-[100%]">
-                                        <div class="colorContainer">
-                                            <div class="color" style="background: <?=$item['variant_color']?>"></div>
-
-                                            <select name="cart_color" class="cartColor" data-id="<?=$item['cart_id']?>">
-                                                <option value="<?=$item['variant_color']?>" data-img="../<?=$item['variant_img']?>"><?=ucfirst($item['variant_color'])?></option>
-
-                                                <?php foreach($product as $variant): ?>
-                                                    <?php 
-                                                        if ($variant['variant_id'] != $item['product_id']) continue; 
-                                                        if ($variant['product_color'] == $item['variant_color']) continue;
-                                                    ?>
-                                                        <option value="<?=$variant['product_color']?>" 
-                                                            data-img="../<?=$variant['product_img']?>">
-                                                            <?=ucfirst($variant['product_color'])?>
-                                                        </option>
-                                                <?php endforeach; ?>
-                                            
-                                            </select>
-                                        </div>
-
-                                        <div class="sizeContainer">
-                                            <select name="cart_size" class="cartSize" data-id="<?=$item['cart_id']?>">
-                                                <?php $sizes = ["S", "M", "L", "XL"];
-                                                  $currentSize = $item['cart_size'];
-                                                  foreach($sizes as $size):
-                                                  $selected = ($size === $currentSize) ? 'selected' : '';
-
-                                                ?>
-
-                                                <option value="<?=$size?>" <?=$selected?>><?=$size?></option>
-
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Item quantity-->
-                                <div id="items-quantity-container">
-                                    <span>QUANTITY</span>
-                                    <div>
-                                        <button style="cursor: pointer;" type="button" id="minus-input" class="operation-button" data-id="<?=$item['cart_id']?>" data-action="minus">
-                                            <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"/></svg>
-                                        </button>
-                                    
-                                        <span class="item-quantity" style="font-weight: 550;"><?=$item['quantity']?></span>
-
-                                        <button style="cursor: pointer;" type="button" id="plus-input" class="operation-button" data-id="<?=$item['cart_id']?>" data-action="plus">
-                                            <svg class="icon operate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"/></svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class="item-right">
-                            <div class="deleteItem">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                                    <path d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"/>
-                                </svg>
-                            </div>
-
-                            <div class="items-total-container"></div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                <?php require "../component/cart/product.php" ?>
             </div>
 
             <!--Item information-->
@@ -234,49 +39,7 @@ if(isset($_SESSION['user_id'])){
                 <div id="info-total-order">
                     <div class="info-total-order-span-container voucher">
                         <span>Voucher</span>
-                        <?php if(empty($voucher)): ?>
-                        <span>No Voucher</span>
-                        <?php else: ?>
-                        <input type="hidden" id="id" name="id" value="">
-                        <div id="voucher-select" style="cursor: pointer;">
-                            <div value="0" id="main-voucher" data-condition="0" data-max="0">No Selection</div>
-                            <div class="voucher-list" value="0" data-condition="0" data-max="0">
-                                <div class="voucher">No Selection</div>
-                                <?php foreach($voucher as $v): ?>
-                                <?php if($v['voucher_type'] == "order"): ?>
-                                    <div class="voucher order" value="<?=$v['id']?>"
-                                                        data-condition="<?=$v['voucher_condition']?>"
-                                                        data-max="<?=$v['voucher_max']?>"
-                                                        data-id="<?=$v['id']?>"
-                                                        data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="0">Sale <?=$v['voucher_discount']?>% | Max <?=$v['voucher_max']?>$
-                                    </div>
-                                <?php elseif($v['voucher_type'] == "shipping"): ?>
-                                    <?php if($v['voucher_discount'] == 25): ?>
-                                        <div class="voucher free" value="<?=$v['id']?>"
-                                                        data-condition="<?=$v['voucher_condition']?>"
-                                                        data-max="<?=$v['voucher_max']?>"
-                                                        data-id="<?=$v['id']?>"
-                                                        data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="1"><svg class="shipping icon" viewBox="0 0 640 512" aria-hidden="true">
-                                                                        <path d="M64 96c0-35.3 28.7-64 64-64h288c35.3 0 64 28.7 64 64v32h50.7c17 0 33.3 6.7 45.3 18.7L621.3 192c12 12 18.7 28.3 18.7 45.3V384c0 35.3-28.7 64-64 64h-3.3c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H300.7c-10.4 36.9-44.4 64-84.7 64s-74.2-27.1-84.7-64H128c-35.3 0-64-28.7-64-64v-48H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h176c13.3 0 24-10.7 24-24s-10.7-24-24-24H24c-13.3 0-24-10.7-24-24S10.7 96 24 96h40zm512 192v-50.7l-45.3-45.3H480v96h96zM256 424a40 40 0 1 0-80 0 40 40 0 1 0 80 0zm232 40a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
-                                                                      </svg>
-                                                                      Free Ship
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="voucher ship" value="<?=$v['id']?>"
-                                                        data-condition="<?=$v['voucher_condition']?>"
-                                                        data-max="<?=$v['voucher_max']?>"
-                                                        data-id="<?=$v['id']?>"
-                                                        data-discount="<?=$v['voucher_discount']?>"
-                                                        data-ship="1">$<?=$v['voucher_discount']?> Ship OFF
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
+                        <?php require "../component/cart/voucher.php" ?>
                     </div>
 
                     <div class="info-total-order-span-container delivery">
@@ -286,11 +49,7 @@ if(isset($_SESSION['user_id'])){
 
                     <div class="info-total-order-span-container total">
                         <span>Grand Total</span>
-                        <?php if(empty($data)): ?>
-                        <span id="final-total">$0</span>
-                        <?php else: ?>
-                        <span id="final-total">$0</span>
-                        <?php endif; ?>
+                        <?php require "../component/cart/total.php" ?>
                     </div> 
                           
                     <button type="submit" id="order-btn">Purchase</button>
@@ -313,8 +72,8 @@ if(isset($_SESSION['user_id'])){
             
             <div id="text">
                 <span onclick="window.location.href='../Pages/'">Home</span>
-                <span onclick="window.location.href='products.php?#product-section'">Shop</span>
-                <span onclick="window.location.href='products.php?#product-section'">Collection</span>
+                <span onclick="window.location.href='products.php'">Shop</span>
+                <span onclick="window.location.href='products.php'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
 
@@ -322,23 +81,18 @@ if(isset($_SESSION['user_id'])){
         </div>
         
         <div id="utility-menu">
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
-                <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
-            </svg>
+            <div class="relative">
+                <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                    <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
+                </svg>
+                <span class="absolute top-[-5px] right-[-5px] bg-red-400 text-white rounded-full w-[14px] h-[14px] text-[7px] flex items-center justify-center"><?=$noti?></span>
+            </div>
 
             <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
             </svg>
-            <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
-            <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg>
-                    </label>
-            <?php endif; ?>
+            
+            <?php require "../component/menu.php" ?>
         </div>
 
         <div id="fast-menu">
@@ -396,18 +150,7 @@ if(isset($_SESSION['user_id'])){
                     <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
                 </div>
 
-                <?php if(isset($_SESSION['username'])): ?>
-                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
-                <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input" id="label-login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg> 
-
-                        <p>Login</p>
-                    </label>
-                <?php endif; ?>
+                <?php require "../component/menu2.php" ?>
             </div>
         </div>
 
@@ -426,597 +169,156 @@ if(isset($_SESSION['user_id'])){
     
             <div id="search-Items">
                 <p id="searchResult"></p>
-                    <div id="items-Container">
-                    <?php foreach($baseProduct as $p):?>
-                        <div class="item" data-name="<?=$p['product_name']?>">
-                            <div class="item-Img">
-                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
-                            </div>
+                <div id="items-Container">
+                    <?php require "../component/base.php" ?>
+                </div>   
 
-                            <div>
-                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
-                                <span>$<?=$p['product_price']?></span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>  
-            </div>   
-
-            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+                <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+            </div>
         </div>
 
     </section>
 
 
-<footer class="footer-2">
-  <div class="footer-container">
-    <div class="footer-left">
-      <p class="footer-label">CONTACT US</p>
-      <h2 class="footer-title">
-        Let’s Discuss Your <br> Style. With Us
-      </h2>
-
-      <button class="footer-btn" onclick="window.location.href='contact.php'">
-        Schedule a call now →
-      </button>
-
-      <p class="footer-email-label">OR EMAIL US AT</p>
-
-      <div class="footer-email">
-        triple3tbusiness@gmail.com
-        <span>📋</span>
+    <footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 border-b border-gray-100">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5h-9l-3.036-5.06A1.242 1.242 0 0 0 7.915 1.75H2.25A2.25 2.25 0 0 0 0 4v13.5A2.25 2.25 0 0 0 2.25 19.75h1.5a2.25 2.25 0 0 0 4.5 0h7.5a2.25 2.25 0 0 0 4.5 0h1.5a2.25 2.25 0 0 0 2.25-2.25V9.75A2.25 2.25 0 0 0 21 7.5Zm-13.5 12.25a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Zm12 0a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5M12 3.75v16.5M3.75 6.75h16.5M3.75 17.25h16.5" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Nationwide Free Shipping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">For orders from 499K</p>
       </div>
-    </div>
 
-    <div class="footer-right">
-      <div class="footer-col">
-        <p class="footer-col-title">QUICK LINKS</p>
-        <a href="../Pages/">Home</a>
-        <a href="products.php">Products</a>
-        <a href="cart.php">Cart</a>
-        <a href="voucher.php">Vouchers</a>
-        <a href="userTier.php">User Tier</a>
-        <a href="about.php">About Us</a>
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0-2.625V7.5m0 0h5.25c1.243 0 2.25-1.007 2.25-2.25h-1.5a1.125 1.125 0 0 0-1.125-1.125h-4.875c-.621 0-1.125.504-1.125 1.125H3.75a1.125 1.125 0 0 0-1.125 1.125H7.5c0 1.243 1.007 2.25 2.25 2.25H12" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Premium Gift Wrapping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Luxurious & meaningful</p>
       </div>
-      <div class="footer-col">
-        <p class="footer-col-title">INFORMATION</p>
-        <a href="../legal/term-of-service.php">Terms of Service</a>
-        <a href="../legal/privacy-policy.php">Privacy Policy</a>
-        <a href="../legal/delivery-policy.php">Delivery Policy</a>
-        <a href="../legal/ai-usage-policy.php">AI Usage Policy</a>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5H3M21 12H3m18 4.5H3M19.5 4.5h-15a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5v-12a1.5 1.5 0 0 0-1.5-1.5Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">100% Authentic Products</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Exclusively crafted by TRINITY</p>
       </div>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499c.151-.416.719-.416.87 0l2.428 6.666a.426.426 0 0 0 .375.281l7.103.65c.451.041.631.597.292.898l-5.372 4.792a.426.426 0 0 0-.129.398l1.583 6.95c.101.442-.38.791-.767.558l-6.19-3.738a.426.426 0 0 0-.44 0l-6.19 3.738c-.387.233-.868-.116-.767-.558l1.583-6.95a.426.426 0 0 0-.129-.398L.141 12.834c-.339-.301-.159-.857.292-.898l7.103-.65a.426.426 0 0 0 .375-.281l2.428-6.666Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Transparent Returns & Warranty</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Clear policies, zero hassle</p>
+      </div>
+
     </div>
   </div>
 
-  <div class="footer-bottom">
-    <p>Copyright (c) 2026 trinity-newfed</p>
-    <div class="footer-social">
-      <span>f</span>
-      <span>t</span>
-      <span>ig</span>
-      <span>in</span>
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Exclusive Offers from TRINITY</h3>
+        <p class="text-sm text-gray-400 mb-6 leading-relaxed">Get 10% off on your first order when you subscribe to our newsletter.</p>
+        <form class="contact-form space-y-3 max-w-sm">
+          <input type="email" placeholder="Email Address" required 
+                 class="email w-full px-4 py-3 bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-900 placeholder-gray-300 transition-colors" />
+          <button type="submit" 
+                  class="contact-submitBtn w-full bg-gray-600 hover:bg-gray-900 text-white font-medium text-xs tracking-widest uppercase py-3 transition-colors duration-300">
+            Contact Us
+          </button>
+        </form>
+        
+        <div class="flex space-x-6 mt-8 text-gray-400">
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.082 2h-.621c-2.42 0-2.743.012-3.71.054-.939.042-1.449.2-1.766.325a3.63 3.63 0 00-1.344.875 3.63 3.63 0 00-.875 1.344c-.125.317-.283.827-.325 1.766-.041.947-.054 1.29-.054 3.71v.621c0 2.42.012 2.743.054 3.71.042.939.2 1.449.325 1.766.23.596.548 1.106.974 1.53.424.424.934.742 1.53.974.317.125.827.283 1.766.325.967.041 1.29.054 3.71.054h.621c2.42 0 2.743-.012 3.71-.054.939-.042 1.449-.2 1.766-.325.596-.23 1.106-.548 1.53-.974.424-.424.742-.934.974-1.53.125-.317.283-.827.325-1.766.041-.967.054-1.29.054-3.71v-.621c0-2.42-.012-2.743-.054-3.71-.042-.939-.2-1.449-.325-1.766a3.63 3.63 0 00-.875-1.344 3.63 3.63 0 00-.125-.317c-.317-.125-.827-.283-1.766-.325C15.115 4.012 14.773 4 12.35 4h-.082zM12 7.682a4.318 4.318 0 100 8.636 4.318 4.318 0 000-8.636zM12 14a2 2 0 110-4 2 2 0 010 4zm5.884-7.804a.836.836 0 100-1.672.836.836 0 000 1.672z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.043 2.62-.053 3.91-.017.38.01.76.047 1.13.11.84.144 1.57.564 2.11 1.2a4.84 4.84 0 0 1 1.07 2.19c.14.65.2 1.32.22 1.99.04 1.53.04 3.07 0 4.6-.02.67-.08 1.34-.22 1.99a4.84 4.84 0 0 1-1.07 2.19 4.98 4.98 0 0 1-2.11 1.2c-.37.063-.75.1-1.13.11-1.29.036-2.6.026-3.91-.017m-1.05.003c-1.31.043-2.62.053-3.91.017a4.65 4.65 0 0 1-1.13-.11 4.84 4.84 0 0 1-2.11-1.2 4.84 4.84 0 0 1-1.07-2.19c-.14-.65-.2-1.32-.22-1.99-.04-1.53-.04-3.07 0-4.6.02-.67.08-1.34.22-1.99A4.84 4.84 0 0 1 4.22 1.52c.54-.636 1.27-1.056 2.11-1.2.37-.063.75-.1 1.13-.11 1.29-.036 2.6-.026 3.91.017"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Contact Us</h3>
+        <ul class="space-y-4 text-sm text-gray-500">
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Sales Hotline</span>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 9:00 PM Daily</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Feedback & Claims</span>
+            <a href="tel:1900252544" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3Tbusiness@gmail.com</a>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 5:00 PM (Mon - Sat)</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Email Support</span>
+            <a href="mailto:contact@TRINITY.vn" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">trinitysupport@gmail.com</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex justify-between">
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Information</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="about.php" class="hover:text-gray-900 transition-colors">About Us</a></li>
+            <li><a href="../legal/privacy-policy.php" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
+            <li><a href="../legal/delivery-policy.php" class="hover:text-gray-900 transition-colors">Delivery Policy</a></li>
+            <li><a href="../ai-usage-policy.php" class="hover:text-gray-900 transition-colors">AI Usage Policy</a></li>
+            <li><a href="../warranty-policy.php" class="hover:text-gray-900 transition-colors">Warranty Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Quick Link</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="../Pages/" class="hover:text-gray-900 transition-colors">Home</a></li>
+            <li><a href="products.php" class="hover:text-gray-900 transition-colors">Products</a></li>
+            <li><a href="voucher.php" class="hover:text-gray-900 transition-colors">Exclusive Offers</a></li>
+            <li><a href="userTier.php" class="hover:text-gray-900 transition-colors">Membership Status</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bg-gray-50 border-t border-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="text-[11px] font-medium tracking-widest text-gray-400 uppercase">
+        &copy; 2026 - TRINITY
+      </p>
     </div>
   </div>
 </footer>
-<input type="hidden" value="<?=$address?>" id="to" disabled>
-    <script>
-
-        const finalTotal = document.getElementById("final-total");
-
-
-        const priceDisplay = document.querySelectorAll(".items-price-container");
-        if(priceDisplay){
-            priceDisplay.forEach(pDisplay =>{
-                pDisplay.textContent = "$" + parseFloat(pDisplay.dataset.price);
-            });
-        }
-
-        //QUANTITY BTN
-        const operationBtn = document.querySelectorAll(".operation-button");
-        operationBtn.forEach(btn =>{
-        btn.addEventListener('click', function(){
-            
-            const id = this.dataset.id;
-            const action = this.dataset.action;
-            const item = this.closest(".cartItem");
-            const quantities = item.querySelector(".item-quantity");
-
-            let quantity = parseInt(quantities.textContent);
-
-            if(action == "plus" && item.dataset.stock > (quantity + 1)){
-                quantity++;
-                fetch('../Database/cart_update.php', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `cart_id=${id}&action=${action}`
-                })
-                .then(() => {btn.disabled = false;
-                        calculateFinalTotal();
-                });  
-            }else if(action == "minus" && quantity > 1){
-                quantity--;
-                fetch('../Database/cart_update.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `cart_id=${id}&action=${action}`
-                })
-                .then(() => {btn.disabled = false;
-                        calculateFinalTotal();
-                });  
-            }else if(action == "minus" && quantity == 1){
-                location.reload();
-                fetch('../Database/cart_update.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `cart_id=${id}&action=${action}`
-                })
-                .then(() => {btn.disabled = false;
-                        calculateFinalTotal();
-                });  
-            }
-
-            quantities.textContent = quantity;                        
-        });
-    });
-
-        //COLOR & SIZE SELECT
-        const colorSelect = document.querySelectorAll('.cartColor');
-        const sizeSelect = document.querySelectorAll('.cartSize');
-        
-
-        function cartUpdate(item){
-            const id = item.querySelector('.cartColor').dataset.id;
-            const cartColor = item.querySelector('.cartColor').value.toLowerCase();
-            const cartSize = item.querySelector('.cartSize').value;
-            const colorIndicator = item.querySelector('.color');
-
-            if(colorIndicator){
-                colorIndicator.style.backgroundColor = cartColor; 
-            }
-
-            fetch('../Database/cart_update.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `cart_id=${id}&cart_color=${cartColor}&cart_size=${cartSize}&action=update`
-            })
-            .catch(error => {
-                console.error('Error updating cart:', error)
-            })
-
-        }
-
-        colorSelect.forEach(color =>{
-            color.addEventListener('change', function(){
-                const img = this.closest(".cartItem").querySelector(".item-img-container img").src = this.options[this.selectedIndex].dataset.img;
-                const item = this.closest(".cartItem");
-                setTimeout(() => {
-                    location.reload();
-                }, 100);
-                cartUpdate(item);
-            });
-        });
-
-        sizeSelect.forEach(size =>{
-            size.addEventListener('change', function(){
-                const item = this.closest(".cartItem");
-                cartUpdate(item);
-            });
-        });
-
-        //DELETE ITEM 
-        document.querySelectorAll(".deleteItem").forEach(del =>{del.addEventListener('click', function(e){
-            const id = this.closest(".cartItem").dataset.id;
-            let confirmDEL = confirm("Do you want to delete this piece?");
-            if(confirmDEL){
-                fetch('../Database/delete_item_cart.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `cartId=${id}`
-                })
-                .then(() => location.reload())
-                .catch(error =>{
-                    console.log("Failed to delete");
-                })
-            }else{
-                e.preventDefault();
-            }
-        });
-        })
-
-        //CHECKOUT BUTTON
-        document.querySelector('#order-btn').addEventListener('click', function(){
-            const ids = [];
-            const sizes = [];
-            const colors = [];
-
-            document.querySelectorAll('.cartItem').forEach(item => {
-                const id = item.dataset.id;
-        
-                const active = parseInt(item.dataset.active, 10) || 0;
-                const stock = parseInt(item.dataset.stock, 10) || 0;
-        
-                const size = item.dataset.size || 'L'; 
-                const color = item.dataset.color || 'Black';
-
-                if(active === 1 && stock > 0){
-                    ids.push(id);
-                    sizes.push(size);
-                    colors.push(color);
-                }
-            });
-
-            if(ids.length === 0){
-                alert("Giỏ hàng không có sản phẩm nào đủ điều kiện hoặc còn hàng để thanh toán!");
-                return;
-            }
-
-            const voucherId = document.querySelector('#voucher-select')?.value || null;
-
-            fetch('../Database/checkout.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    cart_ids: ids,
-                    cart_size: sizes,
-                    cart_color: colors,
-                    id: voucherId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success'){
-                    window.location.href = data.redirect; 
-                }else{
-                    alert(data.message);
-                }
-            })
-            .catch(error => console.error("Lỗi kết nối:", error));
-        });
-
-        
-        //USERNAME
-        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.split("@")[0] || "";
-        let displayName = username1.length > 6
-        ? username1.substring(0, 6) + "..."
-        : username1;
-        const userWelcome = document.querySelectorAll(".menu-Username");
-        
-        if(userWelcome){
-            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
-        }
-
-        const dropDown = document.getElementById("main-voucher");
-        if(dropDown){
-            dropDown.addEventListener('click', ()=>{
-                document.querySelector(".voucher-list").style.display = "block";
-            });
-            document.addEventListener('click', function(e){
-                if(e.target !== dropDown) document.querySelector(".voucher-list").style.display = "none";
-            });
-        }
-
-
-        //MAP API
-        let currentKm = 0;
-        let coords = {
-            from: [106.5775, 10.8908],
-            to: null
-        };
-
-        window.onload = async function() {
-            const toName = "<?=$address?>";
-            const coordsTo = await getCoordsFromName(toName);
-            coords.to = coordsTo;
-            document.getElementById("to").value = toName;
-            if(coordsTo){
-                coords.to = coordsTo;
-                const km = await calc();
-                const fee = calculateShippingFee(km);
-            }
-        };
-
-        async function calc(){
-            const url = `https://router.project-osrm.org/route/v1/driving/${coords.from[0]},${coords.from[1]};${coords.to[0]},${coords.to[1]}?overview=false`;
-            const res = await fetch(url);
-            const data = await res.json();
-            const km = (data.routes[0].distance / 1000);
-            return km;
-        }
-
-        async function getCoordsFromName(name){
-            const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(name)}&limit=1`);
-            const data = await res.json();
-            if(data.features.length > 0){
-                return data.features[0].geometry.coordinates;
-            }
-            return null;
-        }
-
-
-        
-
-    //DELIVERY CALCULATE
-    function calculateShippingFee(km){
-        if(isNaN(km) || km <= 0) return 0;
-        currentKm = km; 
-        if(km < 20) return 2;
-        else if(km < 100) return 5;
-        else if(km < 1000) return 15;
-        else return 25;
-    }
-
-    window.onload = async function(){
-        const toName = "<?=$address?>";
-        const coordsTo = await getCoordsFromName(toName);
-        if(coordsTo){
-            coords.to = coordsTo;
-            const km = await calc();
-            const fee = calculateShippingFee(km);
-            document.getElementById("deli-fee").textContent = fee.toLocaleString() + "$";
-        }
-        await calculateFinalTotal();
-    };
     
+    <input type="hidden" value="<?=$address?>" id="to" disabled>
 
-
-//CALCULATE TOTAL
-function calculateFinalTotal(){
-    const selectedVoucher = document.querySelector("#voucher-select option:checked");
-    const finalTotalDisplay = document.getElementById("final-total");
-    const deliFeeDisplay = document.getElementById("deli-fee");
-    const mainVoucher = document.getElementById("main-voucher");
-
-    let total = 0;
-    const items = document.querySelectorAll(".cartItem");
+    <div class="toast opacity-0 invisible translate-y-[-100%] md:translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] z-[1001] top-[0] bottom-auto md:bottom-[0] md:top-[auto] p-2 sm:p-4 flex justify-center items-center gap-2">
+        <span>Item removed from bag</span>
+        <button class="underline">Undo</button>
+    </div>
     
-
-    //FOREACH ITEM
-    items.forEach(item =>{
-        const itemsTotalSpan = item.querySelector(".items-total-container");
-        const price = parseFloat(item.querySelector(".items-price-container").textContent.replace("$", ""));
-        const quantity = parseInt(item.querySelector(".item-quantity").textContent);
-        
-        const itemTotal = price * quantity;
-        if (itemsTotalSpan) itemsTotalSpan.textContent = "Item total: $" + itemTotal;
-            total += itemTotal;
-
-        if(item.dataset.stock <= 0){
-            item.style.opacity = "0.7";
-            item.querySelector(".notice").classList.remove("hidden");
-            item.querySelector(".notice").textContent = "OUT OF STOCK";
-        }
-        if(item.dataset.active == 0){
-            item.style.opacity = "0.7";
-            item.querySelector(".notice").classList.remove("hidden");
-            item.querySelector(".notice").textContent = "TEMPORARILY UNAVAILABLE";
-        }
-    });
-
-    //FREESHIP THRESHOLD
-    const FREE_SHIP_THRESHOLD = 700;
-    const isAutoFreeShip = total >= FREE_SHIP_THRESHOLD;
-    let totalDiscount = 0;
-    let shipDiscount = 0;
-    let currentShippingFee = (typeof calculateShippingFee === 'function') ? calculateShippingFee(currentKm) : 0;
-
-    //VOUCHER SELECT
-    const vouchers = document.querySelectorAll(".voucher-list .voucher");
-    vouchers.forEach(voucher => {
-        const condition = parseFloat(voucher.dataset.condition) || 0;
-        const isShipVoucher = parseInt(voucher.dataset.ship) === 1;
-
-
-        if(total < condition || (isShipVoucher && isAutoFreeShip)){
-            voucher.classList.add("disabled");
-            let disabledVouchers = document.querySelectorAll(".voucher.disabled");
-            disabledVouchers.forEach(disabledVoucher =>{
-                const text = disabledVoucher.textContent;
-                if(mainVoucher.textContent == text) mainVoucher.textContent = "No Selection";
-            })
-        }else{
-            voucher.classList.remove("disabled");
-        }
-    });
-
-    const activeVoucher = document.querySelector(".voucher.active");
-
-    //CHECK VOUCHER
-    if(activeVoucher && !activeVoucher.disabled && activeVoucher.value !== "0"){
-        const val = parseFloat(activeVoucher.dataset.discount) || 0;
-        const isShipVoucher = parseInt(activeVoucher.dataset.ship) === 1;
-        if(isShipVoucher){
-            shipDiscount = val; 
-            totalDiscount = 0; 
-        }else{
-            const maxLimit = parseFloat(activeVoucher.dataset.max) || Infinity;
-            totalDiscount = Math.min(total * (val / 100), maxLimit);
-            shipDiscount = 0;
-        }
-    }
-
-    let finalShippingFee = Math.max(0, currentShippingFee - shipDiscount);
-    if(total >= FREE_SHIP_THRESHOLD){
-        finalShippingFee = 0;
-    }
-    const finalTotal = Math.max(0, total - totalDiscount + finalShippingFee);
-    
-    //DISPLAY FEE
-    if(finalTotalDisplay){
-        finalTotalDisplay.textContent = "$" + finalTotal;
-    }
-    if(deliFeeDisplay){
-        deliFeeDisplay.textContent = finalShippingFee === 0 ? "$0" : "$" + finalShippingFee.toLocaleString();
-    }
-}
-const vouchers = document.querySelectorAll(".voucher-list .voucher");
-
-vouchers.forEach(voucher => {
-    voucher.addEventListener('click', ()=>{
-        if(voucher.classList.contains("disabled")) return;
-        vouchers.forEach(v => v.classList.remove("active"));
-        voucher.classList.add("active");
-        const activeVoucher = document.querySelector(".voucher.active");
-        const input = document.getElementById("id");
-        if(input){
-            input.value = activeVoucher ? activeVoucher.dataset.id : "";
-        }
-        document.querySelector(".voucher-list").style.display = "none";
-        const mainVoucher = document.getElementById("main-voucher");
-        if(mainVoucher){
-            mainVoucher.textContent = voucher.textContent;
-        }
-        calculateFinalTotal();
-    });
-});        
-            
-        //Menu toggle
-
-        const fastMenuContainer = document.getElementById("fast-menu-container");
-        const menuToggle = document.getElementById("menu-toggle");
-        const hamburger = document.querySelector(".hamburger");
-
-        document.addEventListener('click', function(e){
-            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
-                menuToggle.checked = false;
-            }
-        });
-
-        const menuTitles = document.querySelectorAll(".menu-title");
-            menuTitles.forEach(title =>{
-                title.addEventListener("click", ()=>{
-                    const parent = title.parentElement;
-                    parent.classList.toggle("active");
-            });
-        });
-        const submenuItems = document.querySelectorAll(".submenu-item");
-            submenuItems.forEach(item =>{
-                item.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.toggle("active");
-            });
-        });
-
-        //Search bar
-
-        const search = document.querySelector(".icon.search");
-        const menuSearch = document.getElementById("menu-search");
-        const searchContainer = document.getElementById("search-Container");
-
-        search.addEventListener('click', ()=>{
-            document.getElementById("menu").classList.toggle("active");
-
-            userWelcome ? userWelcome.forEach(user => user.classList.toggle("active")) : null;
-
-            const lines = document.querySelectorAll(".line");
-            lines.forEach(line => line.classList.toggle("active"));
-
-            const icons = document.getElementById("menu").querySelectorAll(".icon path");
-            icons.forEach(icon => icon.classList.toggle("active"));
-
-            const spans = document.getElementById("menu").querySelectorAll("span");
-            spans.forEach(span => span.classList.toggle("active"));
-
-            document.getElementById("menu-search").classList.toggle("active");
-            document.getElementById("search-Container").classList.toggle("active");
-        });
-
-        document.addEventListener('click', function(e){
-            if(!searchContainer.contains(e.target) && e.target !== search){
-                document.getElementById("menu").classList.remove("active");
-
-                userWelcome ? userWelcome.forEach(user => user.classList.remove("active")) : null;
-
-                const lines = document.querySelectorAll(".line");
-                lines.forEach(line => line.classList.remove("active"));
-
-                const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                icons.forEach(icon => icon.classList.remove("active"));
-
-                const spans = document.getElementById("menu").querySelectorAll("span");
-                spans.forEach(span => span.classList.remove("active"));
-                document.getElementById("menu-search").classList.remove("active");
-                document.getElementById("search-Container").classList.remove("active");
-            }
-        });
-
-
-        const searchBar = document.getElementById("searchBar");
-        const searchItems = document.getElementById("search-Items");
-        const searchResult = document.getElementById("searchResult");
-        const searchBtn = document.getElementById("searchBtn");
-
-        searchBar.addEventListener('keyup', () => {
-            const items = document.querySelectorAll(".item");
-            const searchKey = searchBar.value.toLowerCase().trim();
-
-            if(searchKey.length > 0){
-                searchItems.classList.add("active");
-
-            }else{
-
-                searchItems.classList.remove("active");
-                searchResult.textContent = "";
-                return;
-            }
-
-            let hasResult = false;
-
-            items.forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                if(name.includes(searchKey) || searchKey === "all"){
-                    item.style.display = "";
-                    hasResult = true;    
-
-                }else{
-                    item.style.display = "none";
-                }
-            });
-
-            if(hasResult){
-                searchBtn.style.display = "";
-                if(searchKey.length >= 3) searchResult.textContent = "Result for: " + searchKey;
-
-            }else{
-                searchBtn.style.display = "none";
-                if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
-                else searchResult.textContent = "";
-            }
-        });
-
-
-//USERNAME AND API FETCH
-const user_id = <?php echo json_encode($userID); ?>;
-
-if(user_id){
-  const interval = setInterval(async () =>{
-    try {
-      const res = await fetch(`http://localhost:5000/api/progress/${user_id}`);
-      const data = await res.json();
-
-      if(data.status === "done"){
-        clearInterval(interval);
-        const goUser = confirm("Redirect to user page for result?");
-        if(goUser){
-          window.location.href = data.redirect;
-        }
-      }
-    }catch (err){
-      console.error(err);
-    }
-  }, 3000);
-}
-    </script>
+<script src="../asset/headerEmail.js"></script>
+<script src="../asset/cartJS/cart.js"></script>
 </body>
 </html>

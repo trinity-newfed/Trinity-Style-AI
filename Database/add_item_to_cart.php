@@ -21,42 +21,36 @@ $product_id = $_POST['product_id'];
 $product_category = $_POST['product_category'];
 $product_color = $_POST['product_color'];
 $cart_size = $_POST['cart_size'];
-$quantity = 1;
+$quantity = $_POST['quantity'] ?? 1;
 
-$product = $conn->prepare("SELECT product_stock FROM products
-                           WHERE id = ?");
-$product->bind_param("i", $product_id);
-$product->execute();
-$conclude = $product->get_result();
-$p = $conclude->fetch_assoc();
+$product = $conn->execute_query("SELECT 
+                            product_variant.product_stock, product_variant.product_color,
+                            products.id, product_variant.product_id 
+                            FROM products
+                            JOIN product_variant ON products.id = product_variant.product_id
+                            WHERE products.id = ? AND product_variant.product_color = ?", [$product_id, $product_color])
+                ->fetch_assoc();
 
-$sql = "SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND product_category = ? AND product_color = ? AND cart_size = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("sisss", $userID, $product_id, $product_category, $product_color, $cart_size);
-$stmt->execute();
-$result = $stmt->get_result();
-$row = $result->fetch_assoc();
+$stmt = $conn->execute_query("SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND product_category = ? AND product_color = ? AND cart_size = ?", [$userID, $product_id, $product_category, $product_color, $cart_size])
+             ->fetch_assoc();
 
-if($result->num_rows > 0){
-    if($row['quantity'] < $p['product_stock']){
-        $sql = "UPDATE cart 
-                SET quantity = quantity + 1 
-                WHERE user_id = ? AND product_id = ? AND product_category = ? AND product_color = ? AND cart_size = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sisss", $userID, $product_id, $product_category, $product_color, $cart_size);
-        $stmt->execute();
-    }else{
-        header("Location: ../Pages/products.php?failed");
-        exit;
-    }
+$stock = $product['product_stock'] ?? 0;
+
+$conn->execute_query("INSERT INTO cart (user_id, product_id, product_category, product_color, cart_size, quantity)
+                      VALUES (?, ?, ?, ?, ?, ?)
+                      ON DUPLICATE KEY UPDATE quantity = IF(quantity + ? <= ?, quantity + ?, ?)", [$userID, $product_id, $product_category, $product_color, $cart_size, $quantity, $quantity, $stock, $quantity, $stock]);
+
+header('Content-Type: application/json; charset=utf-8');
+if($conn->affected_rows === 0){
+    echo json_encode([
+        "status" => "failed",
+        "message" => "Max stock reached or item could not be updated."
+    ]);
 }else{
-    $sql = "INSERT INTO cart (user_id, product_id, product_category, product_color, cart_size, quantity)
-            VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sisssi", $userID, $product_id, $product_category, $product_color, $cart_size, $quantity);
-    $stmt->execute();
+    echo json_encode([
+        "status" => "success",
+        "message" => "Item successfully added to bag."
+    ]);
 }
-
-header("Location: " . $_SERVER['HTTP_REFERER']);
 exit();
 ?>

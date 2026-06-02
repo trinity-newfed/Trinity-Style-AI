@@ -1,637 +1,368 @@
-<?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
-
-if($conn->connect_error){
-    die("Lỗi kết nối".$conn->error);
-}
-
-session_start();
-$username = $_SESSION['username'] ?? null;
-$userID = $_SESSION['user_id'] ?? null;
-
-$id = $_GET['id'] ?? 0;
-$id = intval($id);
-
-$sql = "SELECT * FROM products WHERE id = $id";
-$result = $conn->query($sql);
-
-if($result->num_rows>0){
-    echo "";
-}else{
-    echo "No infomation";
-}
-
-while($row = $result->fetch_assoc()){
-    $data[] = $row;
-}
-$result->close();
-
-$product = "SELECT * FROM products";
-$ptmt = $conn->query($product);
-
-if($ptmt->num_rows>0){
-}
-
-$variation = "SELECT product_group FROM products WHERE id = $id";
-$result = $conn->query($sql);
-$group = $result->fetch_assoc();
-$result->close();
-
-$sql = $conn->prepare("SELECT * FROM user_policy_agreement
-                       WHERE user_id = ?");
-$sql->bind_param("i", $userID);
-$sql->execute();
-$agreement = $sql->get_result();
-if($agreement->num_rows > 0){
-  $agree = 1;
-}else{
-  $agree = 0;
-}
-$sql->close();
-?>
+<?php require "../component/detail/header.php" ?>
+<?php require "../component/cartItem.php" ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/detail.css">
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
-    <?php foreach($data as $row): ?>
-    <title>Trinity Style - <?=$row['product_name']?></title>
-    <?php endforeach; ?>
+    <title><?=strtoupper($product['product_name'])?> - TRINITY</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="alertNotice">
-      <button id="closeAlertBtn">&times;</button>
-      <h4></h4>
-      <span></span>
-  <div id="alert-div">
-    <button class="alertBtn" id="OK-btn">OK</button>
-    <button class="alertBtn" id="CANCEL-btn">CANCEL</button>
-  </div>
-  <form style="display: none;" id="tryon-form" action="http://127.0.0.1:5000/api/generate" method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="user_id" value="<?=$_SESSION['user_id']?>">
-    <input type="file" id="try-on-input" value="<?=$_SESSION['user_id']?>" name="person" hidden required>
-    <input type="hidden" name="cloth" value="../<?=$group['product_img']?>" id="cloth">
-    <input type="hidden" name="product_id" value="<?=$id?>">
-    <label id="fileChoose" for="try-on-input">Choose your file</label>
-    <button id="genBtn" type="submit">Generate</button>
-    <div id="progress-container">
-      <span style="position: absolute;"></span>
-      <div id="progress"></div>
-    </div>
-  </form>
-  <?php if($agree == 1): ?>
-  <form action="../Database/user_policy_agree.php" id="agreementForm" method="POST">
-    <input type="checkbox" name="policy_id" value="ai_usage" id="agreeAI" style="position: absolute; bottom: 3%; left: 1%;" required checked>
-    <span for="agreeAI" style="position: absolute; bottom: 5%; left: 7.5%; font-size: clamp(.7rem, .8vw, 2rem);">I accept <a href="../legal/ai-usage-policy.php">Trinity AI service</a> policy</span>
-  </form>
-  <?php else: ?>
-  <form action="../Database/user_policy_agree.php" id="agreementForm" method="POST">
-    <input type="checkbox" name="policy_id" value="ai_usage" id="agreeAI" style="position: absolute; bottom: 3%; left: 1%;" required>
-    <span for="agreeAI" style="position: absolute; bottom: 5%; left: 7.5%; font-size: clamp(.7rem, .8vw, 2rem);">I accept <a href="../legal/ai-usage-policy.php">Trinity AI service</a> policy</span>
-  </form>
-  <?php endif; ?>
-</div>
-    <div class="product-container">
-
-<div class="product-left">
-        <?php foreach($data as $row): ?>
-            <span id="mainType" data-type="<?=$row['product_type']?>"></span>
-            <span id="mainColor" data-color="<?=$row['product_color']?>"></span>
-            <?php if(!empty($row['product_img'])): ?>
-                <img id="bigImg" src="../<?=$row['product_img']?>">
-            <?php endif; ?>
-    <div class="thumb-list">
-            <?php if(!empty($row['product_img1'])): ?>
-                <img class="smallImg" src="../<?=$row['product_img1']?>">
-            <?php endif; ?>
-            <?php if(!empty($row['product_img2'])): ?>
-                <img class="smallImg" src="../<?=$row['product_img2']?>">
-            <?php endif; ?>
-    </div>
-        <?php endforeach; ?>
-
-</div>
-    <div class="product-right">
-        <?php foreach($data as $row): ?>
-            <span id="mainId" style="display: none;" data-id="<?=$row['id']?>"></span>
-            <span id="mainType" style="display: none;" data-type="<?=$row['product_type']?>"></span>
-            <span id="mainColor" style="display: none;" data-color="<?=$row['product_color']?>"></span>
-        <h1>Trinity <?=$row['product_name']?></h1>
-        <div class="price">$<?=$row['product_price']?></div>
-
-        <p class="short-desc">
-            <?=$row['product_describe']?>
-        </p>
-        <p>Size</p>
-        <div class="size">       
-                <label for="S-size-<?=$row['id']?>">S</label>
-                <label for="M-size-<?=$row['id']?>">M</label>        
-                <label for="L-size-<?=$row['id']?>">L</label>        
-                <label for="XL-size-<?=$row['id']?>">XL</label>
-        </div>
-
-        <form action="../Database/add_item_to_cart.php" method="POST" style="width: 100%; display: grid; place-items: center;" id="addCartForm">     
-                    <input type="hidden" name="product_id" value="<?=$row['id']?>" id="modal-product-id">
-                    <input type="hidden" name="product_name" value="<?=$row['product_name']?>" id="modal-product-name">
-                    <input type="hidden" name="product_category" value="<?=$row['product_category']?>" id="modal-product-type">
-                    <input type="hidden" name="product_color" value="<?=$row['product_color']?>" id="modal-product-color">
-                    <input type="radio" name="cart_size" value="S" id="S-size-<?=$row['id']?>" hidden checked>
-                    <input type="radio" name="cart_size" value="M" id="M-size-<?=$row['id']?>" hidden>
-                    <input type="radio" name="cart_size" value="L" id="L-size-<?=$row['id']?>" hidden>
-                    <input type="radio" name="cart_size" value="XL" id="XL-size-<?=$row['id']?>" hidden> 
-        <button class="add-cart">Add to cart</button>
-        </form>
-        <div style="align-self: end; position: relative; margin-top: 2%;" id="Try-on-form">
-        <button class="modal-try" type="submit">Try with AI✨</button>
-        <div id="tooltip-explain">
-          <h3>Virtual AI Try On</h3>
-          <span>This is an feature for customers to try on our product</span>
-        </div>
+    <div class="product-container pt-[10px] sm:pt-[120px]">
+      <div class="product-left" data-img1="../<?=$product['product_img1']?>" data-img2="../<?=$product['product_img2']?>">
+        <?php require "../component/detail/img.php" ?>
       </div>
-        <?php endforeach; ?>
+      </div>
+
+      <div class="product-right">
+        <span id="mainId" style="display: none;" data-id="<?=$product['id']?>"></span>
+        <span id="mainCategory" style="display: none;" data-category="<?=$product['product_category']?>"></span>
+        <span id="mainColor" style="display: none;" data-color="<?=$product['product_color']?>"></span>
+        <h1 class="font-normal opacity-[0.8] text-[30px] sm:text-[34px]"><?=$product['product_name']?></h1>
+
+        <div class="price text-[green] text-[25px] pt-2 pb-5 border-b border-[rgba(0,0,0,0.1)]">$<?=$product['product_price']?></div>
+
+        <div class="flex items-center border border-[rgba(0,0,0,0.3)] mt-5 w-max h-12">
+          <button id="decrease-qty" class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">—</button>
+          <input id="quantity-input" type="number" value="1" min="1" max="99" class="w-12 h-full text-center text-xs font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent">
+          <button id="increase-qty" class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">＋</button>
+        </div>
+
+        <p class="pt-5 pb-2">Size</p>
+        <div class="size flex gap-2">       
+          <label class="active text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="S-size">S</label>
+          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="M-size">M</label>        
+          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="L-size">L</label>        
+          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="XL-size">XL</label>
+        </div>
+
+        <div class="color-select pt-5 pb-2">
+          <p>Color</p>
+          <div class="colors grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-2">
+            <?php require "../component/detail/label.php" ?>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-5 pt-5 pb-2">
+          <button class="add-cart">ADD TO CART</button>
+          <button class="modal-try" type="submit">TRY WITH AI✨</button>
+          <p class="short-desc font-serif"><?=$product['product_describe']?></p>
+        </div>
+
+      </div>
     </div>
 
 </div>
 <section id="body">
-    <h1 style="padding: 20px;">Color Variations</h1>
-    <div class="simillar-product-container">
-        <?php foreach($ptmt as $p): ?>
-            <?php if($p['product_group'] == $group['product_group']): ?>
-            <div onclick="window.location.href='detail.php?id=<?=$p['id']?>'" class="items"
-                                                                data-type="<?=$p['product_type']?>" 
-                                                                data-color="<?=$p['product_color']?>" 
-                                                                data-id="<?=$p['id']?>">
-                <div id="items-left">
-                    <img class="img i1" src="../<?=$p['product_img']?>" alt="">
-                    <img class="img i2" src="../<?=$p['product_img1']?>" alt="">
-                </div>
-                <div id="items-right">
-                    <span style="display: none;" class="brand">TRINITY</span>
-                    <h5><?=$p['product_name']?></h5>
-                    <span>$<?=$p['product_price']?></span>
-                </div>
-            </div>
-            <?php endif; ?>
-        <?php endforeach; ?>
+    
+    <div class="max-w-7xl w-[100%] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+      <h1 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider mb-3">Color Variations</h1>
+      <div class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
+        <?php require "../component/detail/variant.php" ?>
+      </div>
     </div>
-    <h1 style="padding: 20px;">You may also like</h1>
-    <div class="simillar-product-container" style="overflow-y: auto; padding-top: 1%; min-height: 300px;">
-        <?php $count = 0; foreach($ptmt as $p): ?>
-            <?php if($p['product_group'] != $group['product_group'] && $count < 10): 
-                $count++;
-            ?>
-            <div onclick="window.location.href='detail.php?id=<?=$p['id']?>'" class="product" 
-                                                                data-type="<?=$p['product_type']?>" 
-                                                                data-color="<?=$p['product_color']?>" 
-                                                                data-id="<?=$p['id']?>">
-                <div id="items-left">
-                    <img class="img i1" src="../<?=$p['product_img']?>" alt="">
-                    <img class="img i2" src="../<?=$p['product_img1']?>" alt="">
-                </div>
-                <div id="items-right">
-                    <span style="display: none;" class="brand">TRINITY</span>
-                    <h5><?=$p['product_name']?></h5>
-                    <span>$<?=$p['product_price']?></span>
-                </div>
-            </div>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </div>
+    
+    
 </section>
-<section id="menu">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">You may also like</h1>
+
+        <div class="flex space-x-2">
+          <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path></svg></button>
+          <button class="next p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path></svg></button>
+        </div>
+      </div>
+
+      <div class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
+        <?php require "../component/detail/classic.php" ?>
+      </div>
+    </div>
+
+    <section>
+      <div>
+        <img src="" alt="">
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
+        <div class="p-4">
+            <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
+            <hr class="w-12 border-black mb-6">
+            <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
+                A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
+            </p>
+            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">View Collection</a>
+        </div>
+    </section>
+
+    <section id="menu">
+        <input type="checkbox" id="menu-toggle" hidden>
+        <label class="hamburger" for="menu-toggle">
+            <svg viewBox="0 0 32 32">
+                <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+                <path class="line" d="M7 16 27 16"></path>
+            </svg>
+        </label>
+
         <div id="text-menu">
-            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
+            
             <div id="text">
                 <span onclick="window.location.href='../Pages/'">Home</span>
                 <span onclick="window.location.href='products.php?#product-section'">Shop</span>
                 <span onclick="window.location.href='products.php?#product-section'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
+
+            <div id="logo" onclick="window.location.href='../Pages/'">TRINITY</div>
         </div>
-        <input type="checkbox" id="menu-toggle" hidden>
+        
         <div id="utility-menu">
-            <label class="hamburger" for="menu-toggle">
-                    <svg viewBox="0 0 32 32">
-                        <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
-                        <path class="line" d="M7 16 27 16"></path>
-                    </svg>
-            </label>
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" onclick="window.location.href='cart.php'">
-                <path d="M223.5-103.5Q200-127 200-160t23.5-56.5Q247-240 280-240t56.5 23.5Q360-193 360-160t-23.5 56.5Q313-80 280-80t-56.5-23.5Zm400 0Q600-127 600-160t23.5-56.5Q647-240 680-240t56.5 23.5Q760-193 760-160t-23.5 56.5Q713-80 680-80t-56.5-23.5ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z"/>
+            <div class="relative">
+                <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                    <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
+                </svg>
+                <span class="absolute top-[-5px] right-[-5px] bg-red-400 text-white rounded-full w-[14px] h-[14px] text-[7px] flex items-center justify-center"><?=$noti?></span>
+            </div>
+
+            <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
             </svg>
-            <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" id="menu-Username" style="cursor: pointer;"><?=$_SESSION['username']?></p>
-                <?php if(!empty($_SESSION['img'])): ?>
-                    <div id="user-account" onclick="window.location.href='user.php'">
-                        <img id="user-avatar" src="../upload/<?= htmlspecialchars($_SESSION['img']) ?>" alt="avatar">
+            <?php require "../component/menu.php" ?>
+        </div>
+
+        <div id="fast-menu">
+            <div id="fast-menu-container">
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Polo shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                        </div>
+
+                        <div class="submenu-item">Hoodie
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                        </div>
                     </div>
-                <?php endif; ?>
-            <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg>
-                    </label>
-            <?php endif; ?>
-        </div>
-<div id="fast-menu">
-    <div class="menu-item">
-        <div class="menu-title">TRINITY</div>
-            <div class="submenu">
-                <div class="submenu-item">T-shirt
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                    <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Polo shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
-            </div>
-            <div class="submenu-item">Hoodie
-                <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
-            </div>
-        </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title">TRINITY LADIES</div>
-        <div class="submenu">
-            <div class="submenu-item">T-shirt
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
-            </div>
-            <div class="submenu-item">Blouse
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
-            </div>
-            <div class="submenu-item">Crop top
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title"><span>TRINITY LADIES</span></div>
+
+                    <div class="submenu">
+                        <div class="submenu-item">T-shirt
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
+                        </div>
+
+                        <div class="submenu-item">Blouse
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                        </div>
+
+                        <div class="submenu-item">Crop top
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='userTier.php'"><span>TRINITY TIER</span></div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
+                </div>
+
+                <?php require "../component/menu2.php" ?>
             </div>
         </div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='voucher.php'">GIFT VOUNCHER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='userTier.php'">TRINITY TIER</div>
-    </div>
-    <div class="menu-item">
-        <div class="menu-title" onclick="window.location.href='about.php'">ABOUT</div>
-    </div>
-</div>
-</section>
-<footer class="footer-2">
-  <div class="footer-container">
-    <div class="footer-left">
-      <p class="footer-label">CONTACT US</p>
-      <h2 class="footer-title">
-        Let’s Discuss Your <br> Style. With Us
-      </h2>
 
-      <button class="footer-btn" onclick="window.location.href='contact.php'">
-        Schedule a call now →
-      </button>
+        <div id="menu-search">
+            <div id="search-Container">
+                <span>
+                    <svg class="icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
+                    </svg>
+                </span>
 
-      <p class="footer-email-label">OR EMAIL US AT</p>
+                <input type="text" id="searchBar" placeholder="Search..."/>
+    
+            </div>
 
-      <div class="footer-email">
-        triple3tbusiness@gmail.com
-        <span>📋</span>
+    
+            <div id="search-Items">
+                <p id="searchResult"></p>
+                <div id="items-Container">
+                    <?php require "../component/base.php" ?>
+                </div>   
+
+                <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+            </div>
+        </div>
+
+    </section>
+
+<footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 border-b border-gray-100">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5h-9l-3.036-5.06A1.242 1.242 0 0 0 7.915 1.75H2.25A2.25 2.25 0 0 0 0 4v13.5A2.25 2.25 0 0 0 2.25 19.75h1.5a2.25 2.25 0 0 0 4.5 0h7.5a2.25 2.25 0 0 0 4.5 0h1.5a2.25 2.25 0 0 0 2.25-2.25V9.75A2.25 2.25 0 0 0 21 7.5Zm-13.5 12.25a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Zm12 0a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5M12 3.75v16.5M3.75 6.75h16.5M3.75 17.25h16.5" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Nationwide Free Shipping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">For orders from 499K</p>
       </div>
-    </div>
 
-    <div class="footer-right">
-      <div class="footer-col">
-        <p class="footer-col-title">QUICK LINKS</p>
-        <a href="../Pages/">Home</a>
-        <a href="products.php">Products</a>
-        <a href="cart.php">Cart</a>
-        <a href="voucher.php">Vouchers</a>
-        <a href="userTier.php">User Tier</a>
-        <a href="about.php">About Us</a>
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0-2.625V7.5m0 0h5.25c1.243 0 2.25-1.007 2.25-2.25h-1.5a1.125 1.125 0 0 0-1.125-1.125h-4.875c-.621 0-1.125.504-1.125 1.125H3.75a1.125 1.125 0 0 0-1.125 1.125H7.5c0 1.243 1.007 2.25 2.25 2.25H12" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Premium Gift Wrapping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Luxurious & meaningful</p>
       </div>
-      <div class="footer-col">
-        <p class="footer-col-title">INFORMATION</p>
-        <a href="../legal/term-of-service.php">Terms of Service</a>
-        <a href="../legal/privacy-policy.php">Privacy Policy</a>
-        <a href="../legal/delivery-policy.php">Delivery Policy</a>
-        <a href="../legal/ai-usage-policy.php">AI Usage Policy</a>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5H3M21 12H3m18 4.5H3M19.5 4.5h-15a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5v-12a1.5 1.5 0 0 0-1.5-1.5Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">100% Authentic Products</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Exclusively crafted by TRINITY</p>
       </div>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499c.151-.416.719-.416.87 0l2.428 6.666a.426.426 0 0 0 .375.281l7.103.65c.451.041.631.597.292.898l-5.372 4.792a.426.426 0 0 0-.129.398l1.583 6.95c.101.442-.38.791-.767.558l-6.19-3.738a.426.426 0 0 0-.44 0l-6.19 3.738c-.387.233-.868-.116-.767-.558l1.583-6.95a.426.426 0 0 0-.129-.398L.141 12.834c-.339-.301-.159-.857.292-.898l7.103-.65a.426.426 0 0 0 .375-.281l2.428-6.666Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Transparent Returns & Warranty</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Clear policies, zero hassle</p>
+      </div>
+
     </div>
   </div>
 
-  <div class="footer-bottom">
-    <p>Copyright (c) 2026 trinity-newfed</p>
-    <div class="footer-social">
-      <span>f</span>
-      <span>t</span>
-      <span>ig</span>
-      <span>in</span>
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Exclusive Offers from TRINITY</h3>
+        <p class="text-sm text-gray-400 mb-6 leading-relaxed">Get 10% off on your first order when you subscribe to our newsletter.</p>
+        <form class="contact-form space-y-3 max-w-sm">
+          <input type="email" placeholder="Email Address" required 
+                 class="email w-full px-4 py-3 bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-900 placeholder-gray-300 transition-colors" />
+          <button type="submit" 
+                  class="contact-submitBtn w-full bg-gray-600 hover:bg-gray-900 text-white font-medium text-xs tracking-widest uppercase py-3 transition-colors duration-300">
+            Contact Us
+          </button>
+        </form>
+        
+        <div class="flex space-x-6 mt-8 text-gray-400">
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.082 2h-.621c-2.42 0-2.743.012-3.71.054-.939.042-1.449.2-1.766.325a3.63 3.63 0 00-1.344.875 3.63 3.63 0 00-.875 1.344c-.125.317-.283.827-.325 1.766-.041.947-.054 1.29-.054 3.71v.621c0 2.42.012 2.743.054 3.71.042.939.2 1.449.325 1.766.23.596.548 1.106.974 1.53.424.424.934.742 1.53.974.317.125.827.283 1.766.325.967.041 1.29.054 3.71.054h.621c2.42 0 2.743-.012 3.71-.054.939-.042 1.449-.2 1.766-.325.596-.23 1.106-.548 1.53-.974.424-.424.742-.934.974-1.53.125-.317.283-.827.325-1.766.041-.967.054-1.29.054-3.71v-.621c0-2.42-.012-2.743-.054-3.71-.042-.939-.2-1.449-.325-1.766a3.63 3.63 0 00-.875-1.344 3.63 3.63 0 00-.125-.317c-.317-.125-.827-.283-1.766-.325C15.115 4.012 14.773 4 12.35 4h-.082zM12 7.682a4.318 4.318 0 100 8.636 4.318 4.318 0 000-8.636zM12 14a2 2 0 110-4 2 2 0 010 4zm5.884-7.804a.836.836 0 100-1.672.836.836 0 000 1.672z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.043 2.62-.053 3.91-.017.38.01.76.047 1.13.11.84.144 1.57.564 2.11 1.2a4.84 4.84 0 0 1 1.07 2.19c.14.65.2 1.32.22 1.99.04 1.53.04 3.07 0 4.6-.02.67-.08 1.34-.22 1.99a4.84 4.84 0 0 1-1.07 2.19 4.98 4.98 0 0 1-2.11 1.2c-.37.063-.75.1-1.13.11-1.29.036-2.6.026-3.91-.017m-1.05.003c-1.31.043-2.62.053-3.91.017a4.65 4.65 0 0 1-1.13-.11 4.84 4.84 0 0 1-2.11-1.2 4.84 4.84 0 0 1-1.07-2.19c-.14-.65-.2-1.32-.22-1.99-.04-1.53-.04-3.07 0-4.6.02-.67.08-1.34.22-1.99A4.84 4.84 0 0 1 4.22 1.52c.54-.636 1.27-1.056 2.11-1.2.37-.063.75-.1 1.13-.11 1.29-.036 2.6-.026 3.91.017"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Contact Us</h3>
+        <ul class="space-y-4 text-sm text-gray-500">
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Sales Hotline</span>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 9:00 PM Daily</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Feedback & Claims</span>
+            <a href="tel:1900252544" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3Tbusiness@gmail.com</a>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 5:00 PM (Mon - Sat)</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Email Support</span>
+            <a href="mailto:contact@TRINITY.vn" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">trinitysupport@gmail.com</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex justify-between">
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Information</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="about.php" class="hover:text-gray-900 transition-colors">About Us</a></li>
+            <li><a href="../legal/privacy-policy.php" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
+            <li><a href="../legal/delivery-policy.php" class="hover:text-gray-900 transition-colors">Delivery Policy</a></li>
+            <li><a href="../ai-usage-policy.php" class="hover:text-gray-900 transition-colors">AI Usage Policy</a></li>
+            <li><a href="../warranty-policy.php" class="hover:text-gray-900 transition-colors">Warranty Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Quick Link</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="../Pages/" class="hover:text-gray-900 transition-colors">Home</a></li>
+            <li><a href="products.php" class="hover:text-gray-900 transition-colors">Products</a></li>
+            <li><a href="voucher.php" class="hover:text-gray-900 transition-colors">Exclusive Offers</a></li>
+            <li><a href="userTier.php" class="hover:text-gray-900 transition-colors">Membership Status</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bg-gray-50 border-t border-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="text-[11px] font-medium tracking-widest text-gray-400 uppercase">
+        &copy; 2026 - TRINITY
+      </p>
     </div>
   </div>
 </footer>
 
+    <div class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
+        <span>Item added to bag</span>
+        <button class="underline" onclick="window.location.href='cart.php'">View</button>
+    </div>
 </body>
-<script>
-    const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-    let username1 = email.split("@")[0] || "";
-      let displayName = username1.length > 6
-      ? username1.substring(0, 6) + "..."
-      : username1;
-    const userWelcome = document.getElementById("menu-Username");
-    const items = document.querySelectorAll(".items");
-    const mainId = document.getElementById("mainId").dataset.id;
-    const mainType = document.getElementById("mainType").dataset.type;
-    const mainColor = document.getElementById("mainColor").dataset.color;
-    const sizeAdd = document.querySelectorAll(".size label");
-    const bigImg = document.getElementById("bigImg");
-    const smallImg = document.querySelectorAll(".smallImg");
-    const try_on = document.getElementById("Try-on-form");
-    const try_on_input = document.getElementById("cloth");
-    const formTryOn = document.getElementById("tryon-form");
-    const addCart = document.querySelectorAll(".add-cart");
-    const alert = document.getElementById("alertNotice");
-    const alertName = document.querySelector("#alertNotice h4");
-    const alertContent = document.querySelector("#alertNotice span");
-    const alertOkBtn = document.getElementById("OK-btn");
-    const alertCancelBtn = document.getElementById("CANCEL-btn");
-    const closeAlert = document.getElementById("closeAlertBtn");
-    const agreeForm = document.getElementById("agreementForm");
-    const isLogin = <?=isset($_SESSION['user_id']) ? 'true' : 'false'?>;
-    const checked = document.getElementById("agreeAI");
-      
-      if(checked){
-        if(checked.checked != true){
-        genBtn.disabled = true;
-        genBtn.style.background = "gray";
-      }else{
-        genBtn.disabled = false;
-      }
 
-      checked.addEventListener('change', function(){
-        if(checked.checked == true){
-          genBtn.disabled = false;
-          genBtn.style.background = "";
-        }else{
-          genBtn.disabled = true;
-          genBtn.style.background = "gray";
-        }
-      });
-      }
-
-    if(userWelcome){
-            userWelcome.textContent = "Hi, " + displayName;
-        }
-
-    items.forEach(item =>{
-        const type = item.dataset.type;
-        const id = item.dataset.id;
-        if(type == mainType && id != mainId){
-            item.style.display = "";
-        }else{
-            item.style.display = "none";
-        }
-    });
-
-    sizeAdd.forEach(label =>{
-        label.addEventListener('click', ()=>{
-            sizeAdd.forEach(lb =>{
-                lb.style.color = "black";
-                lb.style.background = "white";
-            });
-        label.style.color = "white";
-        label.style.background = "black";
-        });
-    });
-    const menuTitles = document.querySelectorAll(".menu-title");
-            menuTitles.forEach(title =>{
-                title.addEventListener("click", ()=>{
-                    const parent = title.parentElement;
-                    parent.classList.toggle("active");
-            });
-        });
-        const submenuItems = document.querySelectorAll(".submenu-item");
-            submenuItems.forEach(item =>{
-                item.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.toggle("active");
-            });
-        });
-
-        smallImg.forEach(img =>{
-            img.addEventListener('click', ()=>{
-                let temp = bigImg.src;
-                bigImg.src = img.src;
-                img.src = temp;
-            });
-        });
-      closeAlert.addEventListener('click', ()=>{
-        if(alert.classList.contains("tryon")){
-          alert.classList.remove("tryon");
-          alert.classList.add("tryon-close");
-        }
-      });
-
-      alert.addEventListener('click', function(e){
-        if(alert.classList.contains("tryon-close") && e.target != closeAlert){
-            alert.classList.add("tryon");
-            alert.classList.remove("tryon-close");
-        }
-      });  
-
-      agreeForm.addEventListener("submit", async function(e){
-        e.preventDefault();
-        const formData = new FormData(agreeForm);
-        try{
-          const res = await fetch("../Database/user_policy_agree.php",{
-            method: "POST",
-            body: formData
-          });
-        const text = await res.text();
-        }catch(err){
-        console.error(err);
-        }
-      });  
-
-      genBtn.addEventListener('click', function(){
-        agreeForm.requestSubmit();
-      });
-
-      let timer;
-      const forms = document.getElementById("addCartForm");
-      addCart.forEach(btn =>{
-        btn.addEventListener('click', function(e){
-        e.preventDefault();
-        clearTimeout(timer);
-        if(!isLogin){
-          alert.classList.add("alert");
-          closeAlert.style.opacity = "1";
-          closeAlert.style.visibility = "visible";
-          agreeForm.style.display = "none";
-          closeAlert.onclick = () =>{
-            alert.classList.remove("alert");
-          }
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "Please login first to use this feature!";
-          alertOkBtn.onclick = () =>{
-            window.location.href = "reglog.php";
-          };
-          alertCancelBtn.onclick = () =>{
-            alert.classList.remove("alert");
-          };
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-          }, 5000);
-          return;
-        }else{
-          fetch("../Database/add_item_to_cart.php", {
-          method: "POST",
-          body: new FormData(forms)
-        })
-        .then(res => res.text())
-        .then(data => {
-          console.log("SERVER:", data);
-          clearTimeout(timer);
-          alert.classList.add("alert");
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "This item has been reserve for you";
-          alertOkBtn.textContent = "View";
-          document.getElementById("fileChoose").style.display = "none";
-          document.getElementById("genBtn").style.display = "none";
-          agreeForm.style.display = "none";
-          document.getElementById("progress-container").style.display = "none";
-          if(alert.classList.contains("tryon") || alert.classList.contains("tryon-close")){
-            alert.classList.add("temp");
-            alert.classList.remove("tryon");
-            alert.classList.remove("tryon-close");
-          }
-          alertOkBtn.onclick = () => {
-            window.location.href = "cart.php";
-          };
-          alertCancelBtn.style.display = "none";
-          alertOkBtn.style.display = "";
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-          }, 5000);
-        });
-        }
-        });
-      });
-
-        try_on.addEventListener('click', function(e){
-        clearTimeout(timer);
-        if(!isLogin){
-          alert.classList.add("alert");
-          alertName.textContent = "TRINITY";
-          alertContent.textContent = "Please login first to use this feature!";
-          closeAlert.style.opacity = "1";
-          closeAlert.style.visibility = "visible";
-          agreeForm.style.display = "none";
-          closeAlert.onclick = () =>{
-            alert.classList.remove("alert");
-          }
-          alertOkBtn.onclick =  ()=>{
-            window.location.href = "reglog.php";
-          };
-          alertCancelBtn.onclick = ()=>{
-            alert.classList.remove("alert");
-          };
-          timer = setTimeout(function(){
-              alert.classList.remove("alert");
-            }, 5000);
-        }else if(isLogin){
-          clearTimeout(timer);
-          timer = null;
-            if(!alert.classList.contains("tryon-close") && !alert.classList.contains("tryon")){
-              alertName.textContent = "TRINITY VIRTUAL AI TRY ON";
-              alertContent.textContent = "";
-              alertOkBtn.style.display = "none";
-              formTryOn.style.display = "flex";
-              closeAlert.style.opacity = "1";
-              closeAlert.style.visibility = "visible";
-              alertCancelBtn.textContent = "Stop";
-              document.getElementById("fileChoose").style.display = "";
-              document.getElementById("genBtn").style.display = "";
-              agreeForm.style.display = "";
-              if(alert.classList.contains("temp")){
-                document.getElementById("progress-container").style.display = "flex";
-                document.getElementById("fileChoose").style.display = "none";
-                document.getElementById("genBtn").style.display = "none";
-                agreeForm.style.display = "none";
-              }
-              alertCancelBtn.style.display = "";
-              closeAlert.onclick = () =>{
-                alert.classList.remove("alert");
-              }
-              alert.classList.add("alert");
-              alertCancelBtn.onclick = ()=>{
-                
-              };
-            }
-        }
-      });
-
-const form = document.querySelector("#tryon-form");
-
-        form.addEventListener("submit", async function(e){
-          e.preventDefault();
-          document.getElementById("progress-container").style.display = "flex";
-          document.getElementById("fileChoose").style.display = "none";
-          document.getElementById("genBtn").style.display = "none";
-          agreeForm.style.display = "none";
-          document.getElementById("alertNotice").classList.remove("alert");
-          document.getElementById("alertNotice").classList.add("tryon");
-          const formData = new FormData(this);
-          const res = await fetch("http://127.0.0.1:5000/api/generate",{
-          method: "POST",
-          body: formData
-      });
-      const data = await res.json();
-      if(data.status === "success"){
-        const goUser = confirm("Redirect to user page for result?");
-      if(goUser){
-        window.location.href = data.redirect;
-      }
-      }
-      });
-      
-      const user_id = <?php echo json_encode($userID); ?>;
-      let abc = 0;
-      let animationInterval = null;
-
-      if(user_id){
-        setInterval(async () =>{
-          try{
-            const res = await fetch(`http://localhost:5000/api/progress/${user_id}`);
-            const data = await res.json();
-
-            if(data.progress < 2){
-              document.querySelector("#progress-container span").classList.add("animation");
-            } 
-            else if(data.progress > 2){
-              let percent = data.progress + data.progress / 4.75; 
-              document.getElementById("progress").style.width = `${percent}%`;
-              if(alert.classList.contains("tryon-close")){
-                alert.querySelector("h4").style.opacity = "1";
-                alert.querySelector("h4").style.visibility = "visible";
-                alert.querySelector("h4").textContent = `${parseFloat(percent.toFixed(2))}%`;
-              }
-            }
-          }catch(err){
-            console.error(err);
-          }
-        }, 3000);
-      }
-
-</script>
+<script src="../asset/contact.js"></script>
+<script src="../asset/headerEmail.js"></script>
+<script src="../asset/detailJS/detail.js"></script>
 </html>

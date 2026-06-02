@@ -1,67 +1,11 @@
-<?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
-
-session_start();
-$username = $_SESSION['username'] ?? null;
-$userID = $_SESSION['user_id'] ?? null;
-
-$baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
-
-$product = $conn
-  ->query("SELECT products.id AS id,
-            products.id AS id,
-            products.product_name, 
-            products.product_group,
-            products.product_price, 
-            products.product_category,
-            products.product_type, 
-            products.product_describe,
-            product_variant.product_stock,
-            product_variant.product_img,
-            product_variant.product_color
-
-            FROM products
-            JOIN product_variant
-            ON products.id = product_id
-            ")
-  ->fetch_all(MYSQLI_ASSOC);
-
-$product_variant = $conn->query("SELECT 
-                                 product_variant.product_id, product_variant.product_price,
-                                 product_variant.product_img AS variant_img,
-                                 product_variant.product_color, product_variant.product_size,
-                                 product_variant.product_stock, products.product_name,
-                                 products.product_category
-
-                                 FROM product_variant
-                                 JOIN products
-                                 ON product_variant.product_id = products.id")
-                        ->fetch_all(MYSQLI_ASSOC);
-
-$sql = $conn->prepare("SELECT * FROM user_policy_agreement
-                       WHERE user_id = ?");
-$sql->bind_param("i", $userID);
-$sql->execute();
-$agreement = $sql->get_result();
-if($agreement->num_rows > 0){
-  $agree = 1;
-}else{
-  $agree = 0;
-}
-$sql->close();
-?>
+<?php require "../component/products/header.php" ?>
+<?php require "../component/cartItem.php" ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRINITY - Ready To Wear</title>
+    <title>Shop All - TRINITY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/products.css">
@@ -103,23 +47,17 @@ $sql->close();
         </div>
         
         <div id="utility-menu">
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
-                <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
-            </svg>
+            <div class="relative">
+                <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                    <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
+                </svg>
+                <span class="absolute top-[-5px] right-[-5px] bg-red-400 text-white rounded-full w-[14px] h-[14px] text-[7px] flex items-center justify-center"><?=$noti?></span>
+            </div>
 
             <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
             </svg>
-            <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
-            <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg>
-                    </label>
-            <?php endif; ?>
+            <?php require "../component/menu.php" ?>
         </div>
 
         <div id="fast-menu">
@@ -177,18 +115,7 @@ $sql->close();
                     <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
                 </div>
 
-                <?php if(isset($_SESSION['username'])): ?>
-                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
-                <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input" id="label-login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg> 
-
-                        <p>Login</p>
-                    </label>
-                <?php endif; ?>
+                <?php require "../component/menu2.php" ?>
             </div>
         </div>
 
@@ -207,22 +134,12 @@ $sql->close();
     
             <div id="search-Items">
                 <p id="searchResult"></p>
-                    <div id="items-Container">
-                    <?php foreach($baseProduct as $p):?>
-                        <div class="item" data-name="<?=$p['product_name']?>">
-                            <div class="item-Img">
-                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
-                            </div>
+                <div id="items-Container">
+                    <?php require "../component/base.php" ?>
+                </div>   
 
-                            <div>
-                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
-                                <span>$<?=$p['product_price']?></span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?> 
-            </div>   
-
-            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+                <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+            </div>
         </div>
 
     </section>
@@ -230,7 +147,7 @@ $sql->close();
     <section id="head" class="relative bg-[#E5E5E5] overflow-hidden min-h-[500px] md:h-[100vh] flex items-center">
         <div class="absolute bg-[black] z-[100] w-[100%] h-[100%] animate-1"></div>
         <div class="absolute inset-0 bg-cover bg-center opacity-90">
-            <img class="object-cover w-[100%] h-[100%] animate-2" src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200" alt="">
+            <img class="object-cover w-[100%] h-[100%] animate-2" src="../Pictures/Banners/Product-Banner.png" alt="">
         </div>
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center py-20 z-10">
@@ -254,66 +171,12 @@ $sql->close();
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8 collections animate-on-scroll">
-            <?php foreach($baseProduct as $base): ?>
-                <?php if($base['product_category'] !== "collections") continue; ?>
-                
-            
-            <div class="group cursor-pointer collections-child">
-                <div class="relative bg-[#F3F3F3] aspect-[3/4] mb-4 overflow-hidden">
-                    <span class="absolute top-2 left-2 bg-white text-[9px] uppercase tracking-widest px-2 py-0.5 z-10">Limited</span>
-                    <img src="../<?=$base['product_img']?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Product">
-                </div>
-                <h3 class="text-xs uppercase tracking-wider text-gray-900">TRINITY <?=$base['product_name']?></h3>
-                <p class="text-xs text-gray-600 mt-1">$ <?=$base['product_price']?></p>
-            </div>
-
-            <?php endforeach; ?>
-
-            <?php foreach($product as $key => $item): ?>
-                <?php if($item['product_category'] !== "collections") continue; ?>
-    
-                    <div class="group cursor-pointer collections-child"
-                         data-id="<?=$item['id']?>" 
-                         data-img="../<?=$item['product_img']?>"
-                         data-name="<?=$item['product_color']?> <?=$item['product_name']?>"
-                         data-price="<?=$item['product_price']?>"
-                         data-category="<?=$item['product_category']?>"
-                         data-color="<?=$item['product_color']?>"
-                         data-stock="<?=$item['product_stock']?>">
-
-                        <div class="bg-[#F3F3F3] aspect-[3/4] mb-4 overflow-hidden">
-                            <img src="../<?=$item['product_img']?>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Product">
-                        </div>
-
-                        <h3 class="text-xs uppercase tracking-wider text-gray-900"><?=$item['product_color']?> <?=$item['product_name']?></h3>
-                        <p class="text-xs text-gray-600 mt-1">$<?=$item['product_price']?></p>
-
-                        <?php foreach($product_variant as $variant): 
-                        ?>
-                            <?php if($variant['product_id'] == $item['id']): 
-                                $activeClass = ($variant['product_color'] === $item['product_color']) ? 'active' : '';
-                            ?>
-                                <div class="variants <?=$activeClass?>" 
-                                     data-id="<?=$variant['product_id']?>"
-                                     data-variant="<?=$variant['product_color']?>"
-                                     data-img="../<?=$variant['variant_img']?>" 
-                                     data-name="<?=$variant['product_color']?> <?=$variant['product_name']?>"
-                                     data-price="<?=$variant['product_price']?>"
-                                     data-category="<?=$variant['product_category']?>"
-                                     data-color="<?=$variant['product_color']?>"
-                                     data-stock="<?=$variant['product_stock']?>">
-                                </div>
-                            <?php endif; ?>
-                        <?php 
-                          endforeach;
-                        ?>
-                    </div>
-            <?php endforeach; ?>
+            <?php require "../component/products/product.php" ?>
         </div>
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-2 bg-[#F9F9F9] items-center">
-        <div class="h-96 md:h-[600px] w-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800');"></div>
+        <div class="h-96 md:h-[600px] w-full bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-3-Img.png');"></div>
         <div class="p-12 md:p-24 text-center md:text-left">
             <h2 class="text-3xl font-serif-custom tracking-widest uppercase mb-4">Tailoring Redefined</h2>
             <p class="text-xs text-gray-600 tracking-wide max-w-sm mb-8 leading-relaxed">
@@ -333,66 +196,13 @@ $sql->close();
         </div>
 
         <div class="flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
-            <?php 
-                $index = -1;
-                foreach($baseProduct as $item): 
-                $index = $index + 1;
-                $formattedNum = str_pad($index, 2, '0', STR_PAD_LEFT);
-            ?>
-                <?php if($item['product_category'] === "collections") continue; ?>
-                <div class="products-child group cursor-pointer w-[calc((100%-80px)/5)] shrink-0 min-w-[160px] product transition-all duration-500"
-                    <?php 
-                        foreach($product_variant as $variant):
-                        if($variant['product_id'] == $item['id']):
-                    ?>
-                     data-id="<?=$item['id']?>" 
-                     data-img="../<?=$item['product_img']?>"
-                     data-name="<?=$item['product_name']?>"
-                     data-price="<?=$item['product_price']?>"
-                     data-color="<?=$variant['product_color']?>"
-                     data-category="<?=$item['product_category']?>"
-                     data-stock="<?=$item['product_stock']?>"
-                    <?php 
-                        endif; 
-                        endforeach;
-                    ?>
-                     >
-                    
-                    <div class="text-[10px] text-gray-400 mb-1"><?=$formattedNum?></div>
-                        <div class="relative bg-[#F3F3F3] aspect-[3/4] mb-3">
-                            <img src="../<?=$item['product_img']?>" class="w-full h-full object-cover" alt="">
-                        </div>
-
-                        <h3 class="text-[11px] uppercase tracking-wider"><?=$item['product_name']?></h3>
-                        <p class="text-[11px] text-gray-500 mt-0.5">$ <?=$item['product_price']?></p>
-
-                        <?php foreach($product_variant as $variant): 
-                        ?>
-                            <?php if($variant['product_id'] == $item['id']): 
-                                $activeClass = ($variant['product_color'] === "white") ? 'active' : '';
-                            ?>
-                                <div class="variants <?=$activeClass?>" 
-                                     data-id="<?=$variant['product_id']?>"
-                                     data-variant="<?=$variant['product_color']?>"
-                                     data-img="../<?=$variant['variant_img']?>" 
-                                     data-name="<?=$variant['product_color']?> <?=$variant['product_name']?>"
-                                     data-price="<?=$variant['product_price']?>"
-                                     data-category="<?=$variant['product_category']?>"
-                                     data-color="<?=$variant['product_color']?>"
-                                     data-stock="<?=$variant['product_stock']?>">
-                                </div>
-                            <?php endif; ?>
-                        <?php 
-                          endforeach;
-                        ?>
-                    </div>
-            <?php endforeach; ?>
+            <?php require "../component/products/classic.php" ?>
         </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-        <div class="h-[450px] bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?q=80&w=600');"></div>
-        <div class="h-[450px] bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600');"></div>
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
+        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
         <div class="p-4">
             <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
             <hr class="w-12 border-black mb-6">
@@ -403,492 +213,185 @@ $sql->close();
         </div>
     </section>
 
-    <footer class="bg-[#F6F6F6] pt-16 pb-8 border-t border-gray-200 text-xs tracking-wide">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div>
-                <h4 class="font-serif-custom text-base tracking-widest uppercase mb-4">Trinity</h4>
-                <p class="text-gray-500 leading-relaxed mb-4">Minimal contemporary fashion label focused on tailoring and refined essentials.</p>
-                <div class="flex space-x-4 text-gray-600">
-                    <a href="#" class="hover:text-black">IG</a>
-                    <a href="#" class="hover:text-black">FB</a>
-                    <a href="#" class="hover:text-black">PT</a>
-                </div>
-            </div>
-            <div>
-                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Navigation</h4>
-                <ul class="space-y-2 text-gray-500">
-                    <li><a href="#" class="hover:text-black">New In</a></li>
-                    <li><a href="#" class="hover:text-black">Ready To Wear</a></li>
-                    <li><a href="#" class="hover:text-black">Men</a></li>
-                    <li><a href="#" class="hover:text-black">Editorial</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Support</h4>
-                <ul class="space-y-2 text-gray-500">
-                    <li><a href="#" class="hover:text-black">Contact</a></li>
-                    <li><a href="#" class="hover:text-black">Shipping</a></li>
-                    <li><a href="#" class="hover:text-black">Returns</a></li>
-                    <li><a href="#" class="hover:text-black">FAQs</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="uppercase font-semibold text-gray-900 tracking-wider mb-4">Newsletter</h4>
-                <p class="text-gray-500 mb-4 leading-relaxed">Subscribe to receive updates, access to exclusive deals, and more.</p>
-                <form class="flex border-b border-black py-1">
-                    <input type="email" placeholder="Enter your email" class="bg-transparent flex-1 focus:outline-none text-xs placeholder-gray-400">
-                    <button type="submit" class="uppercase tracking-widest font-semibold hover:opacity-70">Subscribe</button>
-                </form>
-            </div>
+<footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
+  <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 border-b border-gray-100">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5h-9l-3.036-5.06A1.242 1.242 0 0 0 7.915 1.75H2.25A2.25 2.25 0 0 0 0 4v13.5A2.25 2.25 0 0 0 2.25 19.75h1.5a2.25 2.25 0 0 0 4.5 0h7.5a2.25 2.25 0 0 0 4.5 0h1.5a2.25 2.25 0 0 0 2.25-2.25V9.75A2.25 2.25 0 0 0 21 7.5Zm-13.5 12.25a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Zm12 0a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5M12 3.75v16.5M3.75 6.75h16.5M3.75 17.25h16.5" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Nationwide Free Shipping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">For orders from 499K</p>
+      </div>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0-2.625V7.5m0 0h5.25c1.243 0 2.25-1.007 2.25-2.25h-1.5a1.125 1.125 0 0 0-1.125-1.125h-4.875c-.621 0-1.125.504-1.125 1.125H3.75a1.125 1.125 0 0 0-1.125 1.125H7.5c0 1.243 1.007 2.25 2.25 2.25H12" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Premium Gift Wrapping</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Luxurious & meaningful</p>
+      </div>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5H3M21 12H3m18 4.5H3M19.5 4.5h-15a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5v-12a1.5 1.5 0 0 0-1.5-1.5Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">100% Authentic Products</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Exclusively crafted by TRINITY</p>
+      </div>
+
+      <div class="flex flex-col items-center group">
+        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499c.151-.416.719-.416.87 0l2.428 6.666a.426.426 0 0 0 .375.281l7.103.65c.451.041.631.597.292.898l-5.372 4.792a.426.426 0 0 0-.129.398l1.583 6.95c.101.442-.38.791-.767.558l-6.19-3.738a.426.426 0 0 0-.44 0l-6.19 3.738c-.387.233-.868-.116-.767-.558l1.583-6.95a.426.426 0 0 0-.129-.398L.141 12.834c-.339-.301-.159-.857.292-.898l7.103-.65a.426.426 0 0 0 .375-.281l2.428-6.666Z" />
+          </svg>
+        </div>
+        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Transparent Returns & Warranty</h4>
+        <p class="text-xs text-gray-400 mt-1.5">Clear policies, zero hassle</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Exclusive Offers from TRINITY</h3>
+        <p class="text-sm text-gray-400 mb-6 leading-relaxed">Get 10% off on your first order when you subscribe to our newsletter.</p>
+        <form class="contact-form space-y-3 max-w-sm">
+          <input type="email" placeholder="Email Address" required 
+                 class="email w-full px-4 py-3 bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-900 placeholder-gray-300 transition-colors" />
+          <button type="submit" 
+                  class="contact-submitBtn w-full bg-gray-600 hover:bg-gray-900 text-white font-medium text-xs tracking-widest uppercase py-3 transition-colors duration-300">
+            Contact Us
+          </button>
+        </form>
+        
+        <div class="flex space-x-6 mt-8 text-gray-400">
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.082 2h-.621c-2.42 0-2.743.012-3.71.054-.939.042-1.449.2-1.766.325a3.63 3.63 0 00-1.344.875 3.63 3.63 0 00-.875 1.344c-.125.317-.283.827-.325 1.766-.041.947-.054 1.29-.054 3.71v.621c0 2.42.012 2.743.054 3.71.042.939.2 1.449.325 1.766.23.596.548 1.106.974 1.53.424.424.934.742 1.53.974.317.125.827.283 1.766.325.967.041 1.29.054 3.71.054h.621c2.42 0 2.743-.012 3.71-.054.939-.042 1.449-.2 1.766-.325.596-.23 1.106-.548 1.53-.974.424-.424.742-.934.974-1.53.125-.317.283-.827.325-1.766.041-.967.054-1.29.054-3.71v-.621c0-2.42-.012-2.743-.054-3.71-.042-.939-.2-1.449-.325-1.766a3.63 3.63 0 00-.875-1.344 3.63 3.63 0 00-.125-.317c-.317-.125-.827-.283-1.766-.325C15.115 4.012 14.773 4 12.35 4h-.082zM12 7.682a4.318 4.318 0 100 8.636 4.318 4.318 0 000-8.636zM12 14a2 2 0 110-4 2 2 0 010 4zm5.884-7.804a.836.836 0 100-1.672.836.836 0 000 1.672z"/></svg>
+          </a>
+          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.043 2.62-.053 3.91-.017.38.01.76.047 1.13.11.84.144 1.57.564 2.11 1.2a4.84 4.84 0 0 1 1.07 2.19c.14.65.2 1.32.22 1.99.04 1.53.04 3.07 0 4.6-.02.67-.08 1.34-.22 1.99a4.84 4.84 0 0 1-1.07 2.19 4.98 4.98 0 0 1-2.11 1.2c-.37.063-.75.1-1.13.11-1.29.036-2.6.026-3.91-.017m-1.05.003c-1.31.043-2.62.053-3.91.017a4.65 4.65 0 0 1-1.13-.11 4.84 4.84 0 0 1-2.11-1.2 4.84 4.84 0 0 1-1.07-2.19c-.14-.65-.2-1.32-.22-1.99-.04-1.53-.04-3.07 0-4.6.02-.67.08-1.34.22-1.99A4.84 4.84 0 0 1 4.22 1.52c.54-.636 1.27-1.056 2.11-1.2.37-.063.75-.1 1.13-.11 1.29-.036 2.6-.026 3.91.017"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Contact Us</h3>
+        <ul class="space-y-4 text-sm text-gray-500">
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Sales Hotline</span>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 9:00 PM Daily</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Feedback & Claims</span>
+            <a href="tel:1900252544" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3Tbusiness@gmail.com</a>
+            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 5:00 PM (Mon - Sat)</span>
+          </li>
+          <li>
+            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Email Support</span>
+            <a href="mailto:contact@TRINITY.vn" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">trinitysupport@gmail.com</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="flex justify-between">
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Information</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="about.php" class="hover:text-gray-900 transition-colors">About Us</a></li>
+            <li><a href="../legal/privacy-policy.php" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
+            <li><a href="../legal/delivery-policy.php" class="hover:text-gray-900 transition-colors">Delivery Policy</a></li>
+            <li><a href="../ai-usage-policy.php" class="hover:text-gray-900 transition-colors">AI Usage Policy</a></li>
+            <li><a href="../warranty-policy.php" class="hover:text-gray-900 transition-colors">Warranty Policy</a></li>
+          </ul>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between text-[11px] text-gray-400">
-            <p>© 2026 TRINITY. All rights reserved.</p>
-            <div class="flex space-x-4 mt-2 md:mt-0">
-                <a href="#" class="hover:text-black">Privacy Policy</a>
-                <a href="#" class="hover:text-black">Terms & Conditions</a>
-            </div>
+        <div>
+          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Quick Link</h3>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="../Pages/" class="hover:text-gray-900 transition-colors">Home</a></li>
+            <li><a href="products.php" class="hover:text-gray-900 transition-colors">Products</a></li>
+            <li><a href="voucher.php" class="hover:text-gray-900 transition-colors">Exclusive Offers</a></li>
+            <li><a href="userTier.php" class="hover:text-gray-900 transition-colors">Membership Status</a></li>
+          </ul>
         </div>
-    </footer>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bg-gray-50 border-t border-gray-100 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="text-[11px] font-medium tracking-widest text-gray-400 uppercase">
+        &copy; 2026 - TRINITY
+      </p>
+    </div>
+  </div>
+</footer>
 
 
     <div id="product-modal">
 
         <div class="modal-container">
+            <span class="close-modal">&times;</span>
             <div class="modal-left">
                 <img id="modal-img" src="" alt="Product Image">
             </div>
 
             <div class="modal-right">
-                <span class="close-modal">&times;</span>
-                <p class="modal-brand">TRINITY</p>
-                <h2 id="modal-name"></h2>
-                <p id="modal-price"></p>
+                <h2 id="modal-name" class="font-normal opacity-[0.8] text-[24px] lg:text-[32px]"></h2>
+                <p id="modal-price" class="w-[100%] font-light text-[14px] lg:text-[24px] pb-2 sm:pb-5 border-b border-[rgba(0,0,0,0.1)]"></p>
 
-                <div class="size-select">
-                    <p>Size</p>
-                    <div class="sizes">
-                        <label for="S-size">S</label>
-                        <label for="M-size">M</label>        
-                        <label for="L-size">L</label>        
-                        <label for="XL-size">XL</label>
-                    </div>
-                </div>
-
-                <div class="color-select">
-                    <p>Color</p>
-                    <div class="colors grid grid-cols-3 md:grid-cols-4 sm:gx-3"></div>
-                </div>
-
-                <div id="form-container">
-                    <form id="addCartForm">     
-                        <input type="hidden" name="product_id" id="modal-product-id">
-                        <input type="hidden" name="product_category" id="modal-product-category">
-                        <input type="hidden" name="product_color" id="modal-product-color">
-
-                        <input type="radio" name="cart_size" value="S" id="S-size" hidden checked>
-                        <input type="radio" name="cart_size" value="M" id="M-size" hidden>
-                        <input type="radio" name="cart_size" value="L" id="L-size-" hidden>
-                        <input type="radio" name="cart_size" value="XL" id="XL-size" hidden> 
-
-                        <button class="modal-add add-cart-btn-big">ADD TO CART</button>
-                    </form>
-
-                    <div id="Try-on-form">
-                        <button class="modal-try" type="button">Try with AI✨</button>
-                        <div id="tooltip-explain">
-                            <h3>Virtual AI Try On</h3>
-                            <span>This is an feature for customers to try on our product</span>
+                <div>
+                    <div class="size-select">
+                        <p class="pt-3 lg:pt-4 pb-1">Size</p>
+                        <div class="sizes flex gap-2">
+                            <label for="S-size" class="active text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">S</label>
+                            <label for="M-size" class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">M</label>        
+                            <label for="L-size" class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">L</label>        
+                            <label for="XL-size" class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">XL</label>
                         </div>
                     </div>
+
+                    <div class="color-select">
+                        <p class="pt-3 lg:pt-4 pb-1">Color</p>
+                        <div class="colors grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-2"></div>
+                    </div>
                 </div>
 
-                <div id="modal-detail" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">Details</div>
+                <div class="flex gap-2 sm:gap-3 pt-2 sm:pt-3 mt-10 w-[100%]">
+                    <button class="w-[50%] modal-add text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2">ADD TO CART</button>
+                    <button class="w-[50%] modal-try text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2" type="button">TRY WITH AI✨</button>
+                </div>
+
+                <div class="modal-detail cursor-pointer hover:underline pt-2 sm:pt-4">Details</div>
             </div>
         </div>
 
     </div>
 
-<script>
-        //Username
-        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.split("@")[0] || "";
-        let displayName = username1.length > 6
-        ? username1.substring(0, 6) + "..."
-        : username1;
-        const userWelcome = document.querySelectorAll(".menu-Username");
-
-        if(userWelcome){
-            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
-        }
-        
-        //Head observe
-        const headObserve = new IntersectionObserver(entries =>{
-            entries.forEach(entry =>{
-                if(entry.isIntersecting){
-                    document.getElementById("menu").style.background = "transparent";
-                    document.getElementById("menu").style.backdropFilter = "blur(0px)";
-                    document.getElementById("menu").style.transition = ".3s all";
-                    document.getElementById("menu").classList.add("head");
-                    userWelcome ? userWelcome.forEach(user => user.style.color = "") : null;
-
-                    const lines = document.querySelectorAll(".line");
-                    lines.forEach(line => line.style.stroke = "white");
-
-                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                    icons.forEach(icon => icon.style.fill = "white");
-
-                    const spans = document.getElementById("menu").querySelectorAll("span");
-                    spans.forEach(span => span.style.color = "white");
-
-                }else{
-                    document.getElementById("menu").classList.remove("head");
-
-                    userWelcome ? userWelcome.forEach(user => user.style.color = "black") : null;
-
-                    const lines = document.querySelectorAll(".line");
-                    lines.forEach(line => line.style.stroke = "black");
-
-                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                    icons.forEach(icon => icon.style.fill = "black");
-
-                    const spans = document.getElementById("menu").querySelectorAll("span");
-                    spans.forEach(span => span.style.color = "");
-
-                    document.getElementById("menu").style.background = "";
-                    document.getElementById("menu").style.backdropFilter = "blur(10px)";
-                }
-            });
-        }, {
-            threshold: 0.7
-        });
-        headObserve.observe(head);
-
-        //Search bar
-        const searchBar = document.getElementById("searchBar");
-        const searchItems = document.getElementById("search-Items");
-        const searchResult = document.getElementById("searchResult");
-        const searchBtn = document.getElementById("searchBtn");
-
-        searchBar.addEventListener('keyup', () => {
-            const items = document.querySelectorAll(".item");
-            const searchKey = searchBar.value.toLowerCase().trim();
-
-            if(searchKey.length > 0){
-                searchItems.classList.add("active");
-
-            }else{
-
-                searchItems.classList.remove("active");
-                searchResult.textContent = "";
-                return;
-            }
-
-            let hasResult = false;
-
-            items.forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                if(name.includes(searchKey) || searchKey === "all"){
-                    item.style.display = "";
-                    hasResult = true;    
-
-                }else{
-                    item.style.display = "none";
-                }
-            });
-
-            if(hasResult){
-                searchBtn.style.display = "";
-                if(searchKey.length >= 3) searchResult.textContent = "Result for: " + searchKey;
-
-            }else{
-                searchBtn.style.display = "none";
-                if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
-                else searchResult.textContent = "";
-            }
-        });
-
-        //Animate class add on Viewport
-        document.addEventListener("DOMContentLoaded", function () {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if(entry.isIntersecting){
-                        entry.target.classList.add("animate");
-                        observer.unobserve(entry.target); 
-                    }
-                });
-            }, {
-                root: null,
-                threshold: 0.15
-            });
-
-            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
-            elementsToAnimate.forEach(element => observer.observe(element));
-        });
-
-        //Card modal popup
-        const products = document.querySelectorAll(".group.cursor-pointer");
-
-        const conModal = document.querySelector(".modal-container");
-        const modal = document.getElementById("product-modal");
-        const modalImg = document.getElementById("modal-img");
-        const modalName = document.getElementById("modal-name");
-        const modalPrice = document.getElementById("modal-price");
-        const modalColor = document.querySelector(".colors");
-
-        const modalProductId = document.getElementById("modal-product-id");
-        const modalProductCategory = document.getElementById("modal-product-category");
-        const modalProductColor = document.getElementById("modal-product-color");
-        const modalAddCart = document.querySelector(".modal-add");
-        const sizeAdd = document.querySelectorAll(".sizes label");
-
-        products.forEach(product => {
-            product.addEventListener('click', function(){
-
-              //Size reset
-              sizeAdd.forEach(size =>{
-                size.style.color = "black";
-                size.style.background = "white";
-              });
-
-              //Stock
-              if(this.dataset.stock <= 0){
-                modalAddCart.disabled = true;
-                modalAddCart.style.background = "gray";
-                modalAddCart.textContent = "OUT OF STOCK";
-              }else{
-                modalAddCart.disabled = false;
-                modalAddCart.style.background = "";
-                modalAddCart.textContent = "ADD TO CART";
-              }
-
-              //Modal info
-              let modalId = "";
-              const modalVariant = this.querySelectorAll(".variants");
-              modalImg.src = this.dataset.img;
-              modalId.value = this.dataset.id;
-              modalName.textContent = this.dataset.name.toUpperCase();
-              modalPrice.textContent = "$" + this.dataset.price;
-              modalProductId.value = this.dataset.id;
-              modalProductCategory.value = this.dataset.category;
-              modalProductColor.value = this.dataset.color;
-              modal.style.setProperty("display", "flex", "important");
-
-
-              //Render label color
-              let htmlModal = "";
-              modalVariant.forEach((variant) =>{
-
-
-                const isActive = variant.classList.contains("active");
-
-                const activeClasses = isActive ? "color active bg-black text-white border-black" : "color bg-white text-black hover:bg-black hover:text-white";
-
-                const inlineStyle = isActive ? "color: white; background: black;" : "color: black; background: white;";
-
-                htmlModal += `
-                    <label class="${activeClasses} color text-xs md:text-sm uppercase border-solid border-black/20 border p-1 md:p-2 mr-2 mb-2 text-center cursor-pointer transition-all duration-300 hover:bg-black hover:text-white"
-                           data-id="${variant.dataset.id}"
-                           data-variant="${variant.dataset.variant}"
-                           data-img="${variant.dataset.img}"
-                           data-name="${variant.dataset.name}"
-                           data-price="${variant.dataset.price}"
-                           data-stock="${variant.dataset.stock}">${variant.dataset.variant}</label>
-                `;
-              });
-
-              modalColor.innerHTML = htmlModal;
-
-
-              //Size select
-              let modalSize = "S";
-              sizeAdd.forEach(label =>
-                    label.addEventListener('click', ()=>{
-                        modalSize = label.textContent;
-                        sizeAdd.forEach(label =>{
-                            label.style.color = "black";
-                            label.style.background = "white";
-                            
-                        });
-
-                        label.style.color = "white";
-                        label.style.background = "black";
-                    })
-                );
-
-              //Color select
-              const colorAdd = document.querySelectorAll(".colors label");
-
-                colorAdd.forEach(color => {
-                    color.addEventListener('click', ()=>{
-                        colorAdd.forEach(color =>{
-                            color.style.color = "black";
-                            color.style.background = "white";
-                        });
-
-                    color.style.color = "white";
-                    color.style.background = "black";
-                    });
-                });
-
-
-
-                //Color button change
-                const outerColorBtn = document.querySelectorAll(".colors label");
-
-                outerColorBtn.forEach(Btn =>{
-                    Btn.addEventListener('click', function(e){
-                        e.stopPropagation();
-
-                        //Stock
-                        if(this.dataset.stock <= 0){
-                            modalAddCart.disabled = true;
-                            modalAddCart.style.background = "gray";
-                            modalAddCart.textContent = "OUT OF STOCK";
-                        }else{
-                            modalAddCart.disabled = false;
-                            modalAddCart.style.background = "";
-                            modalAddCart.textContent = "ADD TO CART";
-                        } 
-
-                        const vImg = this.dataset.img;
-                        const baseName = this.dataset.name;
-                        const vColor = this.dataset.variant;
-
-                        modalImg.src = vImg;
-                        modalName.textContent = baseName.toUpperCase();
-                        modalPrice.textContent = "$" + product.dataset.price;
-                        modalProductId.value = product.dataset.id;
-                        modalProductCategory.value = product.dataset.category;
-                        modalProductColor.value = vColor;
-
-                        modal.style.setProperty("display", "flex", "important");
-
-                    });
-                });
-
-                //Add cart
-                modalAddCart.addEventListener('click', function(e){
-                    e.preventDefault();
-                    console.log(modalProductColor.value);
-                    fetch('../Database/add_item_to_cart.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `product_category=${modalProductCategory.value}&product_color=${modalProductColor.value}&cart_size=${modalSize}&product_id=${parseInt(modalProductId.value)}`
-                    })
-                    .catch(error => {
-                        console.error('Error updating cart:', error);
-                    });
-                });
-
-            });
-        });        
-
-        //Card modal close
-        const closeBtn = document.querySelector(".close-modal");
-        closeBtn.addEventListener('click', ()=>{
-            modal.style.display = "none";
-        });
-
-        modal.addEventListener('click', function(e){
-            if(!conModal.contains(e.target)) modal.style.display = "none";
-        });
-
-
-        //Button Next - Previous
-        document.querySelector(".next").addEventListener('click', function(){
-            const products = document.querySelectorAll(".product");
-            products.forEach(product =>{
-                product.style.animation = "none";
-                product.style.opacity = "1";
-                const width = product.offsetWidth;
-                let gap = 100;
-                product.style.transform = `translateX(-${(width*5) + gap}px)`;
-            });
-        });
-
-        document.querySelector(".previous").addEventListener('click', function(){
-            const products = document.querySelectorAll(".product");
-            products.forEach(product =>{
-                product.style.animation = "none";
-                product.style.opacity = "1";
-                const width = product.offsetWidth;
-                let gap = 100;
-                product.style.transform = `translateX(${0}px)`;
-            });
-        });
-
-        
-
-
-        //Fast menu 
-        const fastMenuContainer = document.getElementById("fast-menu-container");
-        const menuToggle = document.getElementById("menu-toggle");
-        const hamburger = document.querySelector(".hamburger");
-
-        document.addEventListener('click', function(e){
-            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
-                menuToggle.checked = false;
-            }
-        });
-
-        const menuTitles = document.querySelectorAll(".menu-title");
-            menuTitles.forEach(title =>{
-                title.addEventListener("click", ()=>{
-                    const parent = title.parentElement;
-                    parent.classList.toggle("active");
-            });
-        });
-        const submenuItems = document.querySelectorAll(".submenu-item");
-            submenuItems.forEach(item =>{
-                item.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.toggle("active");
-            });
-        });
-
-        const search = document.querySelector(".icon.search");
-        const menuSearch = document.getElementById("menu-search");
-        const searchContainer = document.getElementById("search-Container");
-
-        search.addEventListener('click', ()=>{
-            document.getElementById("menu").classList.toggle("active");
-
-            userWelcome ? userWelcome.forEach(user => user.classList.toggle("active")) : null;
-
-            const lines = document.querySelectorAll(".line");
-            lines.forEach(line => line.classList.toggle("active"));
-
-            const icons = document.getElementById("menu").querySelectorAll(".icon path");
-            icons.forEach(icon => icon.classList.toggle("active"));
-
-            const spans = document.getElementById("menu").querySelectorAll("span");
-            spans.forEach(span => span.classList.toggle("active"));
-
-            document.getElementById("menu-search").classList.toggle("active");
-            document.getElementById("search-Container").classList.toggle("active");
-        });
-
-        document.addEventListener('click', function(e){
-            if(!searchContainer.contains(e.target) && e.target !== search){
-                document.getElementById("menu").classList.remove("active");
-
-                userWelcome ? userWelcome.forEach(user => user.classList.remove("active")) : null;
-
-                const lines = document.querySelectorAll(".line");
-                lines.forEach(line => line.classList.remove("active"));
-
-                const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                icons.forEach(icon => icon.classList.remove("active"));
-
-                const spans = document.getElementById("menu").querySelectorAll("span");
-                spans.forEach(span => span.classList.remove("active"));
-                document.getElementById("menu-search").classList.remove("active");
-                document.getElementById("search-Container").classList.remove("active");
-            }
-        });
-</script>
+    <div class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
+        <span>Item added to bag</span>
+        <button class="underline" onclick="window.location.href='cart.php'">View</button>
+    </div>
+
+<script src="../asset/contact.js"></script>
+<script src="../asset/headerEmail.js"></script>
+<script src="../asset/productsJS/products.js"></script>
 </body>
 </html>
