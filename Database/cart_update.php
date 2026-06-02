@@ -21,6 +21,7 @@ $id = $_POST['cart_id'] ?? "";
 $action = $_POST['action'] ?? "";
 $size = $_POST['cart_size'] ?? "";
 $color = $_POST['cart_color'] ?? "";
+$quantity = $_POST['quantity'] ?? "";
 
 if($action === "plus"){
     $stmt = $conn->prepare($sql = "UPDATE cart 
@@ -61,7 +62,17 @@ if($action == "update"){
     $stmt->bind_param("ssii", $color, $size, $userID, $id);
     $stmt->execute();
     $stmt->close();
+}else if($action == "reset"){
+    $stmt = $conn->prepare("UPDATE cart 
+                            SET quantity = ?
+                            WHERE user_id = ?
+                            AND id = ?");
+    $stmt->bind_param("iii", $quantity, $userID, $id);
+    $stmt->execute();
+    $stmt->close();
 }
+
+
 
 echo "$id, $color, $size"
 ?>

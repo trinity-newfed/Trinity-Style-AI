@@ -254,7 +254,8 @@ html::-webkit-scrollbar{
 }
 #items-quantity-container div{
     display: flex;
-    width: fit-content;
+    width: 75px;
+    min-width: fit-content;
     gap: 5%;
 }
 #items-quantity-container span{
@@ -265,6 +266,9 @@ html::-webkit-scrollbar{
 .item-quantity{
     min-width: 20px;
     min-height: 20px;
+    width: fit-content;
+    height: fit-content;
+    padding: 2px;
     color: white;
     background: black;
     text-align: center;
@@ -482,6 +486,35 @@ html::-webkit-scrollbar{
     filter: none;
 }
 /*END BODY*/
+
+.toast.active{
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    transition: .3s all;
+}
+.toast.active::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgb(201, 201, 201);
+    width: 100%;
+    height: 1px;
+    animation: toast 5s forwards;
+    animation-delay: .1s;
+}
+
+@keyframes toast {
+    from{
+        width: 100%;
+        transition: .3s all;
+    }
+    to{
+        width: 0;
+        transition: .3s all;
+    }
+}
 
 
 @media(max-width: 768px){

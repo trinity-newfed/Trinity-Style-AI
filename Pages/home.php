@@ -1,450 +1,209 @@
-<?php
-include "../Database/createdatabase.php";
-session_start();
-
-if(!isset($_SESSION['role'])){
-    $_SESSION['role'] = "guest";
-}
-
-$baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
-
-
-$product = $conn
-  ->query("SELECT products.id AS id,
-            products.product_name, products.product_group,
-            products.product_price, products.product_category,
-            products.product_type, products.product_describe,
-            products.product_size, products.product_img,
-            product_variant.product_price, product_variant.product_size,
-            product_variant.product_img, product_variant.product_img1,
-            product_variant.product_color
-
-            FROM products
-            JOIN product_variant
-            ON products.id = product_id
-            ")
-  ->fetch_all(MYSQLI_ASSOC);
-
-$product_variant = $conn->query("SELECT 
-                                 product_variant.product_id, product_variant.product_price,
-                                 product_variant.product_img AS variant_img,
-                                 product_variant.product_color, product_variant.product_size,
-                                 product_variant.product_stock, products.product_name,
-                                 products.product_category
-
-                                 FROM product_variant
-                                 JOIN products
-                                 ON product_variant.product_id = products.id")
-                        ->fetch_all(MYSQLI_ASSOC);
-
-$username = $_SESSION['username'] ?? null;
-$userID = $_SESSION['user_id'] ?? null;
-
-if(isset($_SESSION['error'])){
-    echo "<script>alert('{$_SESSION['error']}');</script>";
-    unset($_SESSION['error']);
-}
-?>
+<?php require "../component/home/header.php" ?>
+<?php require "../component/cartItem.php" ?>
 <!DOCTYPE html>
-<html lang="en" id="html">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trinity Style - Home</title>
+    <title>TRINITY - Cultivating Authentic Apparel</title>
+    <!--TAILWIND CSS & CSS-->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/home.css">
-    <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+    <!--GG FONT & ICON-->
+     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body>
-<section id="head">
-    <div id="head-slider">
-        <div id="head-banner-container">
-        <img src="../Pictures/Banners/BannerImg-1.png">
-        <div id="hero-text">
-            <h1>NEW<br>COLLECTION</h1>
-            <p>Timeless essentials for the modern wardrobe</p>
-            <button onclick="window.location.href='products.php'">
-                <span class="cta-hero-text">Shop Now</span>
-            </button>
+<body class="bg-[#f4f3ef] text-[#1a1a1a] antialiased w-full">
+
+    <section id="head" class="relative w-full bg-[#ebeae4] px-6 py-8 md:py-16 min-h-[90vh] flex flex-col justify-between overflow-hidden">
+        <div class="absolute w-[100%] h-[100%] bg-black z-[1001] left-0 top-0 transition-all duration-300 animate-on-scroll black-screen"></div>
+
+        <div class="w-full max-w-7xl mx-auto flex flex-col justify-between h-full flex-1">
+            <div class="my-auto py-12 flex flex-col items-center text-center w-full">
+                <h1 class="text-2xl md:text-4xl font-light tracking-[0.15em] opacity-0 transiton-all duration-300 translate-y-[-40px] leading-snug max-w-2xl uppercase animate-on-scroll head-h1">
+                    Cultivating Authentic Apparel Through Meaningful Design.
+                </h1>
+                <p class="text-xs md:text-sm text-gray-500 max-w-md mt-4 opacity-0 transiton-all duration-300 translate-y-[-40px] leading-relaxed font-light animate-on-scroll head-p">
+                    We partner with visionary companies to build a modern legacy of essential shirts.
+                </p>
+
+                <div class="relative w-90 h-90 my-10 flex items-center justify-center animate-on-scroll head-img-container">
+                    <img class="w-[100%] h-[100%] object-cover translate-y-[150%]" src="../Pictures/Banners/BannerImg-1.png" alt="">
+                </div>
+
+                <button class="border border-black text-xs tracking-[0.2em] px-8 py-3.5 uppercase bg-transparent hover:bg-black hover:text-white transition-colors duration-300">
+                    Our Collections
+                </button>
+            </div>
         </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <div class="">
+            <?php require "../component/home/feat.php" ?>
         </div>
+    </section>
 
-        <div id="head-banner-container-2">
-
-            <img src="../Pictures/Banners/BannerImg-2.png">
-
-            <div id="hero-text-2">
-                <p>DISCOVER THE NEW</p>
-                <h1>COLLECTION</h1>
-                <div class="title"></div>
-                <p>MODERN STREETWEAR <br>POWERED BY AI STYLING</p>
-                <button id="scroll-btn" onclick="window.location.href='products.php'">Scroll to explore</button>
-            </div>
-
-        </div> 
-        
-        
-    </div>
-
-    <button id="next-btn">
-        <svg class="icon btn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-            <path d="M566.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L466.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l434.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"/>
-        </svg>
-    </button>
-
-    <button class="sectionBtn" onclick="scrollToNext(this)">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" class="icon sectionPath">
-            <path d="M169.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 306.7 54.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
-        </svg>
-    </button>
-
-</section>
-
-<section id="categories">
-    <div id="categoriesImg-Container" class="animate-on-scroll">
-        <img src="../Pictures/Banners/BannerCategory.png" alt="">
-    </div>
-
-    <div id="category-Container" class="animate-on-scroll">
-        <div class="territory category animate-on-scroll">
-            <span>CATEGORY</span>
-            <h2>WARDROBE</h2>
-            <p>Discover pieces that define your style</p>
-        </div>
-
-        <div id="category" class="animate-on-scroll">
-
-            <div class="category-divs">
-                <div>
-                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'" src="../Pictures/Icon/T-shirt.png" id="icon-1" alt="">
-                    <label for="icon-1" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'">T-SHIRT</label>
-                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=T-shirt#product-header'"><span class="btnSpan">Explore</span></button>
-                </div>
-
-                <?php foreach($product as $p): 
-                    $T_shirt = $p['product_category'] === "men" && $p['product_name'] === "White Basic T-shirt";
-                ?>
-                <?php if($T_shirt): 
-                    $T_shirt = $p;    
-                ?>
-
-                    <div class="divImg2">
-                        <img src="../<?=$T_shirt['product_img']?>" alt="">
-                    </div>
-
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="category-divs">
-                <div>
-                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Polo#product-header'" src="../Pictures/Icon/Polo.png" id="icon-2" alt="">
-                    <label onclick="window.location.href='products.php?category=all&name=Polo#product-header'" for="icon-2">POLO</label>
-                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Polo#product-header'"><span class="btnSpan">View All</span></button>
-                </div>
-
-                <?php foreach($product as $p): 
-                    $T_shirt = $p['product_category'] === "men" && $p['product_name'] === "White Basic Polo";
-                ?>
-                <?php if($T_shirt): 
-                    $T_shirt = $p;    
-                ?>
-
-                    <div class="divImg2">
-                        <img src="../<?=$T_shirt['product_img']?>" alt="">
-                    </div>
-
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="category-divs none">
-                <div>
-                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" src="../Pictures/Icon/Hoodie.png" id="icon-3" alt="">
-                    <label onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'" for="icon-3">HOODIE</label>
-                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Hoodie#product-header'"><span class="btnSpan">Explore</span></button>
-                </div>
-            </div>
-
-            <div class="category-divs">
-                <div>
-                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" src="../Pictures/Icon/Blouse.png" id="icon-4" alt="">
-                    <label onclick="window.location.href='products.php?category=all&name=Blouse#product-header'" for="icon-4">BLOUSE</label>
-                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Blouse#product-header'"><span class="btnSpan">View All</span></button>
-                </div>
-
-                <?php foreach($product as $p): 
-                    $T_shirt = $p['product_category'] === "women" && $p['product_name'] === "Black Wrap Blouse";
-                ?>
-                <?php if($T_shirt): 
-                    $T_shirt = $p;    
-                ?>
-
-                    <div class="divImg2">
-                        <img src="../<?=$T_shirt['product_img']?>" alt="">
-                    </div>
-
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="category-divs">
-                <div>
-                    <img class="cateImg" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" src="../Pictures/Icon/CropTop.jpeg" id="icon-5" alt="">
-                    <label onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'" for="icon-5">CROPTOP</label>
-                    <button class="viewBtn" onclick="window.location.href='products.php?category=all&name=Crop Top#product-header'"><span class="btnSpan">View All</span></button>
-                </div>
-
-                <?php foreach($product as $p): 
-                    $T_shirt = $p['product_category'] === "women" && $p['product_name'] === "White Tank Crop Top";
-                ?>
-                <?php if($T_shirt): 
-                    $T_shirt = $p;    
-                ?>
-
-                    <div class="divImg2 short">
-                        <img src="../<?=$T_shirt['product_img']?>" alt="">
-                    </div>
-
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-
-        </div>
-    </div>
-    
-</section>
-
-    
-    <section id="body">
-        <div id="body-content-container">
-            <div id="newest-collection">
-                <div id="container-body">
-                    <video id="bannerVideo" muted>
-                        <source src="../Pictures/Banners/videoBanner.mp4" type="video/mp4">
-                    </video>
-
-                    
-                </div>
-
-            </div>
-
+    <section class="w-full bg-[#f4f3ef] px-6 py-12 md:py-20 border-t border-gray-300/40">
+        <div class="w-full max-w-7xl mx-auto">
+            <h2 class="text-xl tracking-[0.2em] uppercase mb-6 font-light">Our Principles</h2>
             
-        </div>
-
-        <button class="sectionBtn" onclick="scrollToNext(this)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" class="icon sectionPath">
-                    <path d="M169.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 306.7 54.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
-                </svg>
-            </button>
-    </section>
-
-    <div class="marquee-box">
-        <div class="marquee-track">
-
-            <div class="marquee-item">
-                <span>SALE UP TO 50%</span>
-                <span>FREE DELIVERY FOR $700 ORDER</span>
-                <span>GIFT WRAP THE ORDER</span>
-                <span>LUXURIOUS GIFT COMBO</span>
+            <div class="relative bg-stone-300 w-full h-72 md:h-96 mb-4 relative flex items-end p-6 overflow-hidden translate-y-[40px] opacity-0 principle-img-container animate-on-scroll">
+                <img class="absolute w-full h-full object-cover top-0 left-0" src="../Pictures/Banners/Section-2-Img.png" alt="">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                <div class="w-full space-y-2 z-10">
+                    <div class="h-8 bg-stone-400/80 w-1/2 shadow-md"></div>
+                    <div class="h-8 bg-stone-500/80 w-2/3 shadow-md"></div>
+                    <div class="h-8 bg-stone-600/80 w-1/3 shadow-md"></div>
+                </div>
             </div>
 
-            <div class="marquee-item">
-                <span>SALE UP TO 50%</span>
-                <span>FREE DELIVERY FEE FOR $700 ORDER</span>
-                <span>GIFT WRAP THE ORDER</span>
-                <span>LUXURIOUS GIFT COMBO</span>
+            <p class="text-xs tracking-widest uppercase text-gray-400 mb-12">Our Fabrics: A Journey in Shirting Textures</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-on-scroll principle">
+                <div class="principle-child bg-stone-200 aspect-square relative p-2 opacity-0">
+                    <img class="absolute w-full h-full object-cover top-0 left-0" src="../Pictures/Banners/Section-2-Img-child-1.png" alt="">
+                    <span class="text-xs text-black-400 relative z-[100]">1</span>
+                </div>
+
+                <div class="principle-child bg-stone-200 aspect-square relative p-2 opacity-0 translate-x-[-105%]">
+                    <img class="absolute w-full h-full object-cover top-0 left-0" src="../Pictures/Banners/Section-2-Img-child-2.png" alt="">
+                    <span class="text-xs text-black-400 relative z-[100]">2</span>
+                </div>
+
+                <div class="principle-child bg-stone-200 aspect-square relative p-2 opacity-0 translate-x-[-105%]">
+                    <img class="absolute w-full h-full object-cover top-0 left-0" src="../Pictures/Banners/Section-2-Img-child-3.png" alt="">
+                    <span class="text-xs text-black-400 relative z-[100]">3</span>
+                </div>
+
+                <div class="principle-child bg-stone-200 aspect-square relative p-2 opacity-0 translate-x-[-105%]">
+                    <img class="absolute w-full h-full object-cover top-0 left-0" src="../Pictures/Banners/Section-2-Img-child-4.png" alt="">
+                    <span class="text-xs text-black-400 relative z-[100]">4</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-center opacity-25">
+                <div class="w-32 h-5 bg-gradient-to-r from-transparent via-stone-600 to-transparent blur-[2px]"></div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <section id="body-1" class="animate-on-scroll">
-        <img src="../Pictures/Banners/BannerAI-1.png" alt="">
+    <section class="w-full bg-[#ecebe5] px-6 py-12 md:py-20 border-t border-gray-300/40 principle-text-section animate-on-scroll">
+        <div class="w-full max-w-4xl mx-auto">
+            <h2 class="text-xs tracking-[0.2em] uppercase mb-10 text-gray-400 font-medium">Our Principles</h2>
+            
+            <div class="space-y-8 md:space-y-12">
 
-        <div id="cta-tryon">
-
-                        <h3>See yourself in Trinity</h3>
-                        <p>Upload your photo and experience <br> virtual fiting powered by AI</p>
-                        <button onclick="window.location.href='products.php#product-section'">
-                            <span class="cta-tryon-text">Try Now</span>
-                        </button>
-
+                <div class="flex items-start gap-6 md:gap-10 principle-text-section-child">
+                    <span class="text-2xl font-light tracking-wider text-stone-400">01</span>
+                    <div>
+                        <h4 class="text-sm md:text-base font-semibold tracking-wide uppercase">Simplicity</h4>
+                        <p class="text-xs md:text-sm text-stone-500 mt-1">We are maanixe to wearability.</p>
                     </div>
-    </section>
-    
-    <section id="body-2">
-        <div id="body-2-text-container" class="animate-on-scroll">
-            <span>Collection</span>
-            <h4>The Winter Collection</h4>
-            <p>The Trinity collection isn't just about surviving the cold; it’s about mastering it. Built on the pillars of Form, Function, and Fortitude, this line of premium coats is designed for the modern individual who demands elegance without compromising on warmth.</p>
-            <button class="body-2-cta" onclick="window.location.href='products.php#product-section'"><span>Discover</span></button>
-        </div>
+                </div>
 
-        <div id="body-2-img-container">
-            <img class="body-2-img id1 animate-on-scroll" src="../Pictures/Banners/model1.png" alt="">
-            <img class="body-2-img id2 animate-on-scroll" src="../Pictures/Banners/model2.png" alt="">
-        </div>
-    </section>
+                <div class="flex items-start gap-6 md:gap-10 principle-text-section-child">
+                    <span class="text-2xl font-light tracking-wider text-stone-400">02</span>
+                    <div>
+                        <h4 class="text-sm md:text-base font-semibold tracking-wide uppercase">Function</h4>
+                        <p class="text-xs md:text-sm text-stone-500 mt-1">Covansens the apparel to cut.</p>
+                    </div>
+                </div>
 
-    <div class="territory">
-        <span>TRINITY</span> 
-        <h3>OUR LOOK</h3>
-    </div>
+                <div class="flex items-start gap-6 md:gap-10 principle-text-section-child">
+                    <span class="text-2xl font-light tracking-wider text-stone-400">03</span>
+                    <div>
+                        <h4 class="text-sm md:text-base font-semibold tracking-wide uppercase">Elegance</h4>
+                        <p class="text-xs md:text-sm text-stone-500 mt-1">Generous leading, artisand meanings.</p>
+                    </div>
+                </div>
 
-    <section id="footer">
-        <div id="feat-product">
-            <div id="featBtn">
-                <button id="featPre">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"  class="icon">
-                        <path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
-                    </svg>
-                </button>
+                <div class="flex items-start gap-6 md:gap-10 principle-text-section-child">
+                    <span class="text-2xl font-light tracking-wider text-stone-400">04</span>
+                    <div>
+                        <h4 class="text-sm md:text-base font-semibold tracking-wide uppercase">Meaningful</h4>
+                        <p class="text-xs md:text-sm text-stone-500 mt-1">We crede nioapillas and thierarchy.</p>
+                    </div>
+                </div>
 
-                <button id="featNext">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512" class="icon">
-                        <path d="M247.1 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L179.2 256 41.9 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/>
-                    </svg>
-                </button>
             </div>
-                <!--Newest Collection-->
-                <?php 
-                    foreach($product as $item): 
-                    if($item['product_category'] != "collections") continue;
-                ?>
-                <div class="feat collection">
-                    <div class="feat-img-container fi-1" onclick="window.location.href='detail.php?id=<?=$item['id']?>'">
-                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
-                    </div>
-
-                    <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <?php 
-                            foreach($product_variant as $variant): 
-                            if($variant['product_id'] != $item['id']) continue;
-                            if($variant['product_color'] == $item['product_color']) continue;
-                        ?>
-                        <img src="../<?=$variant['variant_img']?>">
-                        <?php 
-                            break;
-                            endforeach; 
-                        ?>
-                        <span><?=$item['product_name']?></span>
-                        <p>$ <?=$item['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-'">Try with AI</button>
-                    </div>
-                </div>
-                <?php 
-                    break;
-                    endforeach; 
-                ?>
-
-                <!--Basic T-shirt-->
-                <?php 
-                    foreach($product as $item): 
-                    if($item['product_category'] != "men" || $item['product_name'] != "Basic T-shirt") continue;
-                ?>
-                <div class="feat id1">
-                    <div class="feat-img-container fi-1">
-                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
-                    </div>
-
-                    <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <?php 
-                            foreach($product_variant as $variant): 
-                            if($variant['product_id'] != $item['id']) continue;
-                            if($variant['product_color'] == $item['product_color']) continue;
-                        ?>
-                        <img src="../<?=$variant['variant_img']?>">
-                        <?php 
-                            break;
-                            endforeach; 
-                        ?>
-                        <span><?=$item['product_name']?></span>
-                        <p>$<?=$item['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
-                    </div>
-
-                </div>
-                <?php 
-                    break;
-                    endforeach; 
-                ?>
-
-                <!--Trinity Lady-->
-                <?php 
-                    foreach($product as $item): 
-                    if($item['product_category'] != "women" || $item['product_name'] != "Classic Blouse") continue;
-                ?>
-                <div class="feat id2">
-                    <div class="feat-img-container fi-1">
-                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
-                    </div>
-
-                    <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <?php 
-                            foreach($product_variant as $variant): 
-                            if($variant['product_id'] != $item['id']) continue;
-                            if($variant['product_color'] == $item['product_color']) continue;
-                        ?>
-                        <img src="../<?=$variant['variant_img']?>">
-                        <?php 
-                            break;
-                            endforeach; 
-                        ?>
-                        <span><?=$item['product_name']?></span>
-                        <p>$<?=$item['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
-                    </div>
-
-                </div>
-                <?php 
-                    break;
-                    endforeach; 
-                ?>
-
-
-                <!--Logo Polo-->
-                <?php 
-                    foreach($product as $item): 
-                    if($item['product_category'] != "men" || $item['product_name'] != "Logo Polo") continue;
-                ?>
-                <div class="feat id2">
-                    <div class="feat-img-container fi-1">
-                        <img class="feat-img id1" src="../<?=$item['product_img']?>" alt="">
-                        <img class="feat-img id2" src="../<?=$item['product_img1']?>" alt="">
-                    </div>
-
-                    <div id="featContent-Container" style="flex-direction: column; max-height: fit-content; width: 30%">
-                        <?php 
-                            foreach($product_variant as $variant): 
-                            if($variant['product_id'] != $item['id']) continue;
-                            if($variant['product_color'] == $item['product_color']) continue;
-                        ?>
-                        <img src="../<?=$variant['variant_img']?>">
-                        <?php 
-                            break;
-                            endforeach; 
-                        ?>
-
-                        <span><?=$item['product_name']?></span>
-                        <p>$<?=$item['product_price']?></p>
-                        <button class="feat-btn" onclick="window.location.href='products.php#product-<?=$item['id']?>'">View Product</button>
-                    </div>
-
-                </div>
-                <?php 
-                    break;
-                    endforeach; 
-                ?>
         </div>
     </section>
-    
+
+    <section class="max-w-[1200px] mx-auto text-center my-[100px]">
+        
+        <div class="mb-10 md:mb-14">
+            <div class="text-[14px] font-medium tracking-[6px] uppercase text-[#8c8c8c] mb-3">
+                Trinity
+            </div>
+            <h2 class="text-2xl md:text-3xl font-normal tracking-[4px] uppercase text-[#1a1a1a] m-0">
+                From Workshop to Your Hands
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+            
+            <div class="flex flex-col items-center">
+                <div class="w-full aspect-[1.18/1] overflow-hidden mb-6 bg-gray-100">
+                    <img class="hover:scale-[1.2] transition-all duration-[4s] cursor-pointer" src="../Pictures/Banners/F1-I1.png" alt="Carefully selecting materials" class="w-full h-full object-cover block">
+                </div>
+                <p class="text-[12px] font-normal leading-relaxed tracking-[1.5px] uppercase text-[#4a4a4a] px-2 m-0">
+                    Carefully selecting the finest pieces of premium leather
+                </p>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-full aspect-[1.18/1] overflow-hidden mb-6 bg-gray-100">
+                    <img class="hover:scale-[1.2] transition-all duration-[4s] cursor-pointer" src="../Pictures/Banners/F1-I2.png" alt="Quality inspection" class="w-full h-full object-cover block">
+                </div>
+                <p class="text-[12px] font-normal leading-relaxed tracking-[1.5px] uppercase text-[#4a4a4a] px-2 m-0">
+                    Thoroughly inspecting every single product before it reaches the customer
+                </p>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="w-full aspect-[1.18/1] overflow-hidden mb-6 bg-gray-100">
+                    <img class="hover:scale-[1.2] transition-all duration-[4s] cursor-pointer" src="../Pictures/Banners/F1-I3.png"  alt="Delivering pride" class="w-full h-full object-cover block">
+                </div>
+                <p class="text-[12px] font-normal leading-relaxed tracking-[1.5px] uppercase text-[#4a4a4a] px-2 m-0">
+                    The final product is the ultimate pride of Trinity when delivered to you
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="w-full bg-[#f0eee7] px-6 py-12 md:py-20 border-t border-gray-300/40">
+        <div class="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
+            <div>
+                <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-6">GET NEWEST INFORMARTION AND DEALS</p>
+                <div class="grid grid-cols-2 gap-6 text-sm font-medium tracking-widest text-stone-600">
+                    <span>Just by fill in your contact</span>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-xs tracking-[0.2em] uppercase text-gray-400 mb-6">Contact</p>
+                <form class="contact-form space-y-4" onsubmit="event.preventDefault();">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input type="text" placeholder="NAME" class="name w-full bg-white border border-stone-300/60 p-3 text-xs tracking-widest focus:outline-none focus:border-black transition-colors">
+                        <input type="email" placeholder="EMAIL" class="email w-full bg-white border border-stone-300/60 p-3 text-xs tracking-widest focus:outline-none focus:border-black transition-colors">
+                    </div>
+                    <textarea placeholder="MESSAGE" rows="3" class="more w-full bg-white border border-stone-300/60 p-3 text-xs tracking-widest focus:outline-none focus:border-black transition-colors"></textarea>
+                    <button class="contact-submitBtn w-full bg-black text-white text-xs tracking-[0.25em] py-3.5 uppercase font-medium hover:bg-stone-800 transition-colors">
+                        Contact Us
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <section id="menu">
         <input type="checkbox" id="menu-toggle" hidden>
         <label class="hamburger" for="menu-toggle">
@@ -458,8 +217,8 @@ if(isset($_SESSION['error'])){
             
             <div id="text">
                 <span onclick="window.location.href='#head'">Home</span>
-                <span onclick="window.location.href='products.php?#product-section'">Shop</span>
-                <span onclick="window.location.href='products.php?#product-section'">Collection</span>
+                <span onclick="window.location.href='products.php'">Shop</span>
+                <span onclick="window.location.href='products.php'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
 
@@ -467,23 +226,18 @@ if(isset($_SESSION['error'])){
         </div>
         
         <div id="utility-menu">
-            <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
-                <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
-            </svg>
+            <div class="relative">
+                <svg class="icon cart" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="21px" onclick="window.location.href='cart.php'">
+                    <path d="M200-80q-33 0-56.5-23.5T120-160v-480q0-33 23.5-56.5T200-720h80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720h80q33 0 56.5 23.5T840-640v480q0 33-23.5 56.5T760-80H200Zm0-80h560v-480H200v480Zm421.5-298.5Q680-517 680-600h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85h-80q0 83 58.5 141.5T480-400q83 0 141.5-58.5ZM360-720h240q0-50-35-85t-85-35q-50 0-85 35t-35 85ZM200-160v-480 480Z"/>
+                </svg>
+                <span class="absolute top-[-5px] right-[-5px] bg-red-400 text-white rounded-full w-[14px] h-[14px] text-[7px] flex items-center justify-center"><?=$noti?></span>
+            </div>
 
             <svg class="icon search" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376C296.3 401.1 253.9 416 208 416 93.1 416 0 322.9 0 208S93.1 0 208 0 416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/>
             </svg>
-            <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" class="menu-Username account" style="cursor: pointer;"></p>
-            <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg>
-                    </label>
-            <?php endif; ?>
+            
+            <?php require "../component/menu.php" ?>
         </div>
 
         <div id="fast-menu">
@@ -541,18 +295,7 @@ if(isset($_SESSION['error'])){
                     <div class="menu-title" onclick="window.location.href='about.php'"><span>ABOUT</span></div>
                 </div>
 
-                <?php if(isset($_SESSION['username'])): ?>
-                    <p onclick="window.location.href='user.php'" class="menu-Username fast-menu-account" style="cursor: pointer;"></p>
-                <?php else: ?>
-                    <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
-                    <label for="login-input" id="label-login-input">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon user fast-menu" viewBox="0 0 448 512">
-                            <path d="M144 128a80 80 0 1 1 160 0 80 80 0 1 1 -160 0zm208 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0zM48 480c0-70.7 57.3-128 128-128l96 0c70.7 0 128 57.3 128 128l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8c0-97.2-78.8-176-176-176l-96 0C78.8 304 0 382.8 0 480l0 8c0 13.3 10.7 24 24 24s24-10.7 24-24l0-8z"/>
-                        </svg> 
-
-                        <p>Login</p>
-                    </label>
-                <?php endif; ?>
+                <?php require "../component/menu2.php" ?>
             </div>
         </div>
 
@@ -571,450 +314,43 @@ if(isset($_SESSION['error'])){
     
             <div id="search-Items">
                 <p id="searchResult"></p>
-                    <div id="items-Container">
-                    <?php foreach($baseProduct as $p):?>
-                        <div class="item" data-name="<?=$p['product_name']?>">
-                            <div class="item-Img">
-                                <img src="../<?=$p['product_img']?>" alt="" onclick="window.location.href='detail.php?id=<?=$p['id']?>'">
-                            </div>
+                <div id="items-Container">
+                    <?php require "../component/base.php" ?>
+                </div>   
 
-                            <div>
-                                <h4 onclick="window.location.href='detail.php?id=<?=$p['id']?>'"><?=$p['product_name']?></h4>
-                                <span>$<?=$p['product_price']?></span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?> 
-            </div>   
-
-            <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+                <button id="searchBtn" onclick="window.location.href='products.php'"><p>View All Products</p></button>
+            </div>
         </div>
 
     </section>
 
-<section id="footer-1">
-    <div class="footer-1-title">
-        <span>TRINITY</span>
-        <h4>FROM TRINITY TO YOU</h4>
-    </div>
-
-    <div class="footer1-imgContainer">
-        <div>
-            <img src="../Pictures/Banners/F1-I1.png" alt="">
-            <p>Woven from the finest fabrics</p>
+    <footer class="w-full bg-[#1a1a1a] text-stone-400 px-6 py-12 md:py-16 text-xs tracking-wider">
+        <div class="w-full max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            <div>
+                <span class="text-white font-medium text-sm tracking-[0.2em] block mb-2">TRINITY</span>
+                <span class="text-stone-500 block text-[10px] uppercase">Design • Branding Agency</span>
+            </div>
+            <div>
+                <span class="text-stone-500 block mb-2 uppercase text-[10px]">Address</span>
+                <p class="leading-relaxed text-stone-300">Dong Thanh,<br>Hoc Mon</p>
+            </div>
+            <div>
+                <span class="text-stone-500 block mb-2 uppercase text-[10px]">Get in touch</span>
+                <p class="leading-relaxed text-stone-300">triple3Tbusiness@gmail.com</p>
+            </div>
+            <div>
+                <span class="text-stone-500 block mb-2 uppercase text-[10px]">Social</span>
+                <div class="space-y-1 text-stone-300">
+                    <a href="#" class="block hover:text-white transition-colors">Instagram</a>
+                    <a href="#" class="block hover:text-white transition-colors">LinkedIn</a>
+                    <a href="#" class="block hover:text-white transition-colors">Behance</a>
+                </div>
+            </div>
         </div>
-
-        <div>
-            <img src="../Pictures/Banners/F1-I2.png" alt="">
-            <p>Meticulously inspected to ensure perfection in every single piece before it reaches you</p>
-        </div>
-
-        <div>
-            <img src="../Pictures/Banners/F1-I3.png" alt="">
-            <p>Unbox a package crafted with passion, tailored for perfection, and delivered just for you</p>
-        </div>
-    </div>
-</section>
-
-<footer class="footer-2">
-    <img src="../Pictures/Banners/BannerFooter.png" alt="" style="max-width: 100%; filter: brightness(70%);">
-  <div class="footer-container">
-    <div class="footer-left">
-      <p class="footer-label">CONTACT US</p>
-      <h2 class="footer-title">
-        Let’s Discuss Your <br> Style. With Us
-      </h2>
-
-      <button class="footer-btn" onclick="window.location.href='contact.php'">
-        Schedule a call now →
-      </button>
-
-      <p class="footer-email-label">OR EMAIL US AT</p>
-
-      <div class="footer-email">
-        triple3tbusiness@gmail.com
-        <span>📋</span>
-      </div>
-    </div>
-
-    <div class="footer-right">
-      <div class="footer-col">
-        <p class="footer-col-title">QUICK LINKS</p>
-        <a href="#head">Home</a>
-        <a href="products.php">Products</a>
-        <a href="cart.php">Cart</a>
-        <a href="voucher.php">Vouchers</a>
-        <a href="userTier.php">User Tier</a>
-        <a href="about.php">About Us</a>
-      </div>
-      <div class="footer-col">
-        <p class="footer-col-title">INFORMATION</p>
-        <a href="../legal/term-of-service.php">Terms of Service</a>
-        <a href="../legal/privacy-policy.php">Privacy Policy</a>
-        <a href="../legal/delivery-policy.php">Delivery Policy</a>
-        <a href="../legal/ai-usage-policy.php">AI Usage Policy</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>Copyright (c) 2026 trinity-newfed</p>
-    <div class="footer-social">
-      <span>f</span>
-      <span>t</span>
-      <span>ig</span>
-      <span>in</span>
-    </div>
-  </div>
-</footer>
-<script>
-        const email = <?= isset($_SESSION['username']) ? json_encode($_SESSION['username']) : '""' ?>;
-        let username1 = email.split("@")[0] || "";
-        let displayName = username1.length > 6
-        ? username1.substring(0, 6) + "..."
-        : username1;
-        const userWelcome = document.querySelectorAll(".menu-Username");
-        const head = document.getElementById("head");
-        const body = document.getElementById("body");
-        const footer = document.getElementById("footer");       
-        const slider = document.getElementById("head-slider");
-        const nextBtn = document.getElementById("next-btn");
-        const video = document.getElementById("bannerVideo");
-        const category = document.getElementById("category");
-        function scrollToNext(button){
-
-        const currentSection = button.parentElement; 
-        const nextSection = currentSection.nextElementSibling; 
-
-        if(nextSection){
-            nextSection.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if(entry.isIntersecting){
-                        entry.target.classList.add("animate");
-                        observer.unobserve(entry.target); 
-                    }
-                });
-            }, {
-                root: null,
-                threshold: 0.15
-            });
-
-            const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
-            elementsToAnimate.forEach(element => observer.observe(element));
-        });
-
-        if(userWelcome){
-            userWelcome.forEach(user => user.textContent = "Hi, " + displayName);
-        }
-
-        let index = 0;
-        let bannerInterval = setInterval(() => {
-            index++;
-            if(index > 1){
-                index = 0;
-            }
-            nextBtn.classList.toggle("rotate");
-            slider.style.transform = `translateX(-${index * 100}%)`;
-        }, 20000);
-
-        nextBtn.addEventListener("click", () =>{
-            clearInterval(bannerInterval);
-            index++;
-            if(index > 1){
-                index = 0;
-            }
-
-            bannerInterval = setInterval(() => {
-                index++;
-                if(index > 1){
-                    index = 0;
-                }
-                nextBtn.classList.toggle("rotate");
-                slider.style.transform = `translateX(-${index * 100}%)`;
-            }, 20000);
-
-            nextBtn.classList.toggle("rotate");
-            slider.style.transform = `translateX(-${index * 100}%)`;
-        });
-
-
-
-        let num = 0;
-        const headObserve = new IntersectionObserver(entries =>{
-            entries.forEach(entry =>{
-                if(entry.isIntersecting){
-                    document.getElementById("menu").style.background = "transparent";
-                    document.getElementById("menu").style.backdropFilter = "blur(0px)";
-                    document.getElementById("menu").style.transition = ".3s all";
-                    document.getElementById("menu").classList.add("head");
-                    userWelcome ? userWelcome.forEach(user => user.style.color = "") : null;
-
-                    const lines = document.querySelectorAll(".line");
-                    lines.forEach(line => line.style.stroke = "white");
-
-                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                    icons.forEach(icon => icon.style.fill = "white");
-
-                    const spans = document.getElementById("menu").querySelectorAll("span");
-                    spans.forEach(span => span.style.color = "white");
-
-                }else{
-                    document.getElementById("menu").classList.remove("head");
-
-                    userWelcome ? userWelcome.forEach(user => user.style.color = "black") : null;
-
-                    const lines = document.querySelectorAll(".line");
-                    lines.forEach(line => line.style.stroke = "black");
-
-                    const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                    icons.forEach(icon => icon.style.fill = "black");
-
-                    const spans = document.getElementById("menu").querySelectorAll("span");
-                    spans.forEach(span => span.style.color = "");
-
-                    document.getElementById("menu").style.background = "";
-                    document.getElementById("menu").style.backdropFilter = "blur(10px)";
-                }
-            });
-        }, {
-            threshold: 0.7
-        });
-
-        const bodyObserve = new IntersectionObserver(entries =>{
-            entries.forEach(entry =>{
-                if(entry.isIntersecting){
-                setInterval(() => {
-                    if(num < 3){
-                        num++;
-                        if(num == 2){
-                            video.play();
-                        }
-                }
-                }, 1000);
-                }
-            });
-        },{
-            threshold: 0.45
-        });
-        const footerObserve = new IntersectionObserver(entries =>{
-            entries.forEach(entry =>{
-                if(entry.isIntersecting){
-                    
-                }
-            });
-        },{
-            threshold: 0.5
-        });
-
-        headObserve.observe(head);
-        bodyObserve.observe(body);
-        footerObserve.observe(footer);
-
-
-
-        //Menu Toggle
-
-        const fastMenuContainer = document.getElementById("fast-menu-container");
-        const menuToggle = document.getElementById("menu-toggle");
-        const hamburger = document.querySelector(".hamburger");
-
-        document.addEventListener('click', function(e){
-            if(menuToggle.checked && !hamburger.contains(e.target) && menuToggle !== e.target && !fastMenuContainer.contains(e.target)){
-                menuToggle.checked = false;
-            }
-        });
-
-        const menuTitles = document.querySelectorAll(".menu-title");
-            menuTitles.forEach(title =>{
-                title.addEventListener("click", ()=>{
-                    const parent = title.parentElement;
-                    parent.classList.toggle("active");
-            });
-        });
-        const submenuItems = document.querySelectorAll(".submenu-item");
-            submenuItems.forEach(item =>{
-                item.addEventListener("click",(e)=>{
-                    e.stopPropagation();
-                    item.classList.toggle("active");
-            });
-        });
-
-        const search = document.querySelector(".icon.search");
-        const menuSearch = document.getElementById("menu-search");
-        const searchContainer = document.getElementById("search-Container");
-
-        search.addEventListener('click', ()=>{
-            document.getElementById("menu").classList.toggle("active");
-
-            userWelcome ? userWelcome.forEach(user => user.classList.toggle("active")) : null;
-
-            const lines = document.querySelectorAll(".line");
-            lines.forEach(line => line.classList.toggle("active"));
-
-            const icons = document.getElementById("menu").querySelectorAll(".icon path");
-            icons.forEach(icon => icon.classList.toggle("active"));
-
-            const spans = document.getElementById("menu").querySelectorAll("span");
-            spans.forEach(span => span.classList.toggle("active"));
-
-            document.getElementById("menu-search").classList.toggle("active");
-            document.getElementById("search-Container").classList.toggle("active");
-        });
-
-        document.addEventListener('click', function(e){
-            if(!searchContainer.contains(e.target) && e.target !== search){
-                document.getElementById("menu").classList.remove("active");
-
-                userWelcome ? userWelcome.forEach(user => user.classList.remove("active")) : null;
-
-                const lines = document.querySelectorAll(".line");
-                lines.forEach(line => line.classList.remove("active"));
-
-                const icons = document.getElementById("menu").querySelectorAll(".icon path");
-                icons.forEach(icon => icon.classList.remove("active"));
-
-                const spans = document.getElementById("menu").querySelectorAll("span");
-                spans.forEach(span => span.classList.remove("active"));
-                document.getElementById("menu-search").classList.remove("active");
-                document.getElementById("search-Container").classList.remove("active");
-            }
-        });
-
-
-        //Search bar
-
-        const searchBar = document.getElementById("searchBar");
-        const searchItems = document.getElementById("search-Items");
-        const searchResult = document.getElementById("searchResult");
-        const searchBtn = document.getElementById("searchBtn");
-
-        searchBar.addEventListener('keyup', () => {
-            const items = document.querySelectorAll(".item");
-            const searchKey = searchBar.value.toLowerCase().trim();
-
-            if(searchKey.length > 0){
-                searchItems.classList.add("active");
-
-            }else{
-
-                searchItems.classList.remove("active");
-                searchResult.textContent = "";
-                return;
-            }
-
-            let hasResult = false;
-
-            items.forEach(item => {
-                const name = item.dataset.name.toLowerCase();
-                if(name.includes(searchKey) || searchKey === "all"){
-                    item.style.display = "";
-                    hasResult = true;    
-
-                }else{
-                    item.style.display = "none";
-                }
-            });
-
-            if(hasResult){
-                searchBtn.style.display = "";
-                if(searchKey.length >= 3) searchResult.textContent = "Result for: " + searchKey;
-
-            }else{
-                searchBtn.style.display = "none";
-                if(searchKey.length >= 3) searchResult.textContent = "No result for: " + searchKey; 
-                else searchResult.textContent = "";
-            }
-        });
-
-        
-
-        const divs = category.querySelectorAll(".category-divs");
-
-        let currentIndex = 0;
-        const totalDivs = divs.length;
-        const gap = 250;
-        let isScrolling = false;
-
-        category.addEventListener('wheel', function(e){
-            if(window.innerWidth < 768){
-                return; 
-            }
-            e.preventDefault(); 
-            if (isScrolling) return; 
-
-            if(e.deltaY > 0){
-                if(currentIndex < totalDivs - 1) currentIndex++;
-            }else{
-                if(currentIndex > 0) currentIndex--;
-            }
-
-
-            const divHeight = divs[0].offsetHeight;
-            const step = divHeight + gap;
-            const totalTranslate = currentIndex * step;
-
-            isScrolling = true;
-            divs.forEach(d => {
-                d.style.transform = `translateY(-${totalTranslate}px)`;
-            });
-
-            setTimeout(() => {
-                isScrolling = false;
-            }, 1500); 
-
-            }, { passive: false });
-
-            const featPre = document.getElementById("featPre");
-            const featNext = document.getElementById("featNext");
-            const feats = document.querySelectorAll(".feat");
-            document.querySelector(".feat.collection").classList.add("active");
-            let indexes = 0;
-            featNext.addEventListener('click', ()=>{
-                indexes = indexes + 1;
-                if(indexes < 4){
-                    feats.forEach(feat => feat.classList.remove("active"));
-                    feats[indexes].classList.add("active");
-                }else indexes = -1;
-            });
-
-            featPre.addEventListener('click', ()=>{
-                indexes = indexes - 1;
-                if(indexes >= 0){
-                    feats.forEach(feat => feat.classList.remove("active"));
-                    feats[indexes].classList.add("active");
-                }else indexes = 4;
-            });
-
-    const user_id = <?php echo json_encode($userID); ?>;
-
-    if(user_id){
-  const interval = setInterval(async () =>{
-    try{
-      const res = await fetch(`http://localhost:5000/api/progress/${user_id}`);
-      const data = await res.json();
-
-      if(data.status === "done"){
-        clearInterval(interval);
-        const goUser = confirm("Redirect to user page for result?");
-        if(goUser){
-          window.location.href = data.redirect;
-        }
-      }
-
-    }catch(err){
-      console.error(err);
-    }
-  }, 3000);
-    }
-
-
-</script>
+    </footer>
+
+<script src="../asset/contact.js"></script>
+<script src="../asset/headerEmail.js"></script>
+<script src="../asset/homeJS/home.js"></script>
 </body>
-</html>
+</html> 

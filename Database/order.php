@@ -8,109 +8,98 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 
-if ($conn->connect_error) {
-    die("error " . $conn->connect_error);
+if($conn->connect_error){
+    die("Database connection error: " . $conn->connect_error);
 }
 
-if(!isset($_SESSION['checkout_cart_ids'])){
-    echo "<script>alert('No items selected!');
-                  window.location.href='../Pages/cart.php';
-          </script>";
-}
-$agree = $_POST['policy_id'];
-$userID = $_SESSION['user_id'];
-$username = $_SESSION['username'];
-$orderAddress = $_POST['address'];
-
-$policy = $conn->prepare("SELECT * FROM user_policy_agreement
-                          WHERE user_id = ? AND policy_id = ?");
-$policy->bind_param("is", $userID, $agree);
-$policy->execute();
-$userAgree = $policy->get_result();
-if($userAgree->num_rows == 0){
-    $sql = $conn->prepare("INSERT INTO user_policy_agreement (user_id, policy_id)
-                           VALUES (?, ?)");
-    $sql->bind_param("is", $userID, $agree);
-    $sql->execute();
-    $sql->close();
-}
-$policy->close();
-
-$usernameShort = strtoupper(substr($username, 0, 3));
-$orderCode = $usernameShort . date('YmdHis');
 $cart_ids = $_SESSION['checkout_cart_ids'] ?? [];
-$size = $_SESSION['checkout_size'];
-$color = $_SESSION['checkout_color'];
+if (empty($cart_ids)) {
+    echo "<script>alert('No items selected!'); window.location.href='../Pages/cart.php';</script>";
+    exit();
+}
 
-$from = [106.5775, 10.8908];
-$address = $conn->prepare("SELECT user_address FROM userdata
-                           WHERE id = ?");
-$address->bind_param("i", $userID);
-$address->execute();
-$userAddress = $address->get_result();
-if($userAddress->num_rows > 0){
-    $row = $userAddress->fetch_assoc();
-    $add = $row['user_address'];
+$agree = $_POST['policy_id'] ?? null;
+$userID = $_SESSION['user_id'] ?? null;
+$username = $_SESSION['username'] ?? 'GUEST';
+$orderAddress = $_POST['address'] ?? '';
 
-    function getCoords($add){
+if(!$userID){
+    header("Location: ../Pages/reglog.php");
+    exit();
+}
+
+function getCoords($add){
     $url = "https://photon.komoot.io/api/?q=" . urlencode($add) . "&limit=1";
-    $response = file_get_contents($url);
-    $data = json_decode($response, true);
-
-    if(!empty($data['features'])){
-        return $data['features'][0]['geometry']['coordinates'];
+    $response = @file_get_contents($url);
+    if ($response) {
+        $data = json_decode($response, true);
+        if (!empty($data['features'])) {
+            return $data['features'][0]['geometry']['coordinates'];
+        }
     }
-
     return null;
-    }
 }
 
-$toCoords = getCoords($add);
-$orderstate = "success";
-
-if (empty($cart_ids)){
-    echo "<script>alert('No items selected!');
-                  window.location.href='../Pages/cart.php';
-          </script>";
-}
-
-function getDistance($from, $toCoords){
+function getDistance($from, $toCoords) {
     $url = "https://router.project-osrm.org/route/v1/driving/" 
             . $from[0] . "," . $from[1] . ";" 
             . $toCoords[0] . "," . $toCoords[1] 
             . "?overview=false";
 
-    $response = file_get_contents($url);
-    $data = json_decode($response, true);
-
-    if(isset($data['routes'][0]['distance'])){
-        $distance = $data['routes'][0]['distance'] / 1000;
-        return $distance;
+    $response = @file_get_contents($url);
+    if ($response) {
+        $data = json_decode($response, true);
+        if (isset($data['routes'][0]['distance'])) {
+            return $data['routes'][0]['distance'] / 1000;
+        }
     }
     return null;
 }
-function getShippingFee($km){
-    if($km < 20){
-        return 2;
-    }else if($km < 100){
-        return 5;
-    }else if($km < 1000){
-        return 15;
-    }else{
-        return 25;
+
+function getShippingFee($km) {
+    if ($km === null) return 25;
+    if ($km < 20) return 2;
+    if ($km < 100) return 5;
+    if ($km < 1000) return 15;
+    return 25;
+}
+
+//Policy
+if($agree){
+    $policy = $conn->prepare("SELECT 1 FROM user_policy_agreement WHERE user_id = ? AND policy_id = ?");
+    $policy->bind_param("is", $userID, $agree);
+    $policy->execute();
+    if ($policy->get_result()->num_rows == 0) {
+        $sql = $conn->prepare("INSERT INTO user_policy_agreement (user_id, policy_id) VALUES (?, ?)");
+        $sql->bind_param("is", $userID, $agree);
+        $sql->execute();
+        $sql->close();
+    }
+    $policy->close();
+}
+
+//Distance
+$from = [106.5775, 10.8908];
+$shipFee = 25;
+
+$addressStmt = $conn->prepare("SELECT user_address FROM userdata WHERE id = ?");
+$addressStmt->bind_param("i", $userID);
+$addressStmt->execute();
+$userAddressResult = $addressStmt->get_result();
+
+if($row = $userAddressResult->fetch_assoc()){
+    $add = $row['user_address'];
+    $toCoords = getCoords($add);
+    if($toCoords){
+        $km = getDistance($from, $toCoords);
+        $shipFee = getShippingFee($km);
     }
 }
-
-if($toCoords){
-    $km = getDistance($from, $toCoords);
-    $shipFee = getShippingFee($km);
-}
-
+$addressStmt->close();
 
 $placeholders = implode(',', array_fill(0, count($cart_ids), '?'));
-
 $sql = "SELECT 
-            cart.id,
+            cart.id AS cart_id,
             cart.product_id,
             products.product_name,
             products.product_price,
@@ -120,21 +109,18 @@ $sql = "SELECT
             cart.quantity
         FROM cart
         JOIN products ON cart.product_id = products.id
-        WHERE cart.id IN ($placeholders)
-        AND cart.user_id = ?";
+        WHERE cart.id IN ($placeholders) AND cart.user_id = ?";
 
 $stmt = $conn->prepare($sql);
-
 $types = str_repeat('i', count($cart_ids)) . 'i';
 $params = array_merge($cart_ids, [$userID]);
-
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
-
 $data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 $total = 0;
-foreach ($data as $item){
+foreach ($data as $item) {
     $total += $item['product_price'] * $item['quantity'];
 }
 
@@ -142,28 +128,25 @@ $voucher = $_SESSION['voucher_id'] ?? 0;
 $discount_amount = 0;
 $ship_discount = 0;
 
-if($voucher > 0){
+if ($voucher > 0) {
     $vsql = $conn->prepare("SELECT voucher_discount, voucher_max, voucher_type FROM vouchers WHERE id = ?");
     $vsql->bind_param("i", $voucher);
     $vsql->execute();
-    $result = $vsql->get_result();
-    if($dis = $result->fetch_assoc()){
+    if ($dis = $vsql->get_result()->fetch_assoc()) {
         $val = $dis['voucher_discount'] ?? 0;
-        $is_ship_voucher = ($dis['voucher_type'] == "shipping");
         $voucher_max = $dis['voucher_max'] ?? PHP_INT_MAX;
-        if($is_ship_voucher){
+        
+        if ($dis['voucher_type'] == "shipping") {
             $ship_discount = $val;
-            $discount_amount = 0;
-        }else{
+        } else {
             $discount_amount = min($total * ($val / 100), $voucher_max);
-            $ship_discount = 0;
         }
     }
     $vsql->close();
 }
 
 $FREE_SHIP_THRESHOLD = 700;
-if($total >= $FREE_SHIP_THRESHOLD){
+if ($total >= $FREE_SHIP_THRESHOLD) {
     $shipFee = 0;
     $ship_discount = 0;
 }
@@ -173,125 +156,121 @@ $final_total = max(0, $total - $discount_amount + $final_ship_fee);
 $conn->begin_transaction();
 
 try{
+    $usernameShort = strtoupper(substr($username, 0, 3));
+    $orderCode = $usernameShort . date('YmdHis');
+    $orderstate = "success";
+
     $stmt = $conn->prepare("
         INSERT INTO orders(user_id, order_name, order_original_price, order_delivery_fee, discount, ship_discount, order_final_price, order_address, order_state)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
-
     $stmt->bind_param("isdddddss", $userID, $orderCode, $total, $final_ship_fee, $discount_amount, $ship_discount, $final_total, $orderAddress, $orderstate);
     $stmt->execute();
-
     $order_id = $stmt->insert_id;
     $stmt->close();
 
-    $stmt = $conn->prepare("
-        INSERT INTO order_items (
-            order_id,
-            product_id,
-            product_name,
-            price,
-            img,
-            color,
-            size,
-            quantity
-        )
+    $itemStmt = $conn->prepare("
+        INSERT INTO order_items (order_id, product_id, product_name, price, img, color, size, quantity)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
-    
+    $checkStockStmt = $conn->prepare("
+        SELECT product_stock FROM product_variant 
+        WHERE product_id = ? AND product_color = ?
+    ");
 
-    foreach ($data as $item){
+    $updateStockStmt = $conn->prepare("
+        UPDATE product_variant SET product_stock = product_stock - ? 
+        WHERE product_id = ? AND product_color = ? AND product_stock >= ?
+    ");
 
-        $stmt->bind_param(
+    $soldStmt = $conn->prepare("
+        INSERT INTO product_sold(`sold`, `product_id`, `product_color`) VALUES(?, ?, ?)
+        ON DUPLICATE KEY UPDATE sold = sold + VALUES(sold)
+    ");
+
+    foreach ($data as $item) {
+        $itemStmt->bind_param(
             "iisdsssi",
-            $order_id,
-            $item['product_id'],
-            $item['product_name'],
-            $item['product_price'],
-            $item['product_img'],
-            $item['product_color'],
-            $item['cart_size'],
-            $item['quantity']
+            $order_id, $item['product_id'], $item['product_name'], $item['product_price'],
+            $item['product_img'], $item['product_color'], $item['cart_size'], $item['quantity']
         );
-        $stmt->execute();
+        $itemStmt->execute();
 
-        $sql = $conn->prepare("SELECT product_stock FROM products
-                             WHERE id = ?");
-        $sql->bind_param("i", $item['product_id']);
-        $sql->execute();
-        $result = $sql->get_result();
-        $row = $result->fetch_assoc();
+        $checkStockStmt->bind_param("is", $item['product_id'], $item['product_color']);
+        $checkStockStmt->execute();
+        $stockRow = $checkStockStmt->get_result()->fetch_assoc();
+        $currentStock = $stockRow['product_stock'] ?? 0;
 
-        if($row['product_stock'] > 0){
-            $stmt2 = $conn->prepare("UPDATE products SET product_stock = product_stock - ?
-                                     WHERE id = ? AND product_stock >= ?");
+        if($currentStock >= $item['quantity']){
+            $updateStockStmt->bind_param(
+                "iisi", 
+                $item['quantity'], $item['product_id'], $item['product_color'], $item['quantity']
+            );
+            $updateStockStmt->execute();
 
-            $qty = $item['quantity'];
-            $product_id = $item['product_id'];
-
-            $stmt2->bind_param("iii", $qty, $product_id, $qty);
-            $stmt2->execute();
-            $stmt2->close();
-
-            $sold = $conn->prepare("INSERT INTO product_sold(`sold`,`product_id`) VALUES(?, ?)");
-            $sold->bind_param("ii", $qty, $product_id);
-            $sold->execute();
-            $sold->close();
+            $soldStmt->bind_param("iis", $item['quantity'], $item['product_id'], $item['product_color']);
+            $soldStmt->execute();
+        }else{
+            throw new Exception("Product '" . ucfirst($item['product_name']) . "' (" . ucfirst($item['product_color']) . " - " . $item['cart_size'] . ") is out of stock!");
         }
     }
 
-    $stmt->close();
+    $itemStmt->close();
+    $checkStockStmt->close();
+    $updateStockStmt->close();
+    $soldStmt->close();
 
-    $usql = $conn->prepare("INSERT INTO used_voucher(user_id, voucher_id) 
-                            VALUES(?, ?)");
-    $usql->bind_param("ii", $userID, $voucher);
-    $usql->execute();
-    $usql->close();
+    if ($voucher > 0) {
+        $usql = $conn->execute_query("INSERT INTO used_voucher(user_id, voucher_id) VALUES(?, ?)",[$userID, $voucher]);
 
-    $del = $conn->prepare("DELETE FROM cart WHERE id IN ($placeholders)");
-    $del->bind_param(str_repeat('i', count($cart_ids)), ...$cart_ids);
+        $vDel = $conn->prepare("DELETE FROM user_voucher WHERE voucher_id = ? AND user_id = ?",[$voucher, $userID]);
+    }
+
+    $del = $conn->prepare("DELETE FROM cart WHERE id IN ($placeholders) AND user_id = ?");
+    $delParams = array_merge($cart_ids, [$userID]);
+    $delTypes = str_repeat('i', count($cart_ids)) . 'i';
+    $del->bind_param($delTypes, ...$delParams);
     $del->execute();
     $del->close();
 
-    $vDel = $conn->prepare("DELETE FROM user_voucher WHERE voucher_id = ? AND user_id = ?");
-    $vDel->bind_param("ii", $voucher, $userID);
-    $vDel->execute();
-    $vDel->close();
-
-    $stmt = $conn->prepare("SELECT 
-                        COUNT(*) AS total_orders, 
-                        SUM(order_final_price) AS total_spent 
-                        FROM orders WHERE user_id = ?");
-
-    $stmt->bind_param("i", $userID);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $orderData = $result->fetch_assoc();
-    $totalOrdersCount = $orderData['total_orders'];
-    $totalSpent = $orderData['total_spent'];
+    $tierStmt = $conn->prepare("
+        SELECT COUNT(*) AS total_orders, SUM(order_final_price) AS total_spent 
+        FROM orders WHERE user_id = ? AND order_state = 'success'
+    ");
+    $tierStmt->bind_param("i", $userID);
+    $tierStmt->execute();
+    $orderData = $tierStmt->get_result()->fetch_assoc();
+    $totalOrdersCount = $orderData['total_orders'] ?? 0;
+    $totalSpent = $orderData['total_spent'] ?? 0;
+    $tierStmt->close();
 
     $newTier = '1';
-
-    if($totalOrdersCount >= 40 && $totalSpent >= 2500 || $totalSpent >= 5000 && $totalOrdersCount >= 1){
+    if (($totalOrdersCount >= 40 && $totalSpent >= 2500) || $totalSpent >= 5000) {
         $newTier = '4';
-    }elseif($totalOrdersCount >= 25 && $totalSpent >= 1000 || $totalSpent >= 2000 && $totalOrdersCount >= 1){
+    } elseif (($totalOrdersCount >= 25 && $totalSpent >= 1000) || $totalSpent >= 2000) {
         $newTier = '3';
-    } elseif($totalOrdersCount >= 10 && $totalSpent >= 200 || $totalSpent >= 500 && $totalOrdersCount >= 1){
+    } elseif (($totalOrdersCount >= 10 && $totalSpent >= 200) || $totalSpent >= 500) {
         $newTier = '2';
     }
 
-    if($newTier !== '1'){
+    if ($newTier !== '1') {
         $tierUpdate = $conn->prepare("UPDATE userdata SET user_tier = ? WHERE id = ?");
         $tierUpdate->bind_param("si", $newTier, $userID);
         $tierUpdate->execute();
         $tierUpdate->close();
     }
-    $conn->commit();
-    unset($_SESSION['checkout_cart_ids']);
-    header("Location: ../Pages/user.php");
-    exit;
 
-} catch (Exception $e){
+    $conn->commit();
+    
+    unset($_SESSION['checkout_cart_ids']);
+    unset($_SESSION['voucher_id']);
+    header("Location: ../Pages/user.php");
+    exit();
+
+}catch (Exception $e) {
     $conn->rollback();
-    echo "Error: " . $e->getMessage();
+    echo "<script>alert('Checkout failed: " . addslashes($e->getMessage()) . "'); window.location.href='../Pages/cart.php';</script>";
+    exit();
 }
+?>

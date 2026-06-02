@@ -9,8 +9,8 @@ html,body{
     scroll-behavior: smooth;
 }
 html::-webkit-scrollbar{
-            width: 0;
-            height: 0;
+    width: 0;
+    height: 0;
 }
     /*section head - menu*/
     #head {
@@ -77,20 +77,6 @@ html::-webkit-scrollbar{
       height: 0;
     }
     
-    .user-cart p {
-      color: black;
-      font-family: Arial, Helvetica, sans-serif;
-      font-weight: 500;
-      font-size: 18px;
-      letter-spacing: 1px;
-      margin-left: 50px;
-    }
-    .user-cart-alert {
-      color: black;
-      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-      font-size: 17px;
-      margin: 10px 10px;
-    }
     .title{
       display: flex;
       justify-content: space-between;
@@ -134,13 +120,13 @@ html::-webkit-scrollbar{
       flex-direction: column;
       align-items: start;
       border-radius: 10px;
-      box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.05);
       transition: .25s all;
       cursor: pointer;
       position: relative;
     }
     .order-block:hover {
-      box-shadow: 0 0 5px rgba(0,0,0,0.4);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
       transition: .25s all;
     }
     .order-block.list{
@@ -148,6 +134,10 @@ html::-webkit-scrollbar{
       width: 98%;
       height: 100px;
       flex-direction: row;
+    }
+    .order-block.list:hover{
+      transition: .25s all;
+      transform: translateY(-2px);
     }
     .order-block.list .reBuy-toggle{
       display: flex;
@@ -494,11 +484,6 @@ html::-webkit-scrollbar{
   }
   .user-information{
     max-width: 100%;
-  }
-  .user-cart p {
-    margin: 0;
-    display: flex;
-    justify-content: start;
   }
     #head-banner-container img{
         object-position: 70%;
