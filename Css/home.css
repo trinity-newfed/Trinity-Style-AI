@@ -462,31 +462,6 @@ html::-webkit-scrollbar{
     .account{
         display: none;
     }
-    .fast-menu-account{
-        display: flex;
-        color: black;
-        position: absolute;
-        bottom: 15vh;
-        opacity: 0;
-        width: 90%;
-        padding: 20px 0;
-        left: 50%;
-        transform: translate(-50%) !important;
-    }
-    #label-login-input{
-        position: absolute;
-        bottom: 15vh;
-        padding: 10px;
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        align-items: center;
-    }
-    #label-login-input p{
-        margin: 0;
-        margin-top: 5px;
-        font-family: Arial, Helvetica, sans-serif;
-    }
     .icon.user{
         display: none;
     }

@@ -352,5 +352,6 @@
 <script src="../asset/contact.js"></script>
 <script src="../asset/headerEmail.js"></script>
 <script src="../asset/homeJS/home.js"></script>
+<script src="../asset/search.js"></script>
 </body>
 </html> 

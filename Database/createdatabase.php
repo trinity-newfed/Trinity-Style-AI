@@ -167,6 +167,14 @@ $conn->query("CREATE TABLE IF NOT EXISTS user_voucher(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
+//Used Voucher Table
+$conn->query("CREATE TABLE IF NOT EXISTS used_voucher(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100),
+    voucher_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
 //Tryon Table
 $conn->query("CREATE TABLE IF NOT EXISTS tryon(
     id INT AUTO_INCREMENT PRIMARY KEY,
