@@ -81,7 +81,7 @@
                 <div id="order-state-option" class="flex justify-between items-center relative">
                     <span>Success</span>
                     <div class="w-fit h-fit flex justify-center items-center">
-                        <svg class="svg select transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                        <svg class="svg rotate-[180deg] select transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
                             <path d="M169.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L192 205.3 54.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/>
                         </svg>
                     </div>
@@ -98,7 +98,7 @@
                 <div id="order-state-layout" class="cursor-pointer flex z-[101] justify-between items-center relative border-b border-[rgba(0,0,0,0.3)] w-[55px]">
                     <span>View</span>
                     <div class="w-fit h-fit flex justify-center items-center">
-                        <svg class="svg layout transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+                        <svg class="svg rotate-[180deg] layout transition-all duration-300 w-[13px] h-[13px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
                             <path d="M169.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L192 205.3 54.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/>
                         </svg>
                     </div>

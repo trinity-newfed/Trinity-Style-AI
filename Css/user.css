@@ -192,7 +192,7 @@ html::-webkit-scrollbar{
     }
     .svg.active{
       transition: .3s all;
-      transform: rotate(180deg);
+      transform: rotate(0deg);
     }
     .order-items{
       width: 100%;

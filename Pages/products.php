@@ -393,5 +393,6 @@
 <script src="../asset/contact.js"></script>
 <script src="../asset/headerEmail.js"></script>
 <script src="../asset/productsJS/products.js"></script>
+<script src="../asset/search.js"></script>
 </body>
 </html>

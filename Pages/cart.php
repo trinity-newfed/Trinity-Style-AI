@@ -180,7 +180,7 @@
     </section>
 
 
-    <footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
+<footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
   <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 border-b border-gray-100">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
       
@@ -320,5 +320,6 @@
     
 <script src="../asset/headerEmail.js"></script>
 <script src="../asset/cartJS/cart.js"></script>
+<script src="../asset/search.js"></script>
 </body>
 </html>

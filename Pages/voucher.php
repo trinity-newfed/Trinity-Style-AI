@@ -291,4 +291,5 @@
 <script src="../asset/contact.js"></script>
 <script src="../asset/headerEmail.js"></script>
 <script src="../asset/voucherJS/voucher.js"></script>
+<script src="../asset/search.js"></script>
 </html>
