@@ -37,6 +37,12 @@ https://github.com/user-attachments/assets/907da0ec-a473-4ed2-826a-cde5ee686c04
 ## Backend setup: 
 ! This project uses **Composer** to manage PHP libraries. Make sure you have Composer installed before proceeding.
 
+! For AI, Stable Diffusion and Qwen require venv and ollama
+
+### OLLAMA:
+#### OLLAMA Download Link:
+https://ollama.com/download/windows
+
 ### MAILER
 #### PHP Composer Download:
 https://getcomposer.org/Composer-Setup.exe
@@ -110,4 +116,8 @@ https://github.com/user-attachments/assets/74b8635d-dc7a-4f48-8666-985813320484
 https://github.com/user-attachments/assets/38f5672e-3a06-48e3-bdf1-04fc3ca82ca9
 
 
+### 🎬OLLAMA SET UP VIDEO
+
+
+https://github.com/user-attachments/assets/ebbee385-929e-48e3-ae1e-24bfc6bd5efc
 
