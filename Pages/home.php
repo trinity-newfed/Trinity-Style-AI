@@ -37,7 +37,7 @@
                     <img class="w-[100%] h-[100%] object-cover translate-y-[150%]" src="../Pictures/Banners/BannerImg-1.png" alt="">
                 </div>
 
-                <button class="border border-black text-xs tracking-[0.2em] px-8 py-3.5 uppercase bg-transparent hover:bg-black hover:text-white transition-colors duration-300">
+                <button class="border border-black text-xs tracking-[0.2em] px-8 py-3.5 uppercase bg-transparent hover:bg-black hover:text-white transition-colors duration-300" onclick="window.location.href='search.php?content=collections'">
                     Our Collections
                 </button>
             </div>
@@ -218,7 +218,7 @@
             <div id="text">
                 <span onclick="window.location.href='#head'">Home</span>
                 <span onclick="window.location.href='products.php'">Shop</span>
-                <span onclick="window.location.href='products.php'">Collection</span>
+                <span onclick="window.location.href='search.php?content=collections'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
 
@@ -246,18 +246,19 @@
                     <div class="menu-title"><span>TRINITY</span></div>
 
                     <div class="submenu">
+                        
                         <div class="submenu-item">T-shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic T-shirt'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Oversize T-shirt'">Oversize</div>
                         </div>
 
                         <div class="submenu-item">Polo shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic Polo'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Logo Polo'">Logo</div>
                         </div>
 
                         <div class="submenu-item">Hoodie
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Hoodie'">Signature</div>
                         </div>
                     </div>
                 </div>
@@ -266,19 +267,15 @@
                     <div class="menu-title"><span>TRINITY LADIES</span></div>
 
                     <div class="submenu">
-                        <div class="submenu-item">T-shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
-                        </div>
 
                         <div class="submenu-item">Blouse
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Classic Blouse'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Wrap Blouse'">Warp</div>
                         </div>
 
                         <div class="submenu-item">Crop top
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic Crop Top'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Tank Crop Top'">Tank</div>
                         </div>
                     </div>
                 </div>
@@ -336,7 +333,7 @@
             </div>
             <div>
                 <span class="text-stone-500 block mb-2 uppercase text-[10px]">Get in touch</span>
-                <p class="leading-relaxed text-stone-300">triple3Tbusiness@gmail.com</p>
+                <p class="leading-relaxed text-stone-300">triple3tbusiness@gmail.com</p>
             </div>
             <div>
                 <span class="text-stone-500 block mb-2 uppercase text-[10px]">Social</span>

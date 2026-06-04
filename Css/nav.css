@@ -763,6 +763,9 @@
     #menu{
         justify-content: space-around;
     }
+    #menu .hamburger svg path{
+        stroke: black;
+    }
     #text-menu{
         width: 60%;
         display: flex;

@@ -40,10 +40,13 @@ $product_variant = $conn->query("SELECT
 
 $bestSeller = $conn->query("SELECT 
                             product_sold.sold, product_sold.product_id,
+                            products.product_name, products.product_img,
+                            products.product_price,
                             products.id AS id
                             FROM product_sold 
                             JOIN products
-                            ON product_sold.product_id = products.id")
+                            ON product_sold.product_id = products.id
+                            GROUP BY products.product_name")
                    ->fetch_all(MYSQLI_ASSOC);
 
 $username = $_SESSION['username'] ?? null;

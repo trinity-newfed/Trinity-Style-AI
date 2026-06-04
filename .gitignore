@@ -4,6 +4,7 @@ vendor/
 node_modules/
 AI/static/
 sd15/
+__pycache__/
 .env
 .DS_Store
 trinity-style-ai
