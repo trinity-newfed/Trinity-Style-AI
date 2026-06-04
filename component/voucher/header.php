@@ -12,8 +12,8 @@ if(!isset($_SESSION['username']) || $_SESSION['role'] != "user"){
     exit;
 }
 
-$username = $_SESSION['username'];
-$userID = $_SESSION['user_id'];
+$username = $_SESSION['username'] ?? null;
+$userID = $_SESSION['user_id'] ?? null;
 
 $baseProduct = $conn->query("SELECT * FROM products")
                     ->fetch_all(MYSQLI_ASSOC);

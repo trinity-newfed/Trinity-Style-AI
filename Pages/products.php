@@ -39,7 +39,7 @@
             <div id="text">
                 <span onclick="window.location.href='../Pages/'">Home</span>
                 <span onclick="window.location.href='products.php?#product-section'">Shop</span>
-                <span onclick="window.location.href='products.php?#product-section'">Collection</span>
+                <span onclick="window.location.href='search.php?content=collections'">Collection</span>
                 <span onclick="window.location.href='contact.php'">Contact</span>
             </div>
 
@@ -66,18 +66,19 @@
                     <div class="menu-title"><span>TRINITY</span></div>
 
                     <div class="submenu">
+                        
                         <div class="submenu-item">T-shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic T-shirt#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Oversize T-shirt#product-header'">Oversize</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic T-shirt'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Oversize T-shirt'">Oversize</div>
                         </div>
 
                         <div class="submenu-item">Polo shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Basic Polo#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Logo Polo#product-header'">Logo</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic Polo'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Logo Polo'">Logo</div>
                         </div>
 
                         <div class="submenu-item">Hoodie
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=men&name=Hoodie#product-header'">Signature</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Hoodie'">Signature</div>
                         </div>
                     </div>
                 </div>
@@ -86,19 +87,15 @@
                     <div class="menu-title"><span>TRINITY LADIES</span></div>
 
                     <div class="submenu">
-                        <div class="submenu-item">T-shirt
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic T-shirt#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Oversize T-shirt#product-header'">Oversize</div>
-                        </div>
 
                         <div class="submenu-item">Blouse
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Classic Blouse#product-header'">Classic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Wrap Blouse#product-header'">Warp</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Classic Blouse'">Classic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Wrap Blouse'">Warp</div>
                         </div>
 
                         <div class="submenu-item">Crop top
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Basic CropTop#product-header'">Basic</div>
-                            <div class="sub-sub" onclick="window.location.href='products.php?category=women&name=Tank CropTop#product-header'">Tank</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Basic Crop Top'">Basic</div>
+                            <div class="sub-sub" onclick="window.location.href='search.php?content=Tank Crop Top'">Tank</div>
                         </div>
                     </div>
                 </div>
@@ -158,8 +155,8 @@
                 Contemporary silhouettes<br>crafted for the modern individual.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4 text-xs tracking-widest uppercase">
-                <a href="#" class="bg-black text-white px-8 py-3.5 hover:bg-transparent border-black transition">Explore Collection</a>
-                <a href="#" class="border border-black text-black px-8 py-3.5 hover:bg-black hover:text-white transition">New Arrivals</a>
+                <a href="search.php?content=collections" class="bg-black text-white px-8 py-3.5 hover:bg-transparent border-black transition">Explore Collection</a>
+                <a href="search.php?content=new" class="border border-black text-black px-8 py-3.5 hover:bg-black hover:text-white transition">New Arrivals</a>
             </div>
         </div>
     </section>
@@ -182,7 +179,7 @@
             <p class="text-xs text-gray-600 tracking-wide max-w-sm mb-8 leading-relaxed">
                 Precision cuts, elevated textures, and timeless forms designed beyond seasonal trends.
             </p>
-            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">Discover More</a>
+            <a href="search.php?content=all" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">Discover More</a>
         </div>
     </section>
 
@@ -209,7 +206,7 @@
             <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
                 A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
             </p>
-            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">View Collection</a>
+            <a href="search.php?content=collections" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">View Collection</a>
         </div>
     </section>
 
@@ -298,7 +295,7 @@
           </li>
           <li>
             <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Feedback & Claims</span>
-            <a href="tel:1900252544" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3Tbusiness@gmail.com</a>
+            <a href="email:triple3tbusiness@gmail.com" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3tbusiness@gmail.com</a>
             <span class="block text-xs text-gray-400">Hours: 8:00 AM - 5:00 PM (Mon - Sat)</span>
           </li>
           <li>

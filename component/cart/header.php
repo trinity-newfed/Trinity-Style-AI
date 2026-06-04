@@ -34,8 +34,6 @@ $baseProduct = $conn->query("SELECT * FROM products")
 //VOUNCHER FETCH
 if(isset($_SESSION['user_id'])){
 
-    $userID = $_SESSION['user_id'];
-
     $stmt = $conn->prepare("SELECT
     vouchers.id AS id,
     vouchers.voucher_condition,
@@ -60,8 +58,6 @@ WHERE user_id = ?
 
 //CART FETCH
 if(isset($_SESSION['user_id'])){
-
-    $userID = $_SESSION['user_id'];
 
     $stmt = $conn->prepare("SELECT 
     cart.id AS cart_id,

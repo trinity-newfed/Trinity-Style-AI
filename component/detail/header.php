@@ -11,8 +11,8 @@ if($conn->connect_error){
 }
 
 session_start();
-$username = $_SESSION['username'];
-$userID = $_SESSION['user_id'];
+$username = $_SESSION['username'] ?? null;
+$userID = $_SESSION['user_id'] ?? null;
 
 $id = $_GET['id'] ?? 0;
 $color = $_GET['color'] ?? null;
