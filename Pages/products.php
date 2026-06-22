@@ -345,7 +345,7 @@
     <div id="product-modal">
 
         <div class="modal-container">
-            <span class="close-modal">&times;</span>
+            <span class="close-modal z-[101]">&times;</span>
             <div class="modal-left">
                 <img id="modal-img" src="" alt="Product Image">
             </div>
