@@ -6,697 +6,308 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
-$otp = 0;
-if(isset($_SESSION['register_data'])){
-  $otp = 2;
-  $resent = $conn->prepare("SELECT expire_at FROM user_otp
-                         WHERE email = ?");
-  $resent->bind_param("s", $_SESSION['register_data']['email']);
-  $resent->execute();
-  $expire_at = $resent->get_result();
-  $row = $expire_at->fetch_assoc();
-  $expire = isset($row['expire_at']) ? (int)$row['expire_at'] : 0;
-}elseif(isset($_SESSION['admin_otp']) || isset($_SESSION['otp'])){
-  $otp = 1;
+
+$bg_images = [
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070", 
+    "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070", 
+    "https://images.unsplash.com/photo-1539106609214-0d76eba6007c?q=80&w=2070", 
+    "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070"  
+];
+$selected_bg = $bg_images[array_rand($bg_images)];
+
+$show_otp_form = false;
+$display_email = "";
+$expire = 0;
+
+if (isset($_SESSION['register_data'])) {
+    $show_otp_form = true;
+    $display_email = is_array($_SESSION['register_data']) ? ($_SESSION['register_data']['email'] ?? '') : $_SESSION['register_data'];
+    
+    $resent = $conn->prepare("SELECT expire_at FROM user_otp WHERE email = ?");
+    $resent->bind_param("s", $display_email);
+    $resent->execute();
+    $result = $resent->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $expire = isset($row['expire_at']) ? (int)$row['expire_at'] : 0;
+    }
+    $resent->close();
+} 
+elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
+    $show_otp_form = true;
+    $display_email = $_SESSION['otp_email'] ?? $_SESSION['admin_username'] ?? "Your Registered Email";
+    $expire = $_SESSION['otp_expire'] ?? $_SESSION['admin_otp_expire'] ?? 0;
 }
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trinity Style - Auth</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+    <title>TRINITY | Collection Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { 
+              sans: ['Montserrat', 'sans-serif'],
+              serif: ['Playfair Display', 'serif']
+            }
+          }
+        }
+      }
+    </script>
     <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        font-family: "Montserrat", sans-serif;
-        overflow: hidden;
-        user-select: none;
-      }
-
-      .banner {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        max-width: 1600px;
-        max-height: 900px;
-        margin: auto;
-        background: url("../Pictures/Banners/banner_yellow.png") no-repeat
-          center;
-        background-size: cover;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .info-box {
-        position: relative;
-        width: 250px;
-        height: 100vh;
-        max-height: 900px;
-        padding: 0 50px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        z-index: 10;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-      }
-
-      .login-box {
-        background: rgba(0, 0, 0, 0.05);
-        border-left: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .brand-header {
-        margin-bottom: 40px;
-      }
-      .brand-header h2 {
-        font-weight: 600;
-        font-size: 28px;
-        margin: 0;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-      }
-      .brand-header p {
-        font-size: 13px;
-        color: #333;
-        margin-top: 5px;
-      }
-
-      .input-group {
-        position: relative;
-        margin-bottom: 30px;
-        width: 100%;
-      }
-      .input-group input {
-        font-size: 15px;
-        padding: 10px 0;
-        display: block;
-        width: 100%;
-        border: none;
-        border-bottom: 1.5px solid #000;
-        background: transparent;
-        outline: none;
-      }
-      .input-group label {
-        color: #000;
-        font-size: 14px;
-        position: absolute;
-        pointer-events: none;
-        left: 0;
-        top: 10px;
-        transition: 0.3s ease all;
-      }
-      .input-group input:focus ~ label,
-      .input-group input:valid ~ label {
-        top: -18px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .input-group input:-webkit-autofill ~ label,
-      .input-group input:focus ~ label{
-        top: -18px;
-        font-size: 12px;
-        font-weight: 600;
+      body { user-select: none; }
+      .form-container { transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      input:focus + label, input:not(:placeholder-shown) + label {
+        transform: translateY(-1.5rem) scale(0.85);
         color: #000;
       }
-
-      input:-webkit-autofill,
-      input:-webkit-autofill:hover, 
-      input:-webkit-autofill:focus, 
-      input:-webkit-autofill:active{
-        -webkit-box-shadow: 0 0 0 30px transparent !important;
-        -webkit-text-fill-color: #000 !important;
-        transition: background-color 5000s ease-in-out 0s;
-      }
-
-      .input-group input::placeholder {
-        color: transparent;
-      }
-
-      .gender-label {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 10px;
-        display: block;
-      }
-      .gender-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 25px;
-      }
-      .gender-box {
-        position: relative;
-        flex: 1;
-        height: 40px;
-        perspective: 1000px;
-        cursor: pointer;
-      }
-      .male-front,
-      .male-back {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 4px;
-        backface-visibility: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 12px;
-        transition: 0.6s;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-      .male-front {
-        background: #fff;
-        color: #000;
-      }
-      .male-back {
-        transform: rotateY(180deg);
-        color: #fff;
-        font-weight: bold;
-      }
-      .gender-box:hover .male-front {
-        transform: rotateY(180deg);
-      }
-      .gender-box:hover .male-back {
-        transform: rotateY(360deg);
-      }
-      .gender-box.stay .male-front{
-        transform: rotateY(180deg);
-      }
-      .gender-box.stay .male-back{
-        transform: rotateY(360deg);
-      }
-      .btn-action {
-        background: #000;
-        color: #fff;
-        border: 1px solid #000;
-        padding: 15px;
-        width: 100%;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        cursor: pointer;
-        transition: 0.3s;
-        margin-top: 10px;
-      }
-      .btn-action:hover {
-        background: #b8860b;
-        border-color: #b8860b;
-      }
-
-      .extra-link {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 12px;
-      }
-      .extra-link a {
-        color: #000;
-        font-weight: 600;
-        text-decoration: none;
-      }
-
-      @media (max-width: 850px) {
-        .banner {
-          overflow-y: auto;
-          justify-content: center;
-        }
-      }
-      .login-link {
-        margin-top: 25px;
-        text-align: center;
-        font-size: 13px;
-      }
-
-      .login-link a {
-        color: #000;
-        font-weight: 600;
-        text-decoration: none;
-        border-bottom: 1px solid #000;
-        cursor: pointer;
-      }
-      #regForm, #loginForm{
-        position: absolute;
-        right: 0;
-        transition: .5s all;
-      }
-      #regForm{
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(100%);
-      }
-      #regForm.move{
-        opacity: 1;
-        visibility: visible;
-        transition: .5s all;
-        transform: translateX(0);
-      }
-      #loginForm.move{
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(100%);
-        transition: .5s all;
-      }
-      #leftContainer{
-        width: 10%;
-        height: 100%;
-        max-height: 900px;
-        left: 5%;
-        position: absolute;
-        display: flex;
-        flex-direction: column;
-        align-items: start;
-        justify-content: center;
-        color: white;
-        gap: 15px;
-        cursor: default;
-      }
-      #leftContainer span{
-        width: 100%;
-        height: 20px;
-        font-size: clamp(1rem, 1vw, 1.5rem);
-        color: rgba(255, 255, 255, 0.481);
-        cursor: default;
-        transition: .5s all;
-      }
-      #leftContainer span:hover{
-        color: white;
-        cursor: pointer;
-        position: relative;
-        transition: .5s all;
-        padding-left: 30px;
-      }
-      #leftContainer span::before{
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 50%;
-        width: 0;
-        height: 2px;
-        background: white;
-        transform: translateY(-50%);
-        transition: .001ms all;
-        opacity: 0;
-      }
-      #leftContainer span:hover::before{
-        opacity: 1;
-        transition: .6s all;
-        width: 15%;
-      }
-      input[type="number"]::-webkit-outer-spin-button,
-      input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      #resent{
-        display: none;
-      }
-      #resent:hover{
-        cursor: pointer;
-        text-decoration: underline;
-      }
-
-      @media(max-width: 600px){
-        #leftContainer{
-          width: 100%;
-          height: fit-content;
-          align-items: center;
-          top: 0;
-          flex-direction: row;
-          position: fixed;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 100;
-          gap: 5%;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(15px);
-        }
-        #leftContainer h2{
-          font-size: clamp(.9rem, 1.2vw, 1.2rem);
-        }
-        #leftContainer span{
-          width: fit-content;
-          font-size: clamp(.8rem, 1vw, 1.2rem);
-        }
-        .Accesories{
-          display: none;
-        }
-        #loginForm, #regForm{
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          display: flex;
-          justify-content: center;
-        }
-        #regForm{
-          padding-top: 20px;
-        }
-        .info-box{
-          width: 80%;
-          padding: 0 40px;
-        }
-        .info-box.login-box{
-          justify-content: center;
-          align-items: center;
-        }
-      }
-      .suggest{
-        max-height: 100px;
-        overflow-y: auto;
-        position: relative;
-        background: transparent;
-        width: 100%;
-        top: 10%;
-        z-index: 1000;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-      }
-      .item{
-        padding: 5px;
-        cursor: pointer;  
-        }
-      .item:hover{
-        background: rgba(0, 0, 0, 0.05);
-      }
-      .suggest::-webkit-scrollbar{
-        width: 0;
-        height: 0;
-      }
+      .bg-overlay { background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%); }
     </style>
   </head>
-  <body>
-    <div class="banner">
-      <div id="leftContainer">
-        <h2 onclick="window.location.href='../Pages/'">TRINITY</h2>
-        <span onclick="window.location.href='../Pages/'">Home</span>
-        <span onclick="window.location.href='products.php?#product-section'">Collection</span>
-        <span onclick="window.location.href='products.php?category=men'">Men</span>
-        <span onclick="window.location.href='products.php?category=women'">Women</span>
-        <span class="Accesories" onclick="window.location.href='products.php?category=accesories'">Accesories</span>
-      </div>
+  <body class="h-full bg-zinc-50 font-sans text-zinc-900 overflow-hidden">
 
-      <?php if($otp == 2): ?>
-      <form action="register.php" method="POST" id="regForm">
-        <div class="info-box">
-          <div class="brand-header">
-            <h2>Register</h2>
-            <p style="font-size:13px; margin-bottom:10px;">
-              OTP sent to: 
-              <b><?php echo $_SESSION['register_data']['email'] ?? '' ?></b>
-            </p>
-          </div>
-            <div class="input-group">
-              <input type="text" name="registerOtp" maxlength="6" pattern="\d{6}" required/>
-              <label>OTP</label>
-            </div>
-          <button type="submit" class="btn-action btn-create">Verify OTP</button>
-          <div class="login-link">
-            Already have an account? <a id="login-btn" class="btn">Login</a>
-            <span id="countdown"></span>
-            <buttom id="resent" onclick="window.location.href='../Database/resetOTP.php'">Resent OTP</button>
-          </div>
-        </div>
-      </form>
-      <form action="login.php" method="POST" id="loginForm">
-        <div class="info-box login-box">
-          <div class="brand-header">
-            <h2>Login</h2>
-            <p>Welcome back</p>
-          </div>
-          <div class="input-group">
-            <input type="text" name="username" required />
-            <label>Email</label>
-          </div>
-          <div class="input-group">
-            <input type="password" name="user_password" required/>
-            <label>Password</label>
-          </div>
-          <button type="submit" class="btn-action">Sign In</button>
-          <div class="extra-link">
-            <a href="resetPass.php">Forget password?</a>
-            <div class="login-link">
-            Don't have an account yet? <a href="#" id="signUp-btn" class="btn">Sign Up</a>
-          </div>
-          </div>
-        </div>
-      </form>
-        <?php else: ?>
-          <form action="register.php" method="POST" id="regForm">
-          <div class="info-box">
-          <div class="brand-header">
-            <h2>Register</h2>
-            <p>Create new Trinity Account</p>
-          </div>
-          <div class="input-group" >
-            <input type="text" name="email" required />
-            <label>Email</label>
-          </div>
-          <div class="input-group">
-            <input type="password" name="user_password" required />
-            <label>Password</label>
-          </div>
-          <span class="gender-label">Sex</span>
-          <div class="gender-container">
-            <div class="gender-box">
-              <div class="male-front">Male</div>
-              <input type="radio" value="male" name="user_sex" id="s-1" hidden>
-              <label for="s-1" class="male-back" style="background-color: #3266ff">Male</label>
-            </div>
-            <div class="gender-box">
-              <div class="male-front">Female</div>
-              <input type="radio" value="female" name="user_sex" id="s-2" hidden>
-              <label for="s-2" class="male-back" style="background-color: #ff00aa">
-                Female
-              </label>
-            </div>
-            <div class="gender-box">
-              <div class="male-front">Other</div>
-              <input type="radio" value="other" name="user_sex" id="s-3" hidden checked>
-              <label for="s-3" class="male-back" style="background-color: #888">Other</label>
-            </div>
-          </div>
-          <div class="input-group">
-            <input type="text" name="user_hotline" pattern="\d{10}" id="hotline" required/>
-            <label>Hotline</label>
-          </div>
-          <div class="input-group">
-            <div class="address-container">
-              <input type="text" id="address" name="user_address" oninput="search(this, 'toList')" required>
-              <div id="toList" class="suggest"></div>
-            </div>
-          </div>
-          <button type="submit" class="btn-action btn-create">Create Account</button>
-          <div class="login-link">
-            Already have an account? <a href="#" id="login-btn" class="btn">Login</a>
-          </div>
-        </div>
-        
-      </form>
-      <?php endif; ?>
-
-
-      <?php if($otp !== 2 && !isset($_SESSION['admin_otp'])): ?>
-      <form action="login.php" method="POST" id="loginForm">
-        <div class="info-box login-box">
-          <div class="brand-header">
-            <h2>Login</h2>
-            <p>Welcome back</p>
-          </div>
-          <div class="input-group">
-            <input type="text" name="username" required />
-            <label>Email</label>
-          </div>
-          <div class="input-group">
-            <input type="password" name="user_password" required/>
-            <label>Password</label>
-          </div>
-          <?php if($otp == 1): ?>
-          <div class="input-group">
-            <input type="text" name="otp" required/>
-            <label>OTP</label>
-          </div>
-          <?php endif; ?>
-          <button type="submit" class="btn-action">Sign In</button>
-          <div class="extra-link">
-            <a href="resetPass.php">Forget password?</a>
-            <div class="login-link">
-            Don't have an account yet? <a href="#" id="signUp-btn" class="btn">Sign Up</a>
-          </div>
-          </div>
-        </div>
-      </form>
-      <?php endif; ?>
-      <?php if($otp == 1 && isset($_SESSION['admin_otp'])): ?>
-        <form action="login.php" method="POST" id="loginForm">
-        <div class="info-box login-box">
-          <div class="brand-header">
-            <h2>Admin Verification</h2>
-            <p style="margin-bottom: 10%;">Enter The OTP To Verify Your Identify</p>
-            <input type="hidden" name="username" value="<?=$_SESSION['admin_username']?>">
-            <input type="hidden" name="user_password" value="<?=$_SESSION['admin_password']?>">
-
-          <div class="input-group">
-            <input type="text" name="otp" required/>
-            <label>OTP</label>
-          </div>
-          <button type="submit" class="btn-action">Continue</button>
-          <div class="extra-link">
-            <div class="login-link">
-            Not an admin? <a href="../Database/outAdmin.php" id="signUp-btn" class="btn">Sign in as user</a>
-            <p>This account requires verification</p>
-          </div>
-          </div>
-        </div>
-      </form>
-      <?php endif; ?>
+    <div class="fixed inset-0 z-0 transition-opacity duration-1000">
+        <img src="<?= $selected_bg ?>" class="w-full h-full object-cover grayscale-[30%]" alt="Fashion Background">
+        <div class="absolute inset-0 bg-overlay"></div>
     </div>
-    <script>
-      const hotlineInput = document.querySelector('input[name="user_hotline"]');
-      if(hotlineInput){
-        hotlineInput.addEventListener('input', function(e){
-        this.value = this.value.replace(/[^0-9]/g, '');
-        if(this.value.length > 10){
-          this.value = this.value.slice(0, 10);
-        }
-        if(this.value.length === 10 && this.value.startsWith('0')){
-          this.style.borderColor = "#2d6a4f";
-        }else if(this.value.length > 0){
-          this.style.borderColor = "#ff4d4d";
-        }else{
-          this.style.borderColor = "";
-        }
-      });
 
-      hotlineInput.addEventListener('input', function(e){
-        let value = this.value.replace(/\D/g, '');
-        if(value.length > 0 && value[0] !== '0'){
-          value = '0' + value;
-        }
-        if(value.length > 10){
-        value = value.slice(0, 10);
-        }
-        this.value = value;
-      });
-
-      document.querySelector('input[name="user_hotline"]').addEventListener("input", function(){
-        this.value = this.value.replace(/\D/g, "").slice(0,10);
-      });
-      }
-
+    <main class="relative h-full w-full flex items-center justify-center p-4 sm:p-8 z-10">
       
+      <div class="bg-white w-full max-w-[1000px] h-full max-h-[700px] flex overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]">
+        
+        <div class="hidden md:flex md:w-1/2 bg-zinc-900 relative items-center justify-center p-12 text-white overflow-hidden">
+            <div class="absolute inset-0 opacity-40">
+                <img src="<?= $selected_bg ?>" class="w-full h-full object-cover scale-110" alt="Sidebar view">
+            </div>
+            <div class="relative z-10 border border-white/30 p-8 text-center backdrop-blur-sm">
+                <p class="font-serif italic text-xl mb-4">The Trinity Archive</p>
+                <div class="w-12 h-px bg-white mx-auto mb-4"></div>
+                <p class="text-[10px] tracking-[0.4em] uppercase opacity-70">Define your identity</p>
+            </div>
+            <div class="absolute bottom-8 left-8">
+                <h1 onclick="window.location.href='../Pages/'" class="text-2xl font-serif tracking-widest cursor-pointer hover:opacity-50 transition">TRINITY.</h1>
+            </div>
+        </div>
 
-      const select = document.querySelectorAll(".gender-box");
-      select.forEach(sec =>{
-        sec.addEventListener('click', ()=>{
-          select.forEach(sec => sec.classList.remove("stay"));
-          sec.classList.add("stay");
-          const radio = sec.querySelector("input[type=radio]");
-          radio.checked = true;
+        <div class="w-full md:w-1/2 flex flex-col relative px-8 py-12 overflow-y-auto no-scrollbar">
+            
+            <div class="mb-10 text-center">
+                <h2 class="text-xs tracking-[0.5em] uppercase text-zinc-400 mb-2">Member Portal</h2>
+                <div class="w-8 h-px bg-zinc-200 mx-auto"></div>
+            </div>
+
+            <?php if($show_otp_form): ?>
+            <form action="<?= isset($_SESSION['register_data']) ? 'register.php' : 'login.php' ?>" method="POST" id="otpForm" class="space-y-8 animate-in fade-in duration-700">
+                <div class="text-center">
+                    <h3 class="font-serif text-2xl">Security Verification</h3>
+                    <p class="text-[11px] text-zinc-500 mt-2 uppercase tracking-wide">Sent to: <?= htmlspecialchars($display_email) ?></p>
+                </div>
+                <div class="relative border-b border-zinc-200 focus-within:border-zinc-900 transition-all">
+                    <input type="hidden" name="email" value="<?=$_SESSION['otp_email'] ?? ""?>">
+                    <input type="text" name="<?= isset($_SESSION['register_data']) ? 'registerOtp' : 'otp' ?>" maxlength="6" pattern="\d{6}" required placeholder=" " class="peer w-full bg-transparent py-3 text-center text-xl tracking-[0.8em] outline-none" />
+                    <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Enter 6-Digit OTP</label>
+                </div>
+                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Verify Secure Key</button>
+                <div class="text-center pt-4">
+                    <span id="countdown" class="text-[10px] text-zinc-400 tracking-widest"></span>
+                    <button type="button" id="resent" onclick="window.location.href='../Database/resetOTP.php'" class="hidden text-[10px] underline underline-offset-4 tracking-widest uppercase hover:text-black transition">Request New Code</button>
+                </div>
+                <?php if(!isset($_SESSION['register_data'])): ?>
+                <div class="text-center">
+                    <a href="../Database/outAdmin.php" class="text-[10px] text-zinc-400 hover:text-black transition tracking-widest underline underline-offset-4 uppercase">Cancel Verification</a>
+                </div>
+                <?php endif; ?>
+            </form>
+
+            <?php else: ?>
+            
+            <form action="login.php" method="POST" id="loginForm" class="form-container space-y-8 opacity-100">
+                <div class="text-center mb-10">
+                    <h3 class="font-serif text-3xl">Sign In</h3>
+                </div>
+                <div class="space-y-6">
+                    <div class="relative border-b border-zinc-200 focus-within:border-zinc-900 transition-all">
+                        <input type="text" name="email" required placeholder=" " class="peer w-full bg-transparent py-3 outline-none text-sm font-light tracking-wide" />
+                        <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Username or Email</label>
+                    </div>
+                    <div class="relative border-b border-zinc-200 focus-within:border-zinc-900 transition-all" id="password_layer">
+                        <input type="password" name="user_password" id="user_password" required placeholder=" " class="peer w-full bg-transparent py-3 outline-none text-sm font-light tracking-wide" />
+                        <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Password</label>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center text-[10px] tracking-widest text-zinc-400 cursor-pointer group">
+                        <input type="checkbox" name="passless" id="passlessCheckbox" value="1" class="hidden peer">
+                        <div class="w-3 h-3 border border-zinc-300 mr-2 peer-checked:bg-zinc-900 peer-checked:border-zinc-900 transition"></div>
+                        PASSWORDLESS ACCESS
+                    </label>
+                    <a href="resetPass.php" class="text-[10px] text-zinc-400 hover:text-black tracking-widest transition">Forgot?</a>
+                </div>
+                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Authenticate</button>
+                <p class="text-center text-[10px] tracking-widest text-zinc-400">
+                    Not a member? <button type="button" class="switch-form-btn text-black font-medium underline underline-offset-4">Register Account</button>
+                </p>
+            </form>
+
+            <form action="register.php" method="POST" id="regForm" class="form-container space-y-5 hidden opacity-0 translate-y-4">
+                <div class="text-center mb-6">
+                    <h3 class="font-serif text-3xl">Register</h3>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="relative border-b border-zinc-100 py-1">
+                        <input type="text" name="email" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Email</label>
+                    </div>
+                    <div class="relative border-b border-zinc-100 py-1">
+                        <input type="password" name="user_password" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Password</label>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <span class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 block mb-2">Identification</span>
+                        <div class="flex gap-2">
+                            <?php foreach(['male', 'female', 'other'] as $sex): ?>
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" name="user_sex" value="<?= $sex ?>" class="hidden peer" <?= $sex == 'other' ? 'checked' : '' ?>>
+                                <div class="text-[9px] py-2 text-center border border-zinc-100 tracking-widest uppercase text-zinc-400 peer-checked:bg-zinc-900 peer-checked:text-white transition">
+                                    <?= $sex ?>
+                                </div>
+                            </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <div class="relative border-b border-zinc-100 py-1">
+                        <input type="text" name="user_hotline" pattern="\d{10}" id="hotline" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Hotline</label>
+                    </div>
+
+                    <div class="relative address-container border-b border-zinc-100 py-1">
+                        <input type="text" id="address" name="user_address" oninput="searchAddress(this, 'toList')" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Geolocation</label>
+                        <div id="toList" class="hidden absolute top-full left-0 w-full max-h-32 bg-white shadow-2xl z-50 text-[10px] overflow-y-auto no-scrollbar border-t border-zinc-50"></div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition">Create Archive</button>
+                <p class="text-center text-[10px] tracking-widest text-zinc-400">
+                    Already registered? <button type="button" class="switch-form-btn text-black font-medium underline underline-offset-4">Return to login</button>
+                </p>
+            </form>
+            <?php endif; ?>
+
+            <div class="mt-auto pt-10 text-center opacity-30">
+                <p class="text-[8px] tracking-[0.5em] font-light">© TRINITY ARCHIVE EST. 2024</p>
+            </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const switchBtns = document.querySelectorAll(".switch-form-btn");
+      const loginForm = document.getElementById("loginForm");
+      const regForm = document.getElementById("regForm");
+
+      switchBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (loginForm && regForm) {
+            const showingLogin = !loginForm.classList.contains('hidden');
+            
+            [loginForm, regForm].forEach(f => {
+                f.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => f.classList.add('hidden'), 300);
+            });
+
+            setTimeout(() => {
+                const activeForm = showingLogin ? regForm : loginForm;
+                activeForm.classList.remove('hidden');
+                setTimeout(() => {
+                    activeForm.classList.remove('opacity-0', 'translate-y-4');
+                    activeForm.classList.add('opacity-100', 'translate-y-0');
+                }, 50);
+            }, 350);
+          }
         });
       });
 
-      document.querySelectorAll(".btn").forEach(button =>{
-        button.addEventListener('click', ()=>{
-          document.getElementById("loginForm").classList.toggle("move");
-          document.getElementById("regForm").classList.toggle("move");
+      const hotline = document.getElementById('hotline');
+      if(hotline) {
+        hotline.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
+            if(this.value.length > 0 && this.value[0] !== '0') this.value = '0' + this.value;
+            this.parentElement.style.borderBottomColor = (this.value.length === 10) ? "#000" : "#e5e7eb";
         });
-      });
-
-
-const addressInput = document.getElementById("address");
-const suggestBox = document.getElementById("toList");
-if(addressInput){
-    addressInput.addEventListener("focus", () => {
-      suggestBox.style.display = "block";
-    });
-}
-
-
-
-document.addEventListener("click", function(e){
-  if (!e.target.closest(".address-container")) {
-    if(suggestBox){
-      suggestBox.style.display = "none";
-    }
-  }
-});
-
-let coords = {
-  from: [106.5775, 10.8908],
-  to: null
-};
-
-async function search(input, listId){
-  const q = input.value;
-  if (q.length < 3) return;
-
-  const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`);
-  const data = await res.json();
-
-  const list = document.getElementById(listId);
-  list.innerHTML = "";
-
-  data.features.forEach(place => {
-    const name = place.properties.name || place.properties.city || place.properties.country;
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerText = name;
-
-    div.onclick = () => {
-      input.value = name;
-      list.innerHTML = "";
-
-      if (listId === "fromList") {
-        coords.from = place.geometry.coordinates;
-      } else {
-        coords.to = place.geometry.coordinates;
       }
-    };
 
-    list.appendChild(div);
-  });
-}
+      const addressInput = document.getElementById("address");
+      const suggestBox = document.getElementById("toList");
 
-//OTP
-const expire = <?= json_encode($expire ?? 0) ?>;
+      async function searchAddress(input, listId) {
+        if (input.value.length < 3) { suggestBox.classList.add('hidden'); return; }
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(input.value)}&limit=5`);
+        const data = await res.json();
+        suggestBox.innerHTML = "";
+        suggestBox.classList.remove('hidden');
 
-if(expire){
-  function updateCountdown() {
-    const now = Math.floor(Date.now() / 1000);
-    const remaining = expire - now;
+        data.features.forEach(place => {
+            const name = place.properties.name || place.properties.city || place.properties.country;
+            const div = document.createElement("div");
+            div.className = "p-3 hover:bg-zinc-50 cursor-pointer border-b border-zinc-50 tracking-widest text-zinc-500 uppercase";
+            div.innerText = name;
+            div.onclick = () => {
+                input.value = name;
+                suggestBox.classList.add('hidden');
+            };
+            suggestBox.appendChild(div);
+        });
+      }
 
-    if(remaining <= 0){
-        document.getElementById("countdown").style.display = "none";
-        document.getElementById("resent").style.display = "block";
-        return;
-    }
-    const minutes = Math.floor(remaining / 60);
-    const seconds = remaining % 60;
+      const expireTime = <?= json_encode($expire) ?>;
+      const countdownEl = document.getElementById("countdown");
+      const resentBtn = document.getElementById("resent");
 
-    document.getElementById("countdown").textContent ="Resent OTP in: " +
-        `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
+      if (expireTime && countdownEl) {
+        function updateCountdown() {
+          const now = Math.floor(Date.now() / 1000);
+          const rem = expireTime - now;
+          if (rem <= 0) {
+            countdownEl.style.display = "none";
+            if(resentBtn) resentBtn.classList.remove("hidden");
+            return;
+          }
+          const m = Math.floor(rem / 60);
+          const s = rem % 60;
+          countdownEl.textContent = `RETRY IN ${m}:${s.toString().padStart(2, '0')}`;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+      }
 
-  setInterval(updateCountdown, 1000);
-  updateCountdown();
-}
+      if (new URLSearchParams(window.location.search).get('otp') && regForm) {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden', 'opacity-0');
+        regForm.classList.add('opacity-100', 'translate-y-0');
+      }
 
-if(new URLSearchParams(window.location.search).get('otp')){
-    document.getElementById("signUp-btn").click();
-}
+      const passless = document.getElementById("passlessCheckbox");
+      const passLayer = document.getElementById("password_layer");
+      const passInput = document.getElementById("user_password");
+      
+      if(passless && passLayer) {
+        passless.addEventListener('change', function(){
+          if(this.checked) {
+            passLayer.classList.add("hidden");
+            passInput.removeAttribute("required");
+          } else {
+            passLayer.classList.remove("hidden");
+            passInput.setAttribute("required", "");
+          }
+        });
+      }
     </script>
   </body>
 </html>
