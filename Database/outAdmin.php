@@ -12,9 +12,8 @@ if ($conn->connect_error) {
     die("error " . $conn->connect_error);
 }
 
-unset($_SESSION['admin_otp']);
-unset($_SESSION['admin_username']);
-unset($_SESSION['admin_password']);
+unset($_SESSION['adminOtp']);
+unset($_SESSION['otp'], $_SESSION['otp_email']);
 
 header("Location: ../Pages/reglog.php");
 exit;

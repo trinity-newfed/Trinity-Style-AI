@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRINITY STYLE — OTP VERIFICATION</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center antialiased px-4 selection:bg-black selection:text-white">
+
+    <div class="w-full max-w-sm">
+        
+        <div class="mb-12 text-center md:text-left">
+            <h1 class="text-2xl font-medium tracking-[0.2em] text-black uppercase mb-2">
+                Verification
+            </h1>
+            <p class="text-xs uppercase tracking-widest text-zinc-400 font-light leading-relaxed">
+                Enter the security code sent to your administrator account.
+            </p>
+        </div>
+
+        <form action="../Database/adminLogin.php" method="POST" class="space-y-8">
+            
+            <div class="space-y-2 group">
+                <label for="otp" class="block text-xs uppercase tracking-widest text-zinc-500 font-medium">
+                    Secure OTP Code
+                </label>
+                <input 
+                    type="text" 
+                    id="otp" 
+                    name="otp" 
+                    required
+                    maxlength="6"
+                    pattern="[0-9]*"
+                    inputmode="numeric"
+                    placeholder="••••••"
+                    class="w-full bg-white text-black text-xl font-medium tracking-[0.5em] text-center md:text-left px-0 py-3 border-b border-zinc-200 rounded-none focus:outline-none focus:border-black transition-colors duration-300 placeholder:text-zinc-200"
+                />
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <button 
+                    type="submit" 
+                    class="w-full bg-black text-white text-xs uppercase tracking-[0.2em] font-medium py-4 rounded-none hover:bg-zinc-900 active:bg-black transition-all duration-300 focus:outline-none"
+                >
+                    Verify Code
+                </button>
+                
+                <button 
+                    type="button"
+                    onclick="window.location.href='adminLogin.php';" 
+                    class="w-full bg-white text-black text-xs uppercase tracking-[0.2em] font-medium py-4 rounded-none border border-zinc-200 hover:border-black transition-all duration-300 focus:outline-none"
+                >
+                    Cancel
+                </button>
+            </div>
+
+        </form>
+
+        <div class="mt-16 text-center">
+            <p class="text-[10px] uppercase tracking-widest text-zinc-400 font-light">
+                &copy; 2026 Trinity Style. All rights reserved.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>
