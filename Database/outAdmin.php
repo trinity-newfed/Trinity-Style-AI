@@ -13,7 +13,7 @@ if ($conn->connect_error) {
 }
 
 unset($_SESSION['adminOtp']);
-unset($_SESSION['otp'], $_SESSION['otp_email']);
+unset($_SESSION['otp'], $_SESSION['otp_expire'], $_SESSION['register_data']);
 
 header("Location: ../Pages/reglog.php");
 exit;
