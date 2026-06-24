@@ -10,7 +10,6 @@ session_start();
 $bg_images = [
     "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070", 
     "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070", 
-    "https://images.unsplash.com/photo-1539106609214-0d76eba6007c?q=80&w=2070", 
     "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070"  
 ];
 $selected_bg = $bg_images[array_rand($bg_images)];
@@ -43,9 +42,10 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TRINITY | Collection Access</title>
+    <title>TRINITY | Authentication</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <script>
       tailwind.config = {
         theme: {
@@ -94,7 +94,7 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 flex flex-col relative px-8 py-12 overflow-y-auto no-scrollbar">
+        <div class="relative w-full md:w-1/2 flex flex-col relative px-8 py-12 overflow-y-auto no-scrollbar">
             
             <div class="mb-10 text-center">
                 <h2 class="text-xs tracking-[0.5em] uppercase text-zinc-400 mb-2">Member Portal</h2>
@@ -102,7 +102,7 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
             </div>
 
             <?php if($show_otp_form): ?>
-            <form action="<?= isset($_SESSION['register_data']) ? 'register.php' : 'login.php' ?>" method="POST" id="otpForm" class="space-y-8 animate-in fade-in duration-700">
+            <form action="<?=isset($_SESSION['register_data']) ? 'register.php' : 'login.php' ?>"  method="POST" id="otpForm" class="space-y-8 animate-in fade-in duration-700">
                 <div class="text-center">
                     <h3 class="font-serif text-2xl">Security Verification</h3>
                     <p class="text-[11px] text-zinc-500 mt-2 uppercase tracking-wide">Sent to: <?= htmlspecialchars($display_email) ?></p>
@@ -112,16 +112,16 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
                     <input type="text" name="<?= isset($_SESSION['register_data']) ? 'registerOtp' : 'otp' ?>" maxlength="6" pattern="\d{6}" required placeholder=" " class="peer w-full bg-transparent py-3 text-center text-xl tracking-[0.8em] outline-none" />
                     <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Enter 6-Digit OTP</label>
                 </div>
-                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Verify Secure Key</button>
+                <button class="submit w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Verify Secure Key</button>
                 <div class="text-center pt-4">
                     <span id="countdown" class="text-[10px] text-zinc-400 tracking-widest"></span>
                     <button type="button" id="resent" onclick="window.location.href='../Database/resetOTP.php'" class="hidden text-[10px] underline underline-offset-4 tracking-widest uppercase hover:text-black transition">Request New Code</button>
                 </div>
-                <?php if(!isset($_SESSION['register_data'])): ?>
+
                 <div class="text-center">
                     <a href="../Database/outAdmin.php" class="text-[10px] text-zinc-400 hover:text-black transition tracking-widest underline underline-offset-4 uppercase">Cancel Verification</a>
                 </div>
-                <?php endif; ?>
+
             </form>
 
             <?php else: ?>
@@ -133,7 +133,7 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
                 <div class="space-y-6">
                     <div class="relative border-b border-zinc-200 focus-within:border-zinc-900 transition-all">
                         <input type="text" name="email" required placeholder=" " class="peer w-full bg-transparent py-3 outline-none text-sm font-light tracking-wide" />
-                        <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Username or Email</label>
+                        <label class="absolute left-0 top-3 text-[10px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Email</label>
                     </div>
                     <div class="relative border-b border-zinc-200 focus-within:border-zinc-900 transition-all" id="password_layer">
                         <input type="password" name="user_password" id="user_password" required placeholder=" " class="peer w-full bg-transparent py-3 outline-none text-sm font-light tracking-wide" />
@@ -148,7 +148,7 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
                     </label>
                     <a href="resetPass.php" class="text-[10px] text-zinc-400 hover:text-black tracking-widest transition">Forgot?</a>
                 </div>
-                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Authenticate</button>
+                <button class="submit w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition shadow-lg">Authenticate</button>
                 <p class="text-center text-[10px] tracking-widest text-zinc-400">
                     Not a member? <button type="button" class="switch-form-btn text-black font-medium underline underline-offset-4">Register Account</button>
                 </p>
@@ -160,16 +160,16 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
                 </div>
                 <div class="grid grid-cols-1 gap-4">
                     <div class="relative border-b border-zinc-100 py-1">
-                        <input type="text" name="email" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
-                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Email</label>
+                        <input type="text" name="registerEmail" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Email <span class="text-[red]">*</span></label>
                     </div>
                     <div class="relative border-b border-zinc-100 py-1">
                         <input type="password" name="user_password" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
-                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Password</label>
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Password <span class="text-[red]">*</span></label>
                     </div>
                     
                     <div class="pt-2">
-                        <span class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 block mb-2">Identification</span>
+                        <span class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 block mb-2">Gender</span>
                         <div class="flex gap-2">
                             <?php foreach(['male', 'female', 'other'] as $sex): ?>
                             <label class="flex-1 cursor-pointer group">
@@ -184,25 +184,23 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
 
                     <div class="relative border-b border-zinc-100 py-1">
                         <input type="text" name="user_hotline" pattern="\d{10}" id="hotline" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
-                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Hotline</label>
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Hotline <span class="text-[red]">*</span></label>
                     </div>
 
                     <div class="relative address-container border-b border-zinc-100 py-1">
                         <input type="text" id="address" name="user_address" oninput="searchAddress(this, 'toList')" required placeholder=" " class="peer w-full bg-transparent py-2 text-xs outline-none" />
-                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Geolocation</label>
+                        <label class="absolute left-0 top-2 text-[9px] uppercase tracking-widest text-zinc-400 transition-all pointer-events-none origin-left">Geolocation <span class="text-[red]">*</span></label>
                         <div id="toList" class="hidden absolute top-full left-0 w-full max-h-32 bg-white shadow-2xl z-50 text-[10px] overflow-y-auto no-scrollbar border-t border-zinc-50"></div>
                     </div>
                 </div>
-                <button type="submit" class="w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition">Create Archive</button>
+                <button class="submit w-full py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition">Create Archive</button>
                 <p class="text-center text-[10px] tracking-widest text-zinc-400">
                     Already registered? <button type="button" class="switch-form-btn text-black font-medium underline underline-offset-4">Return to login</button>
                 </p>
             </form>
             <?php endif; ?>
-
-            <div class="mt-auto pt-10 text-center opacity-30">
-                <p class="text-[8px] tracking-[0.5em] font-light">© TRINITY ARCHIVE EST. 2024</p>
-            </div>
+            
+            <div class="toast text-center absolute bottom-[10%] rounded left-[50%] translate-x-[-50%] translate-y-[40px] transition-all duration-300 w-[80%] h-fit p-4 invisible"></div>
         </div>
       </div>
     </main>
@@ -212,25 +210,36 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
       const loginForm = document.getElementById("loginForm");
       const regForm = document.getElementById("regForm");
 
+      let isAnimating = false;
+
       switchBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          if (loginForm && regForm) {
-            const showingLogin = !loginForm.classList.contains('hidden');
-            
-            [loginForm, regForm].forEach(f => {
-                f.classList.add('opacity-0', 'translate-y-4');
-                setTimeout(() => f.classList.add('hidden'), 300);
-            });
+          if(isAnimating || !loginForm || !regForm) return; 
 
+          isAnimating = true;
+          const showingLogin = !loginForm.classList.contains('invisible');
+    
+
+          [loginForm, regForm].forEach(f => {
+            f.classList.remove('opacity-100', 'translate-y-0');
+            f.classList.add('opacity-0', 'translate-y-4');
+            setTimeout(() => f.classList.add('invisible', 'hidden'), 300);
+          });
+
+          setTimeout(() => {
+            const activeForm = showingLogin ? regForm : loginForm;
+            activeForm.classList.remove('invisible', 'hidden');
+        
             setTimeout(() => {
-                const activeForm = showingLogin ? regForm : loginForm;
-                activeForm.classList.remove('hidden');
-                setTimeout(() => {
-                    activeForm.classList.remove('opacity-0', 'translate-y-4');
-                    activeForm.classList.add('opacity-100', 'translate-y-0');
-                }, 50);
-            }, 350);
-          }
+              activeForm.classList.remove('opacity-0', 'translate-y-4');
+              activeForm.classList.add('opacity-100', 'translate-y-0');
+        
+              setTimeout(() => {
+                isAnimating = false;
+              }, 300); 
+
+            }, 50);
+          }, 350);
         });
       });
 
@@ -308,6 +317,70 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
           }
         });
       }
+
+      const toast = document.querySelector(".toast");
+      let notiTimer = null;
+
+      function toastNoti(data){   
+        if(notiTimer){
+          clearTimeout(notiTimer);
+        }
+
+        toast.style.background = `${data.color}`;
+        toast.classList.remove("invisible", "opactiy-100", "opactiy-0", "translate-y-[60px]");
+        toast.classList.add("translate-y-[30px]", "opacity-100");
+        toast.textContent = data.message;
+
+        notiTimer = setTimeout(() => {
+          toast.classList.remove("translate-y-[30px]", "opacity-100");
+          toast.classList.add("invisible", "opactiy-0", "translate-y-[60px]");
+        }, 5000);
+      }
+
+      const submitBtns = document.querySelectorAll(".submit");
+
+      submitBtns.forEach(btn =>{
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+
+          toast.classList.remove("translate-y-[30px]");
+          toast.classList.add("invisible", "translate-y-[60px]", "opactiy-0");
+
+          const form = this.closest('form'); 
+          const url = form.getAttribute('action'); 
+          const formData = new FormData(form);
+          
+          fetch(url, {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if(!response.ok) throw new Error('Server error, please try again later!');
+            return response.json();
+          })
+          .then(data => {
+
+            if(data.otp == 'required' || data.redirect == 'true'){
+              toastNoti(data);
+              setTimeout(() => {
+                window.location.reload();
+              }, 3000);
+            }
+
+            if(data.status == 'OTP_success'){
+              toastNoti(data);
+              setTimeout(() => {
+                window.location.href = '../Pages/home.php';
+              }, 1500);
+            }
+
+            if(data.status == false) toastNoti(data);
+
+            else toastNoti(data);
+          })
+          .catch(error => console.error('Error:', error));
+        });
+      });                        
     </script>
   </body>
 </html>
