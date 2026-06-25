@@ -34,12 +34,31 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
     $hotline  = isset($_POST['user_hotline']) ? trim($_POST['user_hotline']) : "";
     $inputOtp = $_POST['registerOtp'] ?? null;
 
+    if(isset($_SESSION['register_data'])) $checkMail = $_SESSION['register_data']['email'];
+    else $checkMail = $registerEmail;
+
+    $stmt = $conn->prepare("SELECT id FROM userdata WHERE email = ?");
+    $stmt->bind_param("s", $checkMail);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if($stmt->num_rows > 0){
+        echo json_encode([
+            'status' => false,
+            'color' => '#FFCCCC',
+            'message' => 'Account Already Exists.'
+        ]);
+        $stmt->close();
+        exit;
+    }
+    $stmt->close();
+
     if(empty($registerEmail) || empty($password) || empty($hotline) || empty($address)){    
         if(!isset($_SESSION['register_data'])){
             echo json_encode([
                 'status' => false,
                 'color' => '#FFCCCC',
-                'message' => 'Failed: Please fill all required information'
+                'message' => 'Please Fill All Required Information'
             ]);
             exit;
         }
@@ -55,28 +74,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         }  
     }
 
-    $stmt = $conn->prepare("SELECT id FROM userdata WHERE email = ?");
-    $stmt->bind_param("s", $_SESSION['register_data']['email']);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if($stmt->num_rows > 0){
-        echo json_encode([
-            'status' => false,
-            'color' => '#FFCCCC',
-            'message' => 'Failed: Account Already Exists.'
-        ]);
-        $stmt->close();
-        exit;
-    }
-    $stmt->close();
-
 
         if(!isset($_SESSION['register_data'])){
             echo json_encode([
                 'status' => false,
                 'color' => '#FFCCCC',
-                'message' => 'Failed: Session expired, please register again.'
+                'message' => 'Session Expired, Please Register Again.'
             ]);
             exit;
         }
@@ -89,38 +92,41 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
 
-        if($row){
-            if(password_verify($inputOtp, $row['otp'])){
-                $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+        
+        if($inputOtp != '' && isset($_SESSION['register_data'])){
+            if($row){
+                if(password_verify($inputOtp, $row['otp'])){
+                    $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
 
-                $stmt = $conn->prepare("
-                    INSERT INTO userdata (email, user_password, user_address, user_sex, user_hotline)
-                    VALUES (?, ?, ?, ?, ?)
-                ");
-                $stmt->bind_param("sssss", $data['email'], $hashedPassword, $data['address'], $data['sex'], $data['hotline']);
+                    $stmt = $conn->prepare("
+                        INSERT INTO userdata (email, user_password, user_address, user_sex, user_hotline)
+                        VALUES (?, ?, ?, ?, ?)
+                    ");
+                    $stmt->bind_param("sssss", $data['email'], $hashedPassword, $data['address'], $data['sex'], $data['hotline']);
 
-                if($stmt->execute()){
-                    $stmtDel = $conn->prepare("DELETE FROM user_otp WHERE email = ?");
-                    $stmtDel->bind_param("s", $data['email']);
-                    $stmtDel->execute();
+                    if($stmt->execute()){
+                        $stmtDel = $conn->prepare("DELETE FROM user_otp WHERE email = ?");
+                        $stmtDel->bind_param("s", $data['email']);
+                        $stmtDel->execute();
 
-                    unset($_SESSION['register_data'], $_SESSION['otp'], $_SESSION['otp_expire']);
+                        unset($_SESSION['register_data'], $_SESSION['otp'], $_SESSION['otp_expire']);
 
+                        echo json_encode([
+                            'status' => 'success',
+                            'color' => '#daffcc',
+                            'redirect' => 'true',
+                            'message' => 'Register Success.'
+                        ]);
+                        exit;
+                    }
+                }else{
                     echo json_encode([
-                        'status' => 'success',
-                        'color' => '#daffcc',
-                        'redirect' => 'true',
-                        'message' => 'Register success.'
+                        'status' => 'OTP_failed',
+                        'color' => '#FFCCCC',
+                        'message' => 'Invalid OTP.'
                     ]);
                     exit;
                 }
-            }else{
-                echo json_encode([
-                    'status' => 'OTP_failed',
-                    'color' => '#FFCCCC',
-                    'message' => 'Failed: Invalid OTP.'
-                ]);
-                exit;
             }
         }else{
                 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
@@ -152,16 +158,46 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                 curl_exec($ch);
                 curl_close($ch);
 
-                $_SESSION['otp'] = 'true';
-                $_SESSION['otp_expire'] = time() + 180;
+                $sql = $conn->execute_query("SELECT max_otp FROM user_otp WHERE email = ?",[$checkMail])
+                    ->fetch_assoc();
+        
+                if($sql){
+                    if($sql['max_otp'] < 5){
+
+                        $_SESSION['otp'] = 'true';
+                        $_SESSION['otp_expire'] = time() + 180;
+
+                        echo json_encode([
+                            'status' => 'success',
+                            'otp' => 'required',
+                            'color' => '#daffcc',
+                            'message' => 'Register OTP Has Been Sent To Your Email.'
+                        ]);
                 
-                echo json_encode([
-                    'status' => 'success',
-                    'otp' => 'required',
-                    'color' => '#daffcc',
-                    'message' => 'OTP has been sent to your email.'
-                ]);
-                exit;
+                        exit;
+                    }else{
+                        echo json_encode([
+                            'status' => false,
+                            'otp' => 'none',
+                            'color' => '#FFCCCC',
+                            'message' => 'OTP Request Limit Reached, Please Try Again Later.'
+                        ]);
+                
+                        exit;
+                    }
+                }else{
+                    $_SESSION['otp'] = 'true';
+                    $_SESSION['otp_expire'] = time() + 180;
+
+                    echo json_encode([
+                        'status' => 'success',
+                        'otp' => 'required',
+                        'color' => '#daffcc',
+                        'message' => 'Register OTP Has Been Sent To Your Email.'
+                    ]);
+                
+                    exit;
+                }
         }
         $stmt->close();
 }

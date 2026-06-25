@@ -94,9 +94,9 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
             </div>
         </div>
 
-        <div class="relative w-full md:w-1/2 flex flex-col relative px-8 py-12 overflow-y-auto no-scrollbar">
+        <div class="relative w-full md:w-1/2 flex flex-col relative px-8 py-8 sm:py-12 overflow-y-auto no-scrollbar">
             
-            <div class="mb-10 text-center">
+            <div class="mb-3 sm:mb-10 text-center">
                 <h2 class="text-xs tracking-[0.5em] uppercase text-zinc-400 mb-2">Member Portal</h2>
                 <div class="w-8 h-px bg-zinc-200 mx-auto"></div>
             </div>
@@ -200,7 +200,7 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
             </form>
             <?php endif; ?>
             
-            <div class="toast text-center absolute bottom-[10%] rounded left-[50%] translate-x-[-50%] translate-y-[40px] transition-all duration-300 w-[80%] h-fit p-4 invisible"></div>
+            <div class="toast text-center absolute bottom-[7%] sm:bottom-[10%] rounded left-[50%] translate-x-[-50%] translate-y-[40px] transition-all duration-300 w-[80%] h-fit p-4 invisible"></div>
         </div>
       </div>
     </main>

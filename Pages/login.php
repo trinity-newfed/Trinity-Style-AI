@@ -46,7 +46,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             'status' => false,
             'otp' => 'none',
             'color' => '#FFCCCC',
-            'message' => 'Account not found.'
+            'message' => 'Account Not Found.'
         ]);
         exit;
     }
@@ -65,7 +65,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 'status' => false,
                 'otp' => 'none',
                 'color' => '#FFCCCC',
-                'message' => 'OTP expired.'
+                'message' => 'OTP Expired.'
             ]);
             exit;
         }
@@ -91,7 +91,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 'status' => 'OTP_success',
                 'otp' => 'none',
                 'color' => '#daffcc',
-                'message' => 'Verify success.'
+                'message' => 'Verification Successful.'
             ]);
 
             exit;
@@ -101,7 +101,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 'status' => false,
                 'otp' => 'none',
                 'color' => '#FFCCCC',
-                'message' => 'Verification security code mismatch.'
+                'message' => 'Verification Security Code Mismatch.'
             ]);
             exit;
         }
@@ -128,7 +128,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             'status' => false,
             'otp' => 'none',
             'color' => '#FFCCCC',
-            'message' => 'Failed: Account suspended.'
+            'message' => 'Account Suspended.'
         ]);
         exit;
 
@@ -162,17 +162,50 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         curl_exec($ch);
         curl_close($ch);
 
-        $_SESSION['otp'] = 'true';
-        $_SESSION['otp_expire'] = time() + 180;
+        
 
-        echo json_encode([
-            'status' => 'success',
-            'otp' => 'required',
-            'color' => '#daffcc',
-            'message' => 'Passwordless login by OTP is deployed in email.'
-        ]);
- 
-        exit;
+        $sql = $conn->execute_query("SELECT max_otp FROM user_otp WHERE email = ?",[$email])
+                    ->fetch_assoc();
+        
+        if($sql){
+            if($sql['max_otp'] < 5){
+
+                $_SESSION['otp'] = 'true';
+                $_SESSION['otp_expire'] = time() + 180;
+
+                echo json_encode([
+                    'status' => 'success',
+                    'otp' => 'required',
+                    'color' => '#daffcc',
+                    'message' => 'Passwordless Login By OTP Is Deployed In Email.'
+                ]);
+        
+                exit;
+            }else{
+                echo json_encode([
+                    'status' => false,
+                    'otp' => 'none',
+                    'color' => '#FFCCCC',
+                    'message' => 'OTP Request Limit Reached, Please Try Again Later.'
+                ]);
+        
+                exit;
+            }
+        }else{
+            $_SESSION['otp'] = 'true';
+            $_SESSION['otp_expire'] = time() + 180;
+
+            echo json_encode([
+                'status' => 'success',
+                'otp' => 'required',
+                'color' => '#daffcc',
+                'message' => 'Passwordless Login Using OTP Is Deployed In Email.'
+            ]);
+        
+            exit;
+        }
+
+        
 
     } else {
         $num = 1;
@@ -186,7 +219,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 'status' => false,
                 'otp' => 'required',
                 'color' => '#FFCCCC',
-                'message' => 'Failed: Maximum consecutive threshold reached. Dynamic OTP required.'
+                'message' => 'Maximum consecutive threshold reached. Dynamic OTP required.'
             ]);
             exit;
         } else {
@@ -195,7 +228,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 'status' => false,
                 'otp' => 'none',
                 'color' => '#FFCCCC',
-                'message' => 'Failed: Invalid email or password.'
+                'message' => 'Invalid email or password.'
             ]);
             exit;
         }

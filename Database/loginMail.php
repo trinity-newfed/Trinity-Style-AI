@@ -32,7 +32,7 @@ $tokenCheck = hash_hmac('sha256', $email . $timestamp , $key);
 $expireTime = time() + 180;
 $otp = rand(100000, 999999);
 
-function sendOtpEmail($targetEmail, $otpCode, $accountType = "User") {
+function sendOtpEmail($targetEmail, $otpCode, $accountType = "User"){
     try {
         $mail = new PHPMailer(true);
         $mail->isSMTP();
@@ -84,23 +84,34 @@ function sendOtpEmail($targetEmail, $otpCode, $accountType = "User") {
 }
 
 
-function syncOtpToDatabase($conn, $email, $otp, $expireTime) {
-    $clear = $conn->prepare("DELETE FROM user_otp WHERE email = ?");
-    $clear->bind_param("s", $email);
-    $clear->execute();
-    $clear->close();
+function syncOtpToDatabase($conn, $email, $otp, $expireTime){
 
     $hashedOtp = password_hash($otp, PASSWORD_BCRYPT);
+    $expireLimit = 86400;
 
-    $insert = $conn->prepare("INSERT INTO user_otp (email, otp, expire_at) VALUES (?, ?, ?)");
-    $insert->bind_param("ssi", $email, $hashedOtp, $expireTime);
-    $insert->execute();
-    $insert->close();
+    $sql = "INSERT INTO user_otp (email, otp, expire_at, max_otp) 
+            VALUES (?, ?, ?, 1) 
+            ON DUPLICATE KEY UPDATE 
+                max_otp = IF(UNIX_TIMESTAMP() - expire_at > ?, 1, max_otp + 1),
+                otp = VALUES(otp), 
+                expire_at = VALUES(expire_at)";
+
+    $conn->execute_query($sql, [$email, $hashedOtp, $expireTime, $expireLimit]);
 }
 
 if(hash_equals($tokenCheck, $token)){
-    sendOtpEmail($email, $otp, $content);
-    syncOtpToDatabase($conn, $email, $otp, $expireTime);
+    $sql = $conn->execute_query("SELECT max_otp FROM user_otp WHERE email = ?",[$email])
+                ->fetch_assoc();
+    
+    if($sql){
+        if($sql['max_otp'] < 5){
+            sendOtpEmail($email, $otp, $content);
+            syncOtpToDatabase($conn, $email, $otp, $expireTime);
+        }
+    }else{
+        sendOtpEmail($email, $otp, $content);
+        syncOtpToDatabase($conn, $email, $otp, $expireTime);
+    }
 }else{
     header('HTTP/1.1 403 Forbidden');
     echo "Invalid Token.";
