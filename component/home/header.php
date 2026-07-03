@@ -1,17 +1,18 @@
-<?php 
-include "../Database/createdatabase.php";
+<?php
+include("../Database/createdatabase.php");
+
 session_start();
 
-if(!isset($_SESSION['role'])){
+if (!isset($_SESSION['role'])) {
     $_SESSION['role'] = "guest";
 }
 
 $baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
+    ->fetch_all(MYSQLI_ASSOC);
 
 
 $product = $conn
-  ->query("SELECT products.id AS id,
+    ->query("SELECT products.id AS id,
             products.product_name, products.product_group,
             products.product_price, products.product_category,
             products.product_type, products.product_describe,
@@ -24,7 +25,7 @@ $product = $conn
             JOIN product_variant
             ON products.id = product_variant.product_id
             ")
-  ->fetch_all(MYSQLI_ASSOC);
+    ->fetch_all(MYSQLI_ASSOC);
 
 $product_variant = $conn->query("SELECT 
                                  product_variant.product_id, product_variant.product_price,
@@ -36,7 +37,7 @@ $product_variant = $conn->query("SELECT
                                  FROM product_variant
                                  JOIN products
                                  ON product_variant.product_id = products.id")
-                        ->fetch_all(MYSQLI_ASSOC);
+    ->fetch_all(MYSQLI_ASSOC);
 
 $bestSeller = $conn->query("SELECT 
                             product_sold.sold, product_sold.product_id,
@@ -47,13 +48,11 @@ $bestSeller = $conn->query("SELECT
                             JOIN products
                             ON product_sold.product_id = products.id
                             GROUP BY products.product_name")
-                   ->fetch_all(MYSQLI_ASSOC);
+    ->fetch_all(MYSQLI_ASSOC);
+
+$baseProduct = $conn->query("SELECT * FROM products")
+    ->fetch_all(MYSQLI_ASSOC);
 
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
-
-if(isset($_SESSION['error'])){
-    echo "<script>alert('{$_SESSION['error']}');</script>";
-    unset($_SESSION['error']);
-}
 ?>

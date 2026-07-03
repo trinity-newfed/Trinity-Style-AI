@@ -2,251 +2,152 @@
 <?php require "../component/cartItem.php" ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../Css/nav.css">
-    <link rel="stylesheet" href="../Css/detail.css">
-    <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
-    <title><?=strtoupper($product['product_name'])?> - TRINITY</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../Css/nav.css">
+  <link rel="stylesheet" href="../Css/detail.css">
+  <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+  <title><?= strtoupper($product['product_name']) ?> - TRINITY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
-    <div class="product-container pt-[10px] sm:pt-[120px]">
-      <div class="product-left" data-img1="../<?=$product['product_img1']?>" data-img2="../<?=$product['product_img2']?>">
-        <?php require "../component/detail/img.php" ?>
-      </div>
-      </div>
+  <div class="product-container pt-[10px] sm:pt-[120px]">
+    <div class="product-left" data-img1="../<?= $product['product_img1'] ?>" data-img2="../<?= $product['product_img2'] ?>">
+      <?php require "../component/detail/img.php" ?>
+    </div>
+  </div>
 
-      <div class="product-right">
-        <span id="mainId" style="display: none;" data-id="<?=$product['id']?>"></span>
-        <span id="mainCategory" style="display: none;" data-category="<?=$product['product_category']?>"></span>
-        <span id="mainColor" style="display: none;" data-color="<?=$product['product_color']?>"></span>
-        <h1 class="font-normal opacity-[0.8] text-[30px] sm:text-[34px]"><?=$product['product_name']?></h1>
+  <div class="product-right">
+    <span id="mainId" style="display: none;" data-id="<?= $product['id'] ?>"></span>
+    <span id="mainCategory" style="display: none;" data-category="<?= $product['product_category'] ?>"></span>
+    <span id="mainColor" style="display: none;" data-color="<?= $product['product_color'] ?>"></span>
+    <h1 class="font-normal opacity-[0.8] text-[30px] sm:text-[34px]"><?= $product['product_name'] ?></h1>
 
-        <div class="price text-[green] text-[25px] pt-2 pb-5 border-b border-[rgba(0,0,0,0.1)]">$<?=$product['product_price']?></div>
+    <div class="price text-[green] text-[25px] pt-2 pb-5 border-b border-[rgba(0,0,0,0.1)]">
+      $<?= $product['product_price']?></div>
 
-        <div class="flex items-center border border-[rgba(0,0,0,0.3)] mt-5 w-max h-12">
-          <button id="decrease-qty" class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">—</button>
-          <input id="quantity-input" type="number" value="1" min="1" max="99" class="w-12 h-full text-center text-xs font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent">
-          <button id="increase-qty" class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">＋</button>
-        </div>
+    <div class="flex items-center border border-[rgba(0,0,0,0.3)] mt-5 w-max h-12">
+      <button id="decrease-qty"
+        class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">—</button>
+      <input id="quantity-input" type="number" value="1" min="1" max="99"
+        class="w-12 h-full text-center text-xs font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent">
+      <button id="increase-qty"
+        class="w-12 h-full flex items-center justify-center text-sm font-light hover:bg-[#F3F3F3] transition-colors duration-300 select-none">＋</button>
+    </div>
 
-        <p class="pt-5 pb-2">Size</p>
-        <div class="size flex gap-2">       
-          <label class="active text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="S-size">S</label>
-          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="M-size">M</label>        
-          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="L-size">L</label>        
-          <label class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer" for="XL-size">XL</label>
-        </div>
+    <p class="pt-5 pb-2">Size</p>
+    <div class="size flex gap-2">
+      <label
+        class="active text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer"
+        for="S-size">S</label>
+      <label
+        class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer"
+        for="M-size">M</label>
+      <label
+        class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer"
+        for="L-size">L</label>
+      <label
+        class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer"
+        for="XL-size">XL</label>
+    </div>
 
-        <div class="color-select pt-5 pb-2">
-          <p>Color</p>
-          <div class="colors grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-2">
-            <?php require "../component/detail/label.php" ?>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-5 pt-5 pb-2">
-          <button class="add-cart">ADD TO CART</button>
-          <button class="modal-try" type="submit">TRY WITH AI✨</button>
-          <p class="short-desc font-serif"><?=$product['product_describe']?></p>
-        </div>
-
+    <div class="color-select pt-5 pb-2">
+      <p>Color</p>
+      <div class="colors grid grid-cols-3 lg:grid-cols-4 gap-x-1 sm:gap-x-2">
+        <?php require "../component/detail/label.php" ?>
       </div>
     </div>
 
-</div>
-<section id="body">
-    
+    <div class="flex flex-col gap-5 pt-5 pb-2">
+      <button class="add-cart">ADD TO CART</button>
+      <button class="modal-try" type="submit">TRY WITH AI✨</button>
+      <p class="short-desc font-serif"><?= $product['product_describe'] ?></p>
+    </div>
+
+  </div>
+  </div>
+
+  </div>
+  <section id="body">
+
     <div class="max-w-7xl w-[100%] mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
       <h1 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider mb-3">Color Variations</h1>
-      <div class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
+      <div
+        class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
         <?php require "../component/detail/variant.php" ?>
       </div>
     </div>
-    
-    
-</section>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">You may also like</h1>
 
-        <div class="flex space-x-2">
-          <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path></svg></button>
-          <button class="next p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path></svg></button>
-        </div>
-      </div>
+  </section>
 
-      <div class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
-        <?php require "../component/detail/classic.php" ?>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">You may also like</h1>
+
+      <div class="flex space-x-2">
+        <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path>
+          </svg></button>
+        <button class="next p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
+          </svg></button>
       </div>
     </div>
 
-    <section>
-      <div>
-        <img src="" alt="">
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
-        <div class="h-[450px] bg-cover bg-center" style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
-        <div class="p-4">
-            <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
-            <hr class="w-12 border-black mb-6">
-            <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
-                A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
-            </p>
-            <a href="#" class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition" onclick="window.location.href='search.php?content=collections'">View Collection</a>
-        </div>
-    </section>
-
-    <?php require "../component/sectionMenu.php"?>
-
-<footer class="bg-white text-gray-600 font-sans border-t border-gray-100">
-  <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 border-b border-gray-100">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-      
-      <div class="flex flex-col items-center group">
-        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5h-9l-3.036-5.06A1.242 1.242 0 0 0 7.915 1.75H2.25A2.25 2.25 0 0 0 0 4v13.5A2.25 2.25 0 0 0 2.25 19.75h1.5a2.25 2.25 0 0 0 4.5 0h7.5a2.25 2.25 0 0 0 4.5 0h1.5a2.25 2.25 0 0 0 2.25-2.25V9.75A2.25 2.25 0 0 0 21 7.5Zm-13.5 12.25a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Zm12 0a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5M12 3.75v16.5M3.75 6.75h16.5M3.75 17.25h16.5" />
-          </svg>
-        </div>
-        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Nationwide Free Shipping</h4>
-        <p class="text-xs text-gray-400 mt-1.5">For orders from 499K</p>
-      </div>
-
-      <div class="flex flex-col items-center group">
-        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0-2.625V7.5m0 0h5.25c1.243 0 2.25-1.007 2.25-2.25h-1.5a1.125 1.125 0 0 0-1.125-1.125h-4.875c-.621 0-1.125.504-1.125 1.125H3.75a1.125 1.125 0 0 0-1.125 1.125H7.5c0 1.243 1.007 2.25 2.25 2.25H12" />
-          </svg>
-        </div>
-        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Premium Gift Wrapping</h4>
-        <p class="text-xs text-gray-400 mt-1.5">Luxurious & meaningful</p>
-      </div>
-
-      <div class="flex flex-col items-center group">
-        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5H3M21 12H3m18 4.5H3M19.5 4.5h-15a1.5 1.5 0 0 0-1.5 1.5v12a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5v-12a1.5 1.5 0 0 0-1.5-1.5Z" />
-          </svg>
-        </div>
-        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">100% Authentic Products</h4>
-        <p class="text-xs text-gray-400 mt-1.5">Exclusively crafted by TRINITY</p>
-      </div>
-
-      <div class="flex flex-col items-center group">
-        <div class="text-gray-800 group-hover:text-amber-500 transition-colors duration-300 mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-8 h-8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499c.151-.416.719-.416.87 0l2.428 6.666a.426.426 0 0 0 .375.281l7.103.65c.451.041.631.597.292.898l-5.372 4.792a.426.426 0 0 0-.129.398l1.583 6.95c.101.442-.38.791-.767.558l-6.19-3.738a.426.426 0 0 0-.44 0l-6.19 3.738c-.387.233-.868-.116-.767-.558l1.583-6.95a.426.426 0 0 0-.129-.398L.141 12.834c-.339-.301-.159-.857.292-.898l7.103-.65a.426.426 0 0 0 .375-.281l2.428-6.666Z" />
-          </svg>
-        </div>
-        <h4 class="text-gray-900 font-medium tracking-widest text-xs uppercase">Transparent Returns & Warranty</h4>
-        <p class="text-xs text-gray-400 mt-1.5">Clear policies, zero hassle</p>
-      </div>
-
+    <div
+      class="simillar-product-container flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll animate">
+      <?php require "../component/detail/classic.php" ?>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-      
-      <div>
-        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Exclusive Offers from TRINITY</h3>
-        <p class="text-sm text-gray-400 mb-6 leading-relaxed">Get 10% off on your first order when you subscribe to our newsletter.</p>
-        <form class="contact-form space-y-3 max-w-sm">
-          <input type="email" placeholder="Email Address" required 
-                 class="email w-full px-4 py-3 bg-white border border-gray-200 text-sm focus:outline-none focus:border-gray-900 placeholder-gray-300 transition-colors" />
-          <button type="submit" 
-                  class="contact-submitBtn w-full bg-gray-600 hover:bg-gray-900 text-white font-medium text-xs tracking-widest uppercase py-3 transition-colors duration-300">
-            Contact Us
-          </button>
-        </form>
-        
-        <div class="flex space-x-6 mt-8 text-gray-400">
-          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
-          </a>
-          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.082 2h-.621c-2.42 0-2.743.012-3.71.054-.939.042-1.449.2-1.766.325a3.63 3.63 0 00-1.344.875 3.63 3.63 0 00-.875 1.344c-.125.317-.283.827-.325 1.766-.041.947-.054 1.29-.054 3.71v.621c0 2.42.012 2.743.054 3.71.042.939.2 1.449.325 1.766.23.596.548 1.106.974 1.53.424.424.934.742 1.53.974.317.125.827.283 1.766.325.967.041 1.29.054 3.71.054h.621c2.42 0 2.743-.012 3.71-.054.939-.042 1.449-.2 1.766-.325.596-.23 1.106-.548 1.53-.974.424-.424.742-.934.974-1.53.125-.317.283-.827.325-1.766.041-.967.054-1.29.054-3.71v-.621c0-2.42-.012-2.743-.054-3.71-.042-.939-.2-1.449-.325-1.766a3.63 3.63 0 00-.875-1.344 3.63 3.63 0 00-.125-.317c-.317-.125-.827-.283-1.766-.325C15.115 4.012 14.773 4 12.35 4h-.082zM12 7.682a4.318 4.318 0 100 8.636 4.318 4.318 0 000-8.636zM12 14a2 2 0 110-4 2 2 0 010 4zm5.884-7.804a.836.836 0 100-1.672.836.836 0 000 1.672z"/></svg>
-          </a>
-          <a href="#" class="hover:text-gray-900 transition-colors duration-200">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.043 2.62-.053 3.91-.017.38.01.76.047 1.13.11.84.144 1.57.564 2.11 1.2a4.84 4.84 0 0 1 1.07 2.19c.14.65.2 1.32.22 1.99.04 1.53.04 3.07 0 4.6-.02.67-.08 1.34-.22 1.99a4.84 4.84 0 0 1-1.07 2.19 4.98 4.98 0 0 1-2.11 1.2c-.37.063-.75.1-1.13.11-1.29.036-2.6.026-3.91-.017m-1.05.003c-1.31.043-2.62.053-3.91.017a4.65 4.65 0 0 1-1.13-.11 4.84 4.84 0 0 1-2.11-1.2 4.84 4.84 0 0 1-1.07-2.19c-.14-.65-.2-1.32-.22-1.99-.04-1.53-.04-3.07 0-4.6.02-.67.08-1.34.22-1.99A4.84 4.84 0 0 1 4.22 1.52c.54-.636 1.27-1.056 2.11-1.2.37-.063.75-.1 1.13-.11 1.29-.036 2.6-.026 3.91.017"/></svg>
-          </a>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Contact Us</h3>
-        <ul class="space-y-4 text-sm text-gray-500">
-          <li>
-            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Sales Hotline</span>
-            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 9:00 PM Daily</span>
-          </li>
-          <li>
-            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Feedback & Claims</span>
-            <a href="email:triple3tbusiness@gmail.com" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">triple3tbusiness@gmail.com</a>
-            <span class="block text-xs text-gray-400">Hours: 8:00 AM - 5:00 PM (Mon - Sat)</span>
-          </li>
-          <li>
-            <span class="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-0.5">Email Support</span>
-            <a href="mailto:contact@TRINITY.vn" class="hover:text-gray-900 underline underline-offset-4 decoration-gray-200 transition-colors">trinitysupport@gmail.com</a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="flex justify-between">
-        <div>
-          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Information</h3>
-          <ul class="space-y-2.5 text-sm">
-            <li><a href="about.php" class="hover:text-gray-900 transition-colors">About Us</a></li>
-            <li><a href="../legal/privacy-policy.php" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
-            <li><a href="../legal/delivery-policy.php" class="hover:text-gray-900 transition-colors">Delivery Policy</a></li>
-            <li><a href="../ai-usage-policy.php" class="hover:text-gray-900 transition-colors">AI Usage Policy</a></li>
-            <li><a href="../warranty-policy.php" class="hover:text-gray-900 transition-colors">Warranty Policy</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-gray-900 font-medium tracking-widest text-xs uppercase mb-4">Quick Link</h3>
-          <ul class="space-y-2.5 text-sm">
-            <li><a href="../Pages/" class="hover:text-gray-900 transition-colors">Home</a></li>
-            <li><a href="products.php" class="hover:text-gray-900 transition-colors">Products</a></li>
-            <li><a href="voucher.php" class="hover:text-gray-900 transition-colors">Exclusive Offers</a></li>
-            <li><a href="userTier.php" class="hover:text-gray-900 transition-colors">Membership Status</a></li>
-          </ul>
-        </div>
-
-      </div>
-
+  <section>
+    <div>
+      <img src="" alt="">
     </div>
-  </div>
+  </section>
 
-  <div class="bg-gray-50 border-t border-gray-100 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p class="text-[11px] font-medium tracking-widest text-gray-400 uppercase">
-        &copy; 2026 - TRINITY
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+    <div class="h-[450px] bg-cover bg-center"
+      style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
+    <div class="h-[450px] bg-cover bg-center"
+      style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
+    <div class="p-4">
+      <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
+      <hr class="w-12 border-black mb-6">
+      <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
+        A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
       </p>
+      <a href="#"
+        class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition"
+        onclick="window.location.href='search.php?content=collections'">View Collection</a>
     </div>
-  </div>
-</footer>
+  </section>
 
-    <div class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
-        <span>Item added to bag</span>
-        <button class="underline" onclick="window.location.href='cart.php'">View</button>
-    </div>
+  <?php require "../component/sectionMenu.php" ?>
+
+  <?php require "../component/sectionFooter.php" ?>
+
+  <div
+    class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
+    <span>Item added to bag</span>
+    <button class="underline" onclick="window.location.href='cart.php'">View</button>
+  </div>
 </body>
 
 <script src="../asset/contact.js"></script>
 <script src="../asset/headerEmail.js"></script>
 <script src="../asset/detailJS/detail.js"></script>
 <script src="../asset/search.js"></script>
+
 </html>

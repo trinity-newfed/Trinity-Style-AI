@@ -1,5 +1,4 @@
 <?php
-
 $host = "localhost";
 $user = "root";
 $password = "";
@@ -12,7 +11,7 @@ if ($conn->connect_error) {
 }
 
 session_start();
-if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
+if (!isset($_SESSION['role']) || ($_SESSION['role'] != "adminTan" && $_SESSION['role'] != "adminTrung")) {
     $_SESSION['error'] = "Restrict permission!";
     header("Location: ../Pages/");
     exit();
@@ -21,49 +20,30 @@ if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_S
 $file = fopen("products.csv", "r");
 $variant = fopen("product_variant.csv", "r");
 
+$stmt = $conn->prepare("INSERT INTO products 
+    (product_name, product_group, product_price, product_category, product_type, product_describe, product_size, product_img, product_img1, product_img2) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
 while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {
-
-    $name = $data[0];
-    $group = $data[1];
-    $price = $data[2];
-    $category = $data[3];
-    $type = $data[4];
-    $description = $data[5];
-    $size = $data[6];
-    $front = $data[7];
-    $side = $data[8];
-    $back = $data[9];
-
-    $sql = "INSERT INTO products 
-            (product_name, product_group, product_price, product_category, product_type, product_describe, product_size, product_img, product_img1, product_img2)
-            VALUES 
-            ('$name','$group','$price','$category','$type', '$description','$size','$front','$side','$back')";
-
-    $conn->query($sql);
+    $stmt->bind_param("sdssssssss", $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9]);
+    $stmt->execute();
 }
+$stmt->close();
+
+$stmt2 = $conn->prepare("INSERT INTO product_variant 
+    (product_id, product_price, product_color, product_size, product_img, product_img1, product_img2)
+    VALUES (?, ?, ?, ?, ?, ?, ?)");
+
 while (($data = fgetcsv($variant, 1000, ",")) !== FALSE) {
-
-    $id = $data[0];
-    $price = $data[1];
-    $color = $data[2];
-    $size = $data[3];
-    $front = $data[4];
-    $side = $data[5];
-    $back = $data[6];
-
-    $sql = "INSERT INTO product_variant 
-            (product_id, product_price, product_color, product_size, product_img, product_img1, product_img2)
-            VALUES 
-            ('$id', '$price', '$color', '$size', '$front', '$side', '$back')";
-
-    $conn->query($sql);
+    $stmt2->bind_param("sdsssss", $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6]);
+    $stmt2->execute();
 }
+$stmt2->close();
 
 fclose($file);
 fclose($variant);
+$conn->close();
 
 header("Location: admin.php");
 exit;
-
-$conn->close();
 ?>

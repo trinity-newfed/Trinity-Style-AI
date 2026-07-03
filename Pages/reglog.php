@@ -360,11 +360,15 @@ elseif (isset($_SESSION['otp']) || isset($_SESSION['admin_otp'])) {
           })
           .then(data => {
 
-            if(data.otp == 'required' || data.redirect == 'true'){
+            if(data.otp == 'required'){
               toastNoti(data);
               setTimeout(() => {
                 window.location.reload();
               }, 3000);
+            }else if(data.redirect == 'true'){
+              setTimeout(() => {
+                window.location.href = data.redirectLink;
+              }, 100);
             }
 
             if(data.status == 'OTP_success'){
