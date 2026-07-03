@@ -9,94 +9,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 40px;
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(10px);
     z-index: 1000;
 }
-#menu::after{
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: .5px;
-    transition: .7s all;
-    background: black;
-}
-#menu.head::after{
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: .5px;
-    transition: .7s all;
-    background: black;
-}
-#menu.active{
-    background: rgba(255, 255, 255, 0.6) !important;
-    backdrop-filter: blur(10px) !important;
-    color: black !important;
-    fill: black;
-}
-#menu.active::after{
-    width: 0;
-}
-#menu.active #text-menu span, #menu.active .menu-Username{
-    fill: black;
-    color: black !important;
-}
-#menu.active .icon path{
-    fill: black !important;
-}
-#menu:hover{
-    background: rgba(255,255,255,0.6) !important;
-    backdrop-filter: blur(10px) !important;
-}
-#menu:hover #text span, #menu:hover #utility-menu .icon path{
-    color: black !important;
-    fill: black !important;
-}
-#menu:hover .hamburger .line{
-    stroke: black !important;
-}
-#menu:hover .menu-Username{
-    color: black;
-}
-#menu.head:hover::after{
-    width: 0;
-}
-#text span{
+#text a{
     position: relative;
     cursor: pointer;
 }
 
-#text span::after{
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -4px;
-    width: 0;
-    height: 1px;
-    background: #0B0B0B;
-    transition: 0.3s;
-}
-
-#text span:hover::after{
-    width: 100%;
-}
-#text span.active::after{
-    width: 100%;
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -4px;
-    height: 1px;
-    background: #0B0B0B;
-    transition: 0.3s;
-}
 #text-menu{
     width: 50vw;
     height: 70px;
@@ -122,7 +41,7 @@
     font-family: "Cormorant Garamond", serif;
     letter-spacing: 0px;
     font-weight: 400;
-    color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
     font-size: 30px;
 }
 #logo.userPHP{
@@ -132,7 +51,7 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 #text{
-    width: 40%;
+    width: 50%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -140,20 +59,11 @@
     font-weight: normal;
     color: white;
 }
+#text-menu a{
+    margin: 0;
+}
 #text.userPHP{
     width: 20%;
-}
-#text span{
-    font-size: 14px;
-    padding: 0 5px;
-    transition: .3s all;
-    color: black;
-}
-#text span:hover{
-    transition: .3s all;
-    cursor: pointer;
-    padding: 0 5px;
-    color: white;
 }
 
 
@@ -423,6 +333,7 @@
     visibility: hidden;
     left: 0;
     right: 0;
+    z-index: 1000;
     background: rgba(0, 0, 0, 0.271);
 }
 #search-Container{
@@ -761,6 +672,7 @@
         opacity: 1;
     }
     #menu{
+        mix-blend-mode: normal;
         justify-content: space-around;
     }
     #menu .hamburger svg path{
@@ -778,6 +690,7 @@
         min-width: fit-content;
         font-size: 24px;
         font-weight: 500;
+        color: #232323;
     }
     #text{
         display: none;
@@ -809,6 +722,10 @@
         margin: 0;
         margin-top: 5px;
         font-family: Arial, Helvetica, sans-serif;
+    }
+    .icon.search path, .icon.cart path, #utility-menu span{
+        fill: rgb(46, 46, 46);
+        color: #000;
     }
     .icon.user{
         display: none;

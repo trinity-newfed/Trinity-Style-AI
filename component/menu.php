@@ -1,5 +1,5 @@
             <?php if(isset($_SESSION['username'])): ?>
-                <p onclick="window.location.href='user.php'" data-name="<?=$_SESSION['username']?>" class="menu-Username account cursor-pointer"></p>
+                <a onclick="window.location.href='user.php'" data-name="<?=$_SESSION['username']?>" class="menu-Username account cursor-pointer font-light hover:opacity-40 transition-opacity"></a>
             <?php else: ?>
                     <input type="submit" value="Login" id="login-input" onclick="window.location.href='reglog.php'" hidden>
                     <label for="login-input">

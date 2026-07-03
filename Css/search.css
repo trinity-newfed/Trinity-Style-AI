@@ -1,4 +1,14 @@
-#menu .icon path, #menu p{
-    fill: black;
-    color: black;
+html,body{
+    top: 0;
+    left: 0;
+    position: relative;
+    margin: auto;
+    background: white;
+    overflow-x: hidden;
+    user-select: none;
+    scroll-behavior: smooth;
+}
+html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
+    width: 0;
+    height: 0;
 }
