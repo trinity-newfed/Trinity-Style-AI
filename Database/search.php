@@ -14,9 +14,9 @@ $content = $_GET['content'] ?? '';
 $content = str_replace(' ', '%', $content);
 $searchTerm = "%" . $content . "%";
 
-if(strtolower($content) != "collections" && strtolower($content) != "all" && strtolower($content) != "new"){
-    $name = $conn->execute_query("SELECT * FROM products WHERE product_name LIKE ?",[$searchTerm])
-                 ->fetch_all(MYSQLI_ASSOC);
+if (strtolower($content) != "collections" && strtolower($content) != "all" && strtolower($content) != "new") {
+    $name = $conn->execute_query("SELECT * FROM products WHERE product_name LIKE ?", [$searchTerm])
+        ->fetch_all(MYSQLI_ASSOC);
 
     $color = $conn->execute_query("SELECT products.id AS id, products.product_name,
 
@@ -26,10 +26,12 @@ if(strtolower($content) != "collections" && strtolower($content) != "all" && str
                                       FROM products
                                       JOIN product_variant 
                                       ON products.id = product_variant.product_id
-                                      WHERE product_color LIKE ?",[$searchTerm])
-                  ->fetch_all(MYSQLI_ASSOC);
+                                      WHERE product_color LIKE ?", [$searchTerm])
+        ->fetch_all(MYSQLI_ASSOC);
 
-}elseif(strtolower($content) == "collections"){
+    $results = array_merge($name, $color);
+
+} elseif (strtolower($content) == "collections") {
     $product = $conn->execute_query("SELECT products.id AS id, products.product_name, 
 
                                      product_variant.product_price, product_variant.product_img,
@@ -38,15 +40,15 @@ if(strtolower($content) != "collections" && strtolower($content) != "all" && str
                                      FROM products 
                                      JOIN product_variant
                                      ON products.id = product_variant.product_id
-                                     WHERE product_category = ?",[$content])
-                    ->fetch_all(MYSQLI_ASSOC);
+                                     WHERE product_category = ?", [$content])
+        ->fetch_all(MYSQLI_ASSOC);
 
-}elseif(strtolower($content) == "all"){
+} elseif (strtolower($content) == "all") {
     $all = $conn->query("SELECT * FROM products")
-                 ->fetch_all(MYSQLI_ASSOC);
+        ->fetch_all(MYSQLI_ASSOC);
 
-}elseif(strtolower($content) == "new"){
+} elseif (strtolower($content) == "new") {
     $new = $conn->query("SELECT * FROM products ORDER BY id DESC LIMIT 5")
-                 ->fetch_all(MYSQLI_ASSOC);
+        ->fetch_all(MYSQLI_ASSOC);
 }
 ?>

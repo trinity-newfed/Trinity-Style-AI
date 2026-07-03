@@ -1,49 +1,25 @@
-<?php if(count($bestSeller) >= 5): ?>
-
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">BEST SELLER</h2>
-    </div>
-
-    <div class="flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
-        <?php foreach($bestSeller as $item): ?>
-        
-
-            <div class='products-child group cursor-pointer w-[calc((100%-80px)/5)] opacity-0 shrink-0 min-w-[160px] product transition-all duration-500'>
-                <div class="relative bg-[rgb(233,233,233)] aspect-[3/4] mb-3">
-                    <img class="w-full h-full object-cover" src='../<?=$item['product_img']?>'/>
-                </div>
-
-                <h3 class="text-[11px] uppercase tracking-wider"><?=$item['product_name']?></h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">$<?=$item['product_price']?></p>
-            </div>
-        <?php endforeach; ?>
-    </div>
-
-
-<?php 
-    else: 
-    $reversedProducts = array_reverse($baseProduct);
-    $latestProducts = array_slice($reversedProducts, 0, 5);
+<?php foreach ($baseProduct as $item):
+    usort($baseProduct, function ($a, $b) {
+        return $b['id'] <=> $a['id'];
+    });
 ?>
-    
-    <div class="flex justify-between items-center mb-8">
-        <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">NEW ARRIVAL</h2>
-    </div>
 
-    <div class="flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
-        <?php foreach($latestProducts as $item): ?>
-        
-
-            <div class='products-child group cursor-pointer w-[calc((100%-80px)/5)] opacity-0 shrink-0 min-w-[160px] product transition-all duration-500'>
-                <div class="relative bg-[rgb(233,233,233)] aspect-[3/4] mb-3">
-                    <img class="w-full h-full object-cover" src='../<?=$item['product_img']?>'/>
-                </div>
-
-                <h3 class="text-[11px] uppercase tracking-wider"><?=$item['product_name']?></h3>
-                <p class="text-[11px] text-gray-500 mt-0.5">$<?=$item['product_price']?></p>
+    <?php if ($item['product_name'] !== 'Summer Shirt' && $item['product_name'] !== 'Winter Coat')
+        continue; ?>
+    <div class="flex justify-between items-center py-8 group cursor-pointer reveal-target">
+        <div class="flex items-center space-x-8 md:space-x-16">
+            <div class="w-14 h-16 overflow-hidden bg-neutral-100 hidden md:block">
+                <img src="../<?= $item['product_img'] ?>" alt="Item Preview"
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
             </div>
-        <?php endforeach; ?>
+            <span class="text-[10px] font-mono text-neutral-400">01 /</span>
+            <h4
+                class="text-sm md:text-lg font-light tracking-wide uppercase transition-all duration-300 group-hover:translate-x-3">
+                <?= $item['product_name'] ?>
+            </h4>
+        </div>
+        <a href="search.php?content=<?=$item['product_name']?>"
+            class="text-[10px] tracking-widest text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">Explore
+            &rarr;</a>
     </div>
-    
-
-<?php endif; ?>
+<?php endforeach; ?>

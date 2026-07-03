@@ -13,16 +13,6 @@ html::-webkit-scrollbar{
             height: 0;
 }
 
-
-
-#menu path, #menu p{
-  stroke: black;
-  color: black;
-}
-#menu .icon path{
-  fill: black;
-}
-
 .voucher-page{
 max-width:900px;
 margin:auto;

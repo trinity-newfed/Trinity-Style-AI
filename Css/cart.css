@@ -3,14 +3,14 @@ html,body{
     left: 0;
     position: relative;
     margin: auto;
-    background-color: rgb(255, 255, 255);
+    background: white;
     overflow-x: hidden;
     user-select: none;
     scroll-behavior: smooth;
 }
-html::-webkit-scrollbar{
-            width: 0;
-            height: 0;
+html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
+    width: 0;
+    height: 0;
 }
 
 
@@ -105,9 +105,6 @@ html::-webkit-scrollbar{
     font-size: 14px;
     width: 20px;
     transform: rotate(-40deg);
-}
-.menu-Username{
-    color: black;
 }
 #product-container{
     display: flex;
@@ -311,12 +308,6 @@ html::-webkit-scrollbar{
     align-items: center;
     text-align: center;
     margin: 0;
-}
-.icon path{
-    fill: black;
-}
-.hamburger path{
-    stroke: black;
 }
 .icon.shipping{
     height: 18px;

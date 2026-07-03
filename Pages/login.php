@@ -31,8 +31,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     if($email == "Tan1206" || $email == "Trung09"){
         $email == "Trung09" ? $_SESSION['tempAdminEmail'] = "Trung09" : $_SESSION['tempAdminEmail'] = "Tan1206";
-        echo "<script>confirm('Redirect To Another Pages?'); window.location.href='../Database/adminLogin.php';</script>";
-        exit;
+        echo json_encode([
+                'status' => 'none',
+                'otp' => 'none',
+                'color' => '#daffcc',
+                'redirect'=> 'true',
+                'redirectLink' => '../Database/adminLogin.php'
+            ]);
+            exit;
     }
 
     $stmt = $conn->prepare("SELECT * FROM userdata WHERE email = ?");

@@ -1,5 +1,5 @@
 <?php 
-$host = "localhost";
+    $host = "localhost";
     $user = "root";
     $password = "";
     $dbname = "TF_Database";

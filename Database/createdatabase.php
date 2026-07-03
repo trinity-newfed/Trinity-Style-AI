@@ -28,7 +28,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS products(
     product_price DECIMAL(10,2),
     product_category ENUM('collections','men','women','accesories'),
     product_type VARCHAR(255),
-    product_describe VARCHAR(255),
+    product_describe TEXT,
     product_size VARCHAR(255),
     product_img VARCHAR(255),
     product_img1 VARCHAR(255),
