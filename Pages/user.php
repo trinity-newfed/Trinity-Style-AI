@@ -19,7 +19,7 @@
     </script>
     <link rel="stylesheet" href="../Css/nav.css">
     <link rel="stylesheet" href="../Css/user.css">
-    <title>My Account - TRINITY</title>
+    <title>TRINITY — MY ACCOUNT</title>
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Birthstone&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"

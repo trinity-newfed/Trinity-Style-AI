@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
   <link rel="stylesheet" href="../Css/nav.css">
   <link rel="stylesheet" href="../Css/orderItem.css">
-  <title>Order Detail - Trinity</title>
+  <title>TRINITY — ORDER DETAIL</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet" />
 </head>
 

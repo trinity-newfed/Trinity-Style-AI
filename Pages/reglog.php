@@ -42,7 +42,7 @@ if (isset($_SESSION['register_data'])) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TRINITY | Authentication</title>
+  <title>TRINITY — AUTHENTICATION</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
     rel="stylesheet" />

@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop All - TRINITY</title>
+  <title>TRINITY — SHOP ALL</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../Css/nav.css">
   <link rel="stylesheet" href="../Css/products.css">

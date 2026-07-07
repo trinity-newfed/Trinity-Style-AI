@@ -13,7 +13,7 @@
 
   <!--GG FONT & ICON-->
   <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
-  <title>Shopping Bag - TRINITY</title>
+  <title>TRINITY — SHOPPING BAG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
