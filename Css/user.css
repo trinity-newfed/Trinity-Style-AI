@@ -511,7 +511,7 @@ html::-webkit-scrollbar {
 #search-wrapper {
   height: fit-content;
   background: transparent;
-  transform: translateX(0);
+  transform: translateX(-80%);
   opacity: 0;
   visibility: hidden;
 }
