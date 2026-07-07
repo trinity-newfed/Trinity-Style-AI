@@ -121,7 +121,7 @@ if (isset($_SESSION['register_data'])) {
         </div>
 
         <?php if ($show_otp_form): ?>
-          <form action="<?= isset($_SESSION['register_data']) ? 'register.php' : 'login.php' ?>" method="POST" id="otpForm"
+          <form action="<?= isset($_SESSION['register_data']) ? '../Database/register.php' : '../Database/login.php' ?>" method="POST" id="otpForm"
             class="space-y-8 animate-in fade-in duration-700">
             <div class="text-center">
               <h3 class="font-serif text-2xl">Security Verification</h3>
@@ -157,7 +157,7 @@ if (isset($_SESSION['register_data'])) {
 
         <?php else: ?>
 
-          <form action="login.php" method="POST" id="loginForm" class="form-container space-y-8 opacity-100">
+          <form action="../Database/login.php" method="POST" id="loginForm" class="form-container space-y-8 opacity-100">
             <div class="text-center mb-10">
               <h3 class="font-serif text-3xl">Sign In</h3>
             </div>
@@ -195,7 +195,7 @@ if (isset($_SESSION['register_data'])) {
             </p>
           </form>
 
-          <form action="register.php" method="POST" id="regForm"
+          <form action="../Database/register.php" method="POST" id="regForm"
             class="form-container space-y-5 hidden opacity-0 translate-y-4">
             <div class="text-center mb-6">
               <h3 class="font-serif text-3xl">Register</h3>

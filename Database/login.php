@@ -155,18 +155,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'content' => 'Passwordless OTP Login'
         ];
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($param));
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 500);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        try {
+            $redis = new Predis\Client([
+                'scheme' => 'tcp',
+                'host' => '127.0.0.1',
+                'port' => 6379,
+            ]);
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            $job_data = json_encode([
+                'url' => $url,
+                'param' => $param,
+                'created_at' => time()
+            ]);
 
-        curl_exec($ch);
-        curl_close($ch);
+            $redis->rpush('smtp_mail_queue', $job_data);
+        }
+        catch(Exception $e) {
+            error_log("Redis Queue Error: " . $e->getMessage());
+        }
 
 
 
