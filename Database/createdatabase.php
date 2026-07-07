@@ -6,16 +6,16 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password);
 
-if($conn->connect_error){
-    die("error" .$conn->connect_error);
+if ($conn->connect_error) {
+    die("error" . $conn->connect_error);
 }
 
 $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
 
-if($conn->query($sql)){
-    
-}else{
-    echo"<script>alert('Database khởi tạo thất bại')</script>";
+if ($conn->query($sql)) {
+
+} else {
+    echo "<script>alert('Database khởi tạo thất bại')</script>";
 }
 $conn->select_db($dbname);
 
@@ -33,7 +33,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS products(
     product_img VARCHAR(255),
     product_img1 VARCHAR(255),
     product_img2 VARCHAR(255),
-    product_stock INT DEFAULT 999,
     product_is_delete TINYINT(1) DEFAULT 0,
     product_state ENUM('active','inactive') DEFAULT 'active'
     )");
@@ -86,6 +85,16 @@ $conn->query("CREATE TABLE IF NOT EXISTS orders(
     order_final_price DECIMAL(10,2),
     order_address VARCHAR(255),
     order_state ENUM('success','cancel','delivery','delivered'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )");
+
+//Order Tracking
+$conn->query("CREATE TABLE IF NOT EXISTS order_tracking(
+    id INT(10) AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100),
+    order_name VARCHAR(100),
+    status_detail TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -96,7 +105,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS order_items(
     product_name VARCHAR(100),
     product_id INT,
     price DECIMAL(10,2),
-    img VARCHAR(100),
+    img VARCHAR(255),
     color VARCHAR(100),
     size VARCHAR(100),
     quantity INT(10)

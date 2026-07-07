@@ -169,6 +169,9 @@ try{
     $order_id = $stmt->insert_id;
     $stmt->close();
 
+    $baseStatus = "success";
+    $orderTrack = $conn->execute_query("INSERT INTO order_tracking(user_id, order_name, status_detail) VALUES(?, ?, ?)",[$userID, $orderCode, $baseStatus]);
+
     $itemStmt = $conn->prepare("
         INSERT INTO order_items (order_id, product_id, product_name, price, img, color, size, quantity)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)

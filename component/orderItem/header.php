@@ -1,37 +1,37 @@
-<?php 
-    $host = "localhost";
-    $user = "root";
-    $password = "";
-    $dbname = "TF_Database";
+<?php
+$host = "localhost";
+$user = "root";
+$password = "";
+$dbname = "TF_Database";
 
-    $conn = new mysqli($host, $user, $password, $dbname);
+$conn = new mysqli($host, $user, $password, $dbname);
 
-    session_start();
+session_start();
 
-    $id = $_GET['id'];
-    $username = $_SESSION['username'];
-    $userID = $_SESSION['user_id'];
+$id = $_GET['id'];
+$username = $_SESSION['username'];
+$userID = $_SESSION['user_id'];
 
-    $sql = "SELECT * FROM userdata
+$sql = "SELECT * FROM userdata
             WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    if(!$stmt){
-        die("Prepare failed: " . $conn->error);
-    }
-    $stmt->bind_param("i", $userID);
-    $stmt->execute();
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("Prepare failed: " . $conn->error);
+}
+$stmt->bind_param("i", $userID);
+$stmt->execute();
 
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-    $stmt->close();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$stmt->close();
 
-    $sql = $conn->prepare("SELECT * FROM orders WHERE id = ? AND user_id = ?");
-    $sql->bind_param("ii", $id, $userID);
-    $sql->execute();
-    $result = $sql->get_result();
-    $row = $result->fetch_assoc();
+$sql = $conn->prepare("SELECT * FROM orders WHERE id = ? AND user_id = ?");
+$sql->bind_param("ii", $id, $userID);
+$sql->execute();
+$result = $sql->get_result();
+$row = $result->fetch_assoc();
 
-    $items = $conn->prepare("SELECT
+$items = $conn->prepare("SELECT
                         order_items.order_id as order_id,
                         order_items.product_id, 
                         order_items.size, order_items.quantity,
@@ -53,18 +53,21 @@
                         AND order_items.color = product_variant.product_color
                         WHERE order_id = ?
                          ");
-    $items->bind_param("i", $id);
-    $items->execute();
-    $item = $items->get_result();
-    $rows = $item->fetch_all(MYSQLI_ASSOC);
-    $count = 0;
+$items->bind_param("i", $id);
+$items->execute();
+$item = $items->get_result();
+$rows = $item->fetch_all(MYSQLI_ASSOC);
+$count = 0;
 
-    foreach($rows as $r){
-      $count = $count + $r['quantity'];
-    }
+foreach ($rows as $r) {
+    $count = $count + $r['quantity'];
+}
 
-    //Cart fetch
-    $cart = $conn->execute_query("SELECT COUNT(*) as total_rows FROM cart WHERE user_id = ?",[$userID])
-                ->fetch_assoc();
-    $noti = $cart['total_rows'] ?? 0;
+$status = $conn->execute_query("SELECT * FROM order_tracking WHERE user_id = ?", [$userID])
+    ->fetch_all(MYSQLI_ASSOC);
+
+//Cart fetch
+$cart = $conn->execute_query("SELECT COUNT(*) as total_rows FROM cart WHERE user_id = ?", [$userID])
+    ->fetch_assoc();
+$noti = $cart['total_rows'] ?? 0;
 ?>
