@@ -39,7 +39,7 @@ $sql->close();
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trinity Style - Payment</title>
+    <title>TRINITY — PAYMENT</title>
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <style>
         body, html {

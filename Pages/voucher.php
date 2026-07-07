@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exclusive Offers - TRINITY</title>
+  <title>TRINITY — EXCLUSIVE OFFERS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
   <link rel="stylesheet" href="../Css/nav.css">
