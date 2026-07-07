@@ -85,7 +85,27 @@
                     <p
                         class="w-[50px] sm:w-[150px] text-black ml-[0px] sm:ml-[50px] text-[18px] tracking-widest font-sans font-medium">
                         Your Orders</p>
-                    <div class="flex gap-x-2 sm:gap-x-5 pl-1">
+
+
+                    <div class="flex gap-x-2 sm:gap-x-5 pl-1 relative" id="function-container">
+                        
+
+                        <div id="search-wrapper"
+                            class="absolute right-0 bottom-0 top-0 left-0 bg-white transition-all duration-300 flex items-center">
+                            <input type="text" id="mobile-search-input"
+                                class="w-full h-[30px] bg-[transparent] border-b border-black focus:outline-none text-sm py-1 font-light"
+                                placeholder="Type order code or product name...">
+                            <button id="close-search-btn" class="ml-2 w-fit h-fit text-gray-400 hover:text-black text-xs">✕</button>
+                        </div>
+
+                        <button id="toggle-search-btn"
+                            class="text-gray-700 hover:text-black focus:outline-none transition-colors py-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+
                         <div id="order-state-option" class="flex justify-between items-center relative">
                             <span>Success</span>
                             <div class="w-fit h-fit flex justify-center items-center">
@@ -229,7 +249,8 @@
 
                 <div class="relative address-container transition-colors h-[50px]">
                     <input type="text" id="address" name="user_address" oninput="searchAddress(this, 'toList')" value=""
-                        placeholder=" " class="peer w-full px-0 pt-6 pb-2 rounded-lg outline-none transition-all duration-200 placeholder-transparent" />
+                        placeholder=" "
+                        class="peer w-full px-0 pt-6 pb-2 rounded-lg outline-none transition-all duration-200 placeholder-transparent" />
                     <label
                         class="absolute left-0 top-1.5 text-[10px] uppercase tracking-widest text-gray-400 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:top-1.3 peer-focus:text-[10px] peer-focus:text-black">
                         Address

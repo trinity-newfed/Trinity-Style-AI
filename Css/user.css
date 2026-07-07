@@ -508,6 +508,25 @@ html::-webkit-scrollbar {
   background: rgba(0, 0, 0, 0.05);
 }
 
+#search-wrapper {
+  height: fit-content;
+  background: transparent;
+  transform: translateX(0);
+  opacity: 0;
+  visibility: hidden;
+}
+
+#search-wrapper.active {
+  transform: translateX(-90%);
+  opacity: 1;
+  visibility: visible;
+}
+
+#search-wrapper.active+#toggle-search-btn {
+  opacity: 0;
+  visibility: hidden;
+}
+
 
 
 
@@ -515,6 +534,30 @@ html::-webkit-scrollbar {
   #menu {
     justify-content: space-between;
   }
+
+  #function-container{
+    position: unset;
+  }
+
+  #search-wrapper {
+    position: absolute;
+    width: 300px;
+    background: transparent;
+    left: 50%;
+    top: 20%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #search-wrapper.active {
+    left: 50%;
+    top: 20%;
+    transform: translateX(-50%);
+    opacity: 1;
+    visibility: visible;
+  }
+
 
   #order-state-option {
     margin-right: 3%;
@@ -560,6 +603,7 @@ html::-webkit-scrollbar {
 
   #order-history {
     padding: 0;
+    margin-top: 50px;
     padding-top: 10px;
     width: 100%;
     gap: 0;

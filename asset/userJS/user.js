@@ -121,6 +121,46 @@ document.querySelectorAll(".reBuy-toggle").forEach(reBuy => {
     });
 });
 
+
+//Search Order
+const toggleBtn = document.getElementById('toggle-search-btn');
+const closeBtn = document.getElementById('close-search-btn');
+const searchWrapper = document.getElementById('search-wrapper');
+const searchInput = document.getElementById('mobile-search-input');
+
+toggleBtn.addEventListener('click', () => {
+    console.log("A")
+    searchWrapper.classList.add('active');
+});
+
+closeBtn.addEventListener('click', () => {
+    searchWrapper.classList.remove('active');
+    searchInput.value = '';
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('mobile-search-input');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const keyword = this.value.toLowerCase().trim();
+
+            const orderCards = document.querySelectorAll('.order-block');
+
+            orderCards.forEach(card => {
+                const orderCode = (card.getAttribute('data-code') || '');
+                const productName = (card.getAttribute('data-name') || '');
+
+                if (orderCode.includes(keyword) || productName.includes(keyword)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+
 //Menu close
 
 const fastMenuContainer = document.getElementById("fast-menu-container");
