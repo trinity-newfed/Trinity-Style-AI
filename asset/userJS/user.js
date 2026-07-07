@@ -89,6 +89,8 @@ layout.addEventListener('click', function () {
                 else {
                     Blocks.forEach(block => block.classList.remove("list"));
                     document.getElementById("order-history").classList.remove("list");
+                    document.querySelector(".re-order").style.display = "";
+                    document.getElementById("blockForm").style.display = "";
                 }
             }, 100);
         });
