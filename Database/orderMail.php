@@ -61,7 +61,7 @@ function sendOrderConfirmationEmail($targetEmail, $order, $conn)
         $mail->addAddress($targetEmail);
 
         $mail->isHTML(true);
-        $mail->Subject = "[TRINITY ARCHIVE] - Order Confirmed #{$order['id']}";
+        $mail->Subject = "[TRINITY ARCHIVE] - Order Confirmed #{$order['order_name']}";
 
         $items = $conn->execute_query("SELECT 
                                     order_items.product_id, 
@@ -116,7 +116,7 @@ function sendOrderConfirmationEmail($targetEmail, $order, $conn)
                     $currentCid = $uniqueImages[$imagePath];
                     $imageTagHtml = "
                     <td width='70' style='vertical-align: middle; padding-right: 12px;'>
-                        <img src='cid:{$currentCid}' alt='Product' width='60' height='60' style='display: block; object-fit: cover; border-radius: 4px; border: 1px solid #eaebec;' />
+                        <img src='cid:{$currentCid}' alt='Product' width='60' height='60' style='background: #f5f5f4; display: block; object-fit: cover; border-radius: 4px; border: 1px solid #eaebec;' />
                     </td>";
                 } else {
                     echo "PHP đang tìm ảnh tại: " . $imagePath . "<br>";
@@ -161,7 +161,7 @@ function sendOrderConfirmationEmail($targetEmail, $order, $conn)
                 </div>
                 <div style='margin-bottom: 24px;'>
                     <span style='font-size: 11px; color: #78716c; text-transform: uppercase; letter-spacing: 1px;'>ORDER #{$order['order_name']}</span>
-                    <h2 style='font-size: 20px; font-weight: normal; margin: 8px 0 12px 0; color: #000000;'>Thank you for your order!</h2>
+                    <h2 style='font-size: 20px; font-weight: normal; margin: 8px 0 12px 0; color: #000000;'>Thank you for letting TRINITY be a part of your journey.</h2>
                     <p style='font-size: 13px; line-height: 1.6; color: #44403c; margin: 0;'>
                         Hi, TRINITY has successfully received your order details. Our team will review and process your shipment shortly.
                     </p>

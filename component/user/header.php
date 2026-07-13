@@ -1,4 +1,4 @@
-<?php 
+<?php
 $host = "localhost";
 $user = "root";
 $password = "";
@@ -6,9 +6,9 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 session_start();
-if(!isset($_SESSION['user_id'])){
-  header("Location: reglog.php");
-  exit();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: reglog.php");
+    exit();
 }
 $username = $_SESSION['username'];
 $userID = $_SESSION['user_id'];
@@ -16,7 +16,7 @@ $userID = $_SESSION['user_id'];
 $sql = "SELECT * FROM userdata
         WHERE id = ?";
 $stmt = $conn->prepare($sql);
-if(!$stmt){
+if (!$stmt) {
     die("Prepare failed: " . $conn->error);
 }
 $stmt->bind_param("i", $userID);
@@ -27,21 +27,24 @@ $user = $result->fetch_assoc();
 $stmt->close();
 
 $sql = "SELECT 
-        orders.id,
-        order_items.order_id,
-        orders.order_state,
-        orders.order_name,
-        orders.order_original_price,
-        orders.order_final_price,
-        orders.created_at,
-        order_items.product_name,
-        order_items.img,    
-        order_items.quantity
+            orders.id,
+            order_items.order_id,
+            orders.order_state,
+            orders.order_name,
+            orders.order_original_price,
+            orders.order_final_price,
+            orders.created_at,
+            order_items.product_name,    
+            order_items.quantity,
+            product_variant.product_img AS img
         FROM orders
         JOIN order_items ON orders.id = order_items.order_id
+        LEFT JOIN product_variant ON (
+            order_items.product_id = product_variant.product_id 
+            AND LOWER(TRIM(order_items.color)) = LOWER(TRIM(product_variant.product_color))
+        )
         WHERE orders.user_id = ?
-        ORDER BY orders.id DESC
-";
+        ORDER BY orders.id DESC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userID);
@@ -50,16 +53,16 @@ $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
 $groupedOrders = [];
 $count = 0;
-foreach($data as $d){
+foreach ($data as $d) {
     $orderID = $d['id'];
-    
+
     if (!isset($groupedOrders[$orderID])) {
         $groupedOrders[$orderID] = [
             'order_info' => $d,
             'total_items' => 0
         ];
     }
-    
+
 
     $groupedOrders[$orderID]['total_items'] += $d['quantity'];
 }

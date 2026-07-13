@@ -30,6 +30,7 @@ if (empty($cart_ids)) {
 
 $agree = $_POST['policy_id'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
+$email = $conn->execute_query("SELECT email FROM userdata WHERE id = ?",[$userID])->fetch_assoc()["email"];
 $username = $_SESSION['username'] ?? 'GUEST';
 $orderAddress = $_POST['address'] ?? '';
 
