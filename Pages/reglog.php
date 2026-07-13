@@ -216,21 +216,6 @@ if (isset($_SESSION['register_data'])) {
                   <span class="text-[red]">*</span></label>
               </div>
 
-              <div class="pt-2">
-                <span class="text-[9px] uppercase tracking-[0.2em] text-zinc-400 block mb-2">Gender</span>
-                <div class="flex gap-2">
-                  <?php foreach (['male', 'female', 'other'] as $sex): ?>
-                    <label class="flex-1 cursor-pointer group">
-                      <input type="radio" name="user_sex" value="<?= $sex ?>" class="hidden peer" <?= $sex == 'other' ? 'checked' : '' ?>>
-                      <div
-                        class="text-[9px] py-2 text-center border border-zinc-100 tracking-widest uppercase text-zinc-400 peer-checked:bg-zinc-900 peer-checked:text-white transition">
-                        <?= $sex ?>
-                      </div>
-                    </label>
-                  <?php endforeach; ?>
-                </div>
-              </div>
-
               <div class="relative border-b border-zinc-100 py-1">
                 <input type="text" name="user_hotline" pattern="\d{10}" id="hotline" required placeholder=" "
                   class="peer w-full bg-transparent py-2 text-xs outline-none" />

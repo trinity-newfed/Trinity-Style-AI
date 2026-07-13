@@ -30,7 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $registerEmail = $_POST['registerEmail'] ?? "";
     $password = $_POST['user_password'] ?? "";
     $address = isset($_POST['user_address']) ? trim($_POST['user_address']) : "";
-    $sex = $_POST["user_sex"] ?? "";
     $hotline = isset($_POST['user_hotline']) ? trim($_POST['user_hotline']) : "";
     $inputOtp = $_POST['registerOtp'] ?? null;
 
@@ -70,7 +69,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 'email' => $registerEmail,
                 'password' => $password,
                 'address' => $address,
-                'sex' => $sex,
                 'hotline' => $hotline
             ];
         }
@@ -101,10 +99,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
 
                 $stmt = $conn->prepare("
-                        INSERT INTO userdata (email, user_password, user_address, user_sex, user_hotline)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO userdata (email, user_password, user_address, user_hotline)
+                        VALUES (?, ?, ?, ?)
                     ");
-                $stmt->bind_param("sssss", $data['email'], $hashedPassword, $data['address'], $data['sex'], $data['hotline']);
+                $stmt->bind_param("ssss", $data['email'], $hashedPassword, $data['address'], $data['hotline']);
 
                 if ($stmt->execute()) {
                     $stmtDel = $conn->prepare("DELETE FROM user_otp WHERE email = ?");
