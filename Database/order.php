@@ -1,4 +1,14 @@
 <?php
+header('Content-Type: application/json; charset=utf-8');
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
 session_start();
 
 $host = "localhost";
@@ -8,7 +18,7 @@ $dbname = "TF_Database";
 
 $conn = new mysqli($host, $user, $password, $dbname);
 
-if($conn->connect_error){
+if ($conn->connect_error) {
     die("Database connection error: " . $conn->connect_error);
 }
 
@@ -23,12 +33,13 @@ $userID = $_SESSION['user_id'] ?? null;
 $username = $_SESSION['username'] ?? 'GUEST';
 $orderAddress = $_POST['address'] ?? '';
 
-if(!$userID){
+if (!$userID) {
     header("Location: ../Pages/reglog.php");
     exit();
 }
 
-function getCoords($add){
+function getCoords($add)
+{
     $url = "https://photon.komoot.io/api/?q=" . urlencode($add) . "&limit=1";
     $response = @file_get_contents($url);
     if ($response) {
@@ -40,11 +51,12 @@ function getCoords($add){
     return null;
 }
 
-function getDistance($from, $toCoords) {
-    $url = "https://router.project-osrm.org/route/v1/driving/" 
-            . $from[0] . "," . $from[1] . ";" 
-            . $toCoords[0] . "," . $toCoords[1] 
-            . "?overview=false";
+function getDistance($from, $toCoords)
+{
+    $url = "https://router.project-osrm.org/route/v1/driving/"
+        . $from[0] . "," . $from[1] . ";"
+        . $toCoords[0] . "," . $toCoords[1]
+        . "?overview=false";
 
     $response = @file_get_contents($url);
     if ($response) {
@@ -56,16 +68,21 @@ function getDistance($from, $toCoords) {
     return null;
 }
 
-function getShippingFee($km) {
-    if ($km === null) return 25;
-    if ($km < 20) return 2;
-    if ($km < 100) return 5;
-    if ($km < 1000) return 15;
+function getShippingFee($km)
+{
+    if ($km === null)
+        return 25;
+    if ($km < 20)
+        return 2;
+    if ($km < 100)
+        return 5;
+    if ($km < 1000)
+        return 15;
     return 25;
 }
 
 //Policy
-if($agree){
+if ($agree) {
     $policy = $conn->prepare("SELECT 1 FROM user_policy_agreement WHERE user_id = ? AND policy_id = ?");
     $policy->bind_param("is", $userID, $agree);
     $policy->execute();
@@ -87,10 +104,10 @@ $addressStmt->bind_param("i", $userID);
 $addressStmt->execute();
 $userAddressResult = $addressStmt->get_result();
 
-if($row = $userAddressResult->fetch_assoc()){
+if ($row = $userAddressResult->fetch_assoc()) {
     $add = $row['user_address'];
     $toCoords = getCoords($add);
-    if($toCoords){
+    if ($toCoords) {
         $km = getDistance($from, $toCoords);
         $shipFee = getShippingFee($km);
     }
@@ -135,7 +152,7 @@ if ($voucher > 0) {
     if ($dis = $vsql->get_result()->fetch_assoc()) {
         $val = $dis['voucher_discount'] ?? 0;
         $voucher_max = $dis['voucher_max'] ?? PHP_INT_MAX;
-        
+
         if ($dis['voucher_type'] == "shipping") {
             $ship_discount = $val;
         } else {
@@ -155,7 +172,7 @@ $final_total = max(0, $total - $discount_amount + $final_ship_fee);
 
 $conn->begin_transaction();
 
-try{
+try {
     $usernameShort = strtoupper(substr($username, 0, 3));
     $orderCode = $usernameShort . date('YmdHis');
     $orderstate = "success";
@@ -170,7 +187,7 @@ try{
     $stmt->close();
 
     $baseStatus = "success";
-    $orderTrack = $conn->execute_query("INSERT INTO order_tracking(user_id, order_name, status_detail) VALUES(?, ?, ?)",[$userID, $orderCode, $baseStatus]);
+    $orderTrack = $conn->execute_query("INSERT INTO order_tracking(user_id, order_name, status_detail) VALUES(?, ?, ?)", [$userID, $orderCode, $baseStatus]);
 
     $itemStmt = $conn->prepare("
         INSERT INTO order_items (order_id, product_id, product_name, price, img, color, size, quantity)
@@ -195,8 +212,14 @@ try{
     foreach ($data as $item) {
         $itemStmt->bind_param(
             "iisdsssi",
-            $order_id, $item['product_id'], $item['product_name'], $item['product_price'],
-            $item['product_img'], $item['product_color'], $item['cart_size'], $item['quantity']
+            $order_id,
+            $item['product_id'],
+            $item['product_name'],
+            $item['product_price'],
+            $item['product_img'],
+            $item['product_color'],
+            $item['cart_size'],
+            $item['quantity']
         );
         $itemStmt->execute();
 
@@ -205,16 +228,19 @@ try{
         $stockRow = $checkStockStmt->get_result()->fetch_assoc();
         $currentStock = $stockRow['product_stock'] ?? 0;
 
-        if($currentStock >= $item['quantity']){
+        if ($currentStock >= $item['quantity']) {
             $updateStockStmt->bind_param(
-                "iisi", 
-                $item['quantity'], $item['product_id'], $item['product_color'], $item['quantity']
+                "iisi",
+                $item['quantity'],
+                $item['product_id'],
+                $item['product_color'],
+                $item['quantity']
             );
             $updateStockStmt->execute();
 
             $soldStmt->bind_param("iis", $item['quantity'], $item['product_id'], $item['product_color']);
             $soldStmt->execute();
-        }else{
+        } else {
             throw new Exception("Product '" . ucfirst($item['product_name']) . "' (" . ucfirst($item['product_color']) . " - " . $item['cart_size'] . ") is out of stock!");
         }
     }
@@ -225,9 +251,9 @@ try{
     $soldStmt->close();
 
     if ($voucher > 0) {
-        $usql = $conn->execute_query("INSERT INTO used_voucher(user_id, voucher_id) VALUES(?, ?)",[$userID, $voucher]);
+        $usql = $conn->execute_query("INSERT INTO used_voucher(user_id, voucher_id) VALUES(?, ?)", [$userID, $voucher]);
 
-        $vDel = $conn->prepare("DELETE FROM user_voucher WHERE voucher_id = ? AND user_id = ?",[$voucher, $userID]);
+        $vDel = $conn->prepare("DELETE FROM user_voucher WHERE voucher_id = ? AND user_id = ?", [$voucher, $userID]);
     }
 
     $del = $conn->prepare("DELETE FROM cart WHERE id IN ($placeholders) AND user_id = ?");
@@ -265,13 +291,48 @@ try{
     }
 
     $conn->commit();
-    
+
     unset($_SESSION['checkout_cart_ids']);
     unset($_SESSION['voucher_id']);
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+
+    $url = $protocol . $host . "/Trinity-Style-AI/Database/orderMail.php";
+
+    $key = "trinitySMTP2026";
+    $timestamp = time();
+    $tempToken = hash_hmac('sha256', $email . $timestamp, $key);
+
+    $param = [
+        'email' => $email,
+        'timestamp' => $timestamp,
+        'token' => $tempToken,
+        'content' => 'Thank you for letting TRINITY be a part of your journey.'
+    ];
+
+    try {
+        $redis = new Predis\Client([
+            'scheme' => 'tcp',
+            'host' => '127.0.0.1',
+            'port' => 6379,
+        ]);
+
+        $job_data = json_encode([
+            'url' => $url,
+            'param' => $param,
+            'created_at' => time()
+        ]);
+
+        $redis->rpush('smtp_mail_queue', $job_data);
+    } catch (Exception $e) {
+        error_log("Redis Queue Error: " . $e->getMessage());
+    }
+
     header("Location: ../Pages/user.php");
     exit();
 
-}catch (Exception $e) {
+} catch (Exception $e) {
     $conn->rollback();
     echo "<script>alert('Checkout failed: " . addslashes($e->getMessage()) . "'); window.location.href='../Pages/cart.php';</script>";
     exit();
