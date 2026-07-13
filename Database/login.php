@@ -126,7 +126,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $clearOtpStmt = $conn->execute_query("DELETE FROM user_otp WHERE email = ?", [$email]);
 
-            header("Location: ../Pages/home.php");
+            echo json_encode([
+                'status' => 'OTP_success',
+                'otp' => 'none',
+                'color' => '#daffcc',
+                'message' => 'Verification Successful.'
+            ]);
+
             exit;
         }
 
@@ -169,8 +175,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ]);
 
             $redis->rpush('smtp_mail_queue', $job_data);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             error_log("Redis Queue Error: " . $e->getMessage());
         }
 
