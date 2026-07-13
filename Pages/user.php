@@ -234,8 +234,6 @@
 
             <div class="space-y-6 w-full max-w-sm">
 
-                <?php require "../component/user/gender.php" ?>
-
                 <div class="relative">
                     <input type="text" id="hotline" placeholder=" " name="user_hotline" pattern="\d{10}"
                         class="peer w-full px-0 pt-5 pb-2 rounded-lg outline-none transition-all duration-200 placeholder-transparent" />

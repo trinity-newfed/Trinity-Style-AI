@@ -18,10 +18,9 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
-$res_current = $conn->execute_query("SELECT user_sex, user_hotline, user_address, img FROM userdata WHERE id = ?", [$userID]);
+$res_current = $conn->execute_query("SELECT user_hotline, user_address, img FROM userdata WHERE id = ?", [$userID]);
 $current_data = $res_current->fetch_assoc();
 
-$sex = !empty($_POST['user_sex']) ? $_POST['user_sex'] : $current_data['user_sex'];
 $hotline = !empty($_POST['user_hotline']) ? $_POST['user_hotline'] : $current_data['user_hotline'];
 $address = !empty($_POST['user_address']) ? $_POST['user_address'] : $current_data['user_address'];
 $newPath = $current_data['img'];
@@ -49,8 +48,8 @@ if (!empty($_FILES['img']['name'])) {
     }
 }
 
-$sql = $conn->prepare("UPDATE userdata SET user_sex=?, user_hotline=?, user_address=?, img=? WHERE id=?");
-$sql->bind_param("ssssi", $sex, $hotline, $address, $newPath, $userID);
+$sql = $conn->prepare("UPDATE userdata SET  user_hotline=?, user_address=?, img=? WHERE id=?");
+$sql->bind_param("sssi", $hotline, $address, $newPath, $userID);
 
 if ($sql->execute()) {
     echo json_encode(['status' => 'success', 'message' => 'Information Update Successfully.']);

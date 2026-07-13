@@ -216,34 +216,6 @@ document.querySelectorAll(".orderBlock").forEach(order => {
     })
 });
 
-//Gender Select
-const container = document.getElementById('custom-select-container');
-const button = document.getElementById('select-button');
-const dropdown = document.getElementById('select-dropdown');
-const display = document.getElementById('selected-value');
-const arrow = document.getElementById('select-arrow');
-
-button.addEventListener('click', () => {
-    dropdown.classList.toggle('hidden');
-    arrow.classList.toggle('rotate-180');
-});
-
-dropdown.addEventListener('click', (e) => {
-    if (e.target.tagName === 'LI') {
-        display.textContent = e.target.textContent;
-        dropdown.classList.add('hidden');
-        arrow.classList.remove('rotate-180');
-    }
-});
-
-document.addEventListener('click', (e) => {
-    if (!container.contains(e.target)) {
-        dropdown.classList.add('hidden');
-        arrow.classList.remove('rotate-180');
-    }
-});
-
-
 //Validation Hotline 
 const hotline = document.getElementById('hotline');
 if (hotline) {
