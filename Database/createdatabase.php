@@ -119,7 +119,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS userdata(
     user_password VARCHAR(255) NOT NULL,
     user_address VARCHAR(100),
     user_hotline VARCHAR(20),
-    user_sex ENUM('Male','Female','Other'),
     user_tier ENUM('1','2','3','4') DEFAULT '1',
     user_limit_tryon ENUM('10','30','50','100') DEFAULT '10',
     user_limit_password INT DEFAULT 0,
