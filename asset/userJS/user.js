@@ -187,6 +187,7 @@ function OrderProfileToggle() {
         document.querySelector(".title p").textContent = "Your Orders";
         document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
         document.querySelectorAll(".orderBlock").forEach(order => order.classList.add("active"));
+        document.getElementById("function-container").style.display = "";
         menuToggle.checked = false;
     } else {
         document.getElementById("order-history").style.display = "none";
@@ -196,6 +197,7 @@ function OrderProfileToggle() {
         document.getElementById("order-state-layout").style.display = "none";
         document.querySelectorAll("#text span").forEach(span => span.classList.remove("active"));
         document.querySelectorAll(".profileBlock").forEach(profile => profile.classList.add("active"));
+        document.getElementById("function-container").style.display = "none";
         menuToggle.checked = false;
     }
 }
@@ -287,7 +289,6 @@ cancelBtn.addEventListener('click', function () {
 
 
 //Form fetch
-const selectGender = document.getElementById("selected-value");
 const selectAddress = document.getElementById("address");
 const selectImg = document.getElementById("uploadImg");
 
@@ -296,7 +297,6 @@ saveBtn.addEventListener('click', function (e) {
     e.preventDefault()
 
     const formData = new FormData();
-    formData.append('user_sex', selectGender.textContent);
     formData.append('user_hotline', hotline.value);
     formData.append('user_address', selectAddress.value);
 
