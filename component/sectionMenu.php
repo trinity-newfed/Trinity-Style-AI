@@ -86,6 +86,10 @@
             </div>
 
             <div class="menu-item">
+                <div class="menu-title" onclick="window.location.href='products.php'"><span>SHOP</span></div>
+            </div>
+
+            <div class="menu-item">
                 <div class="menu-title" onclick="window.location.href='voucher.php'"><span>GIFT VOUNCHER</span></div>
             </div>
 

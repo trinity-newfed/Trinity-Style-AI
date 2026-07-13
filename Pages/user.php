@@ -91,7 +91,7 @@
                         
 
                         <div id="search-wrapper"
-                            class="absolute right-0 bottom-0 top-0 left-0 bg-white transition-all duration-300 flex items-center">
+                            class="absolute right-0 bottom-0 left-0 bg-white transition-all duration-300 flex items-center">
                             <input type="text" id="mobile-search-input"
                                 class="w-full h-[30px] bg-[transparent] border-b border-black focus:outline-none text-sm py-1 font-light"
                                 placeholder="Type order code or product name...">
@@ -185,6 +185,8 @@
                         </h4>
                         <span class="text-sm opacity-[0.5]">Email</span>
                         <span><?= $user['email'] ?></span>
+                        <span class="text-sm opacity-[0.5]">Sex</span>
+                        <span><?= $user['user_sex'] ?></span>
                     </div>
 
                     <div class="flex flex-col p-5 bg-white rounded-[5px] h-[50%] gap-1">

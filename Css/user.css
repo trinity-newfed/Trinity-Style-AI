@@ -205,14 +205,14 @@ html::-webkit-scrollbar {
 .order-block.list .order-state {
   background: transparent;
   position: absolute;
-  left: 30%;
+  left: 34%;
   width: fit-content;
 }
 
 .order-block.list .order-info {
   width: fit-content;
   position: absolute;
-  left: 10%;
+  left: 14%;
 }
 
 .order-block.list form {
@@ -556,6 +556,10 @@ html::-webkit-scrollbar {
     transform: translateX(-50%);
     opacity: 1;
     visibility: visible;
+  }
+
+  #order-history.list{
+    height: auto;
   }
 
 
