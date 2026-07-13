@@ -185,8 +185,6 @@
                         </h4>
                         <span class="text-sm opacity-[0.5]">Email</span>
                         <span><?= $user['email'] ?></span>
-                        <span class="text-sm opacity-[0.5]">Sex</span>
-                        <span><?= $user['user_sex'] ?></span>
                     </div>
 
                     <div class="flex flex-col p-5 bg-white rounded-[5px] h-[50%] gap-1">
