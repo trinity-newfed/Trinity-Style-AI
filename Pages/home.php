@@ -181,7 +181,7 @@
                 src="https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=800">
 
             <div
-                class="space-y-8 order-2 md:order-1 reveal-target absolute left-[50%] translate-x-[-50%] top-[60%] z-[100] flex flex-col items-center">
+                class="z-[0] space-y-8 order-2 md:order-1 reveal-target absolute left-[50%] translate-x-[-50%] top-[50%] translate-y-[-50%] text-center sm:text-left sm:top-[60%] sm:translate-y-[0] flex flex-col items-center">
                 <h3 class="text-4xl font-extralight tracking-tight uppercase reveal-fade"
                     style="transition-delay: 100ms;">Visit us on TRINITY</h3>
                 <p class="text-xs text-neutral-200 bg-[rgba(0,0,0,0.2)] font-light leading-relaxed max-w-md reveal-fade"

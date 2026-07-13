@@ -34,7 +34,7 @@
   <section id="head" class="relative bg-[#E5E5E5] overflow-hidden min-h-[500px] md:h-[100vh] flex items-center">
     <div class="absolute bg-[black] z-[100] w-[100%] h-[100%] animate-1"></div>
     <div class="absolute inset-0 bg-cover bg-center opacity-90">
-      <img class="object-cover w-[100%] h-[100%] animate-2" src="../Pictures/Banners/Product-Banner.png" alt="">
+      <img class="object-cover w-[100%] h-[100%] animate-2 sm:brightness-[90%]" src="../Pictures/Banners/Product-Banner.png" alt="">
     </div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center py-20 z-10">

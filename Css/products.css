@@ -268,7 +268,6 @@ html::-webkit-scrollbar {
     scale: 1.2;
     animation: appear2 1s forwards;
     animation-delay: .2s;
-    filter: brightness(90%);
 }
 .collections-child{
     opacity: 0;

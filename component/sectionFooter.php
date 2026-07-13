@@ -41,7 +41,8 @@
         <div class="flex flex-col space-y-3 col-span-2 md:col-span-1">
             <span class="text-neutral-600 font-medium">Contact & Support</span>
             <p class="font-mono text-[9px] text-neutral-500">triple3tbusiness@gmail.com</p>
-            <p class="font-mono text-[9px] text-neutral-500 cursor-pointer hover:text-white" id="chat" onclick="toggleChat()">Live
+            <p class="font-mono text-[9px] text-neutral-500 cursor-pointer hover:text-white" id="chat"
+                onclick="toggleChat()">Live
                 Chat</p>
         </div>
     </div>
@@ -50,18 +51,23 @@
 <div class="fixed bottom-6 right-6 z-50">
 
     <div id="chatWindow"
-        class="hidden absolute bottom-0 right-0 w-80 h-96 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
-        <div class="p-4 border-b border-white/10 text-white font-light text-sm uppercase tracking-widest">
-            Trinity Support
+        class="hidden fixed bottom-0 right-0 sm:bottom-4 sm:right-4 w-full h-[90%] sm:w-80 sm:h-96 bg-[#1a1a1a] border-t sm:border border-white/10 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 z-1001">
+
+        <div
+            class="p-4 border-b border-white/10 text-white font-light text-sm uppercase tracking-widest flex justify-between items-center">
+            <span>Trinity Support</span>
+            <button class="cursor-pointer" onclick="closeChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+            </button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto text-white/60 text-xs font-light">
+        <div class="flex-1 p-4 overflow-y-auto text-white/60 text-xs font-light custom-scrollbar">
             <p class="mb-2">How can we assist your journey today?</p>
         </div>
 
-        <div class="p-3 border-t border-white/10">
+        <div class="p-3 border-t border-white/10 bg-[#1a1a1a] pb-safe">
             <input type="text" placeholder="Type a message..."
-                class="w-full bg-transparent border-none text-white text-xs placeholder-white/30 focus:ring-0 outline-none">
+                class="w-full bg-transparent border-none text-white text-sm sm:text-xs placeholder-white/30 focus:ring-0 outline-none py-2">
         </div>
     </div>
 </div>
@@ -72,9 +78,14 @@
         window.classList.toggle('hidden');
     }
 
-    window.addEventListener('click', function(e){
+    function closeChat(){
+        const window = document.getElementById('chatWindow');
+        window.classList.add('hidden');
+    }
+
+    window.addEventListener('click', function (e) {
         const chatWindow = document.getElementById('chatWindow');
         const liveChat = document.getElementById('chat');
-        if(!chatWindow.contains(e.target) && e.target !== liveChat) chatWindow.classList.add('hidden');
+        if (!chatWindow.contains(e.target) && e.target !== liveChat) chatWindow.classList.add('hidden');
     })
 </script>
