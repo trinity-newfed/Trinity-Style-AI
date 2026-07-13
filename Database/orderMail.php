@@ -27,7 +27,6 @@ $token = $_POST['token'] ?? '';
 $key = "trinitySMTP2026";
 $content = $_POST['content'];
 
-/*
 $tokenCheck = hash_hmac('sha256', $email . $timestamp, $key);
 
 if (hash_equals($tokenCheck, $token)) {
@@ -35,7 +34,6 @@ if (hash_equals($tokenCheck, $token)) {
 } else {
     die("Mã xác thực không chính xác.");
 }
-*/
 
 $userResult = $conn->execute_query("SELECT id FROM userdata WHERE email = ?", [$email])->fetch_assoc();
 $userID = $userResult["id"] ?? null;
