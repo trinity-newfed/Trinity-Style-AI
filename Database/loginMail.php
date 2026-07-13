@@ -27,7 +27,13 @@ $token = $_POST['token'] ?? '';
 $key = "trinitySMTP2026";
 $content = $_POST['content'];
 
-$tokenCheck = hash_hmac('sha256', $email . $timestamp , $key);
+$tokenCheck = hash_hmac('sha256', $email . $timestamp, $key);
+
+if (hash_equals($tokenCheck, $token)) {
+    echo "Xác thực token thành công!";
+} else {
+    die("Mã xác thực không chính xác.");
+}
 
 $expireTime = time() + 180;
 $otp = rand(100000, 999999);
