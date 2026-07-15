@@ -1,7 +1,7 @@
         <?php foreach($product_variant as $variant): ?>
             <?php 
-              if($variant['product_id'] == $product['id']) continue;
-              if($variant['product_color'] != $product['product_color']) continue;
+              if($variant['product_color'] == $product['product_color']) continue;
+              if($variant['product_type'] != $product['product_type']) continue;
             ?>
               <div class="items classic products-child group cursor-pointer w-[calc((100%-80px)/5)] shrink-0 min-w-[160px] product transition-all duration-500">
                 <div class="items-left bg-[#F3F3F3]">

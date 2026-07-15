@@ -16,7 +16,6 @@ $product = $conn
             products.product_name, products.product_group,
             products.product_price, products.product_category,
             products.product_type, products.product_describe,
-            products.product_size, 
             
             product_variant.product_price, product_variant.product_id AS variant_id,
             product_variant.product_size, product_variant.product_img,

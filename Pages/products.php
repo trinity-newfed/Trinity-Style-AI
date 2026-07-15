@@ -82,7 +82,7 @@
 
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
     <div class="flex justify-between items-center mb-8">
-      <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">Best Sellers</h2>
+      <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">New Items</h2>
       <div class="flex space-x-2">
         <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4"
             fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@
     </div>
 
     <div
-      class="flex overflow-x-auto overflow-y-hidden gap-x-5 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
+      class="grid grid-cols-2 sm:grid-cols-5 gap-x-5 gap-y-2 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
       <?php require "../component/products/classic.php" ?>
     </div>
   </section>

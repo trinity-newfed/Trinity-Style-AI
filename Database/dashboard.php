@@ -26,7 +26,15 @@ $product = $conn
     ->fetch_all(MYSQLI_ASSOC);
 
 $inventory = $conn
-    ->query("SELECT * FROM products ORDER BY product_stock DESC LIMIT 5")
+    ->query("SELECT 
+             products.product_name, products.id as id,
+
+             product_variant.product_stock, product_variant.product_img
+
+             FROM products
+             JOIN product_variant
+             ON products.id = product_variant.product_id
+             ORDER BY id DESC LIMIT 5")
     ->fetch_all(MYSQLI_ASSOC);
 
 $totalSold = 0;

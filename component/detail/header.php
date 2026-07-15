@@ -25,7 +25,7 @@ $product = $conn
             products.product_name, products.product_group,
             products.product_price, products.product_category,
             products.product_type, products.product_describe,
-            products.product_size, products.product_img,
+            products.product_img,
 
             product_variant.product_price, product_variant.product_size,
             product_variant.product_img, product_variant.product_img1,
@@ -46,7 +46,8 @@ $product_variant = $conn->query("SELECT
                                  product_variant.product_img2 AS variant_img2,
                                  product_variant.product_color, product_variant.product_size,
                                  product_variant.product_stock, products.product_name,
-                                 products.product_category
+
+                                 products.product_category, products.product_type
 
                                  FROM product_variant
                                  JOIN products

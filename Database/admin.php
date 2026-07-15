@@ -13,7 +13,23 @@ if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_S
 }
 //PRODUCT FETCH
 $product = $conn
-    ->query("SELECT * FROM products")
+    ->query("SELECT 
+                products.id AS id,
+                products.product_name, 
+                products.product_is_delete,
+                products.product_state,
+
+                product_variant.id AS variant_id,
+                product_variant.product_img as product_img,
+                product_variant.product_price, 
+                product_variant.product_color,
+                product_variant.product_size,
+                product_variant.product_stock
+
+             FROM products
+             INNER JOIN product_variant ON products.id = product_variant.product_id
+             WHERE products.product_is_delete = 0 
+               AND product_variant.product_is_delete = 0")
     ->fetch_all(MYSQLI_ASSOC);
 
 //USER FETCH
@@ -533,11 +549,11 @@ $voucher = $conn
                     <input type="text" placeholder="Search " id="search-input-1" class="search">
                     <label id="total-products" style="text-align: center;"></label>
                     <div id="add-product" class="add">Add new product</div>
-                    <?php if(empty($product)): ?>
+
                     <form action="insert_product_database_admin.php" method="post">
                         <input class="add full" type="submit" value="add database (product)">
                     </form>
-                    <?php endif; ?>
+
                 </div>
                 <div id="s-user" style="display: none;" class="search-div">
                     <input type="text" placeholder="Search" id="search-input-2" class="search">
@@ -547,11 +563,11 @@ $voucher = $conn
                     <input type="text" placeholder="Search" id="search-input-3" class="search">
                     <label id="total-vouchers" style="text-align: center;"></label>
                     <div id="add-voucher" class="add">Add new voucher</div>
-                    <?php if(empty($voucher)): ?>
+
                     <form action="insert_voucher_database_admin.php">
                         <input class="add full" type="submit" value="add database (voucher)">
                     </form>
-                    <?php endif; ?>
+
                 </div>
             </div>
             <div id="list">

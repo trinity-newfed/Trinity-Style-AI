@@ -1,4 +1,4 @@
-<?php 
+<?php
 $host = "localhost";
 $user = "root";
 $password = "";
@@ -10,8 +10,14 @@ session_start();
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
 
-$baseProduct = $conn->query("SELECT * FROM products")
-                    ->fetch_all(MYSQLI_ASSOC);
+$collection = $conn->query("SELECT * FROM products")
+  ->fetch_all(MYSQLI_ASSOC);
+
+$baseProduct = $conn->query("SELECT * FROM products 
+                             WHERE product_category != 'collections' 
+                             ORDER BY id DESC
+                             LIMIT 10")
+  ->fetch_all(MYSQLI_ASSOC);
 
 $product = $conn
   ->query("SELECT products.id AS id,
@@ -22,6 +28,8 @@ $product = $conn
             products.product_category,
             products.product_type, 
             products.product_describe,
+            products.color_display,
+
             product_variant.product_stock,
             product_variant.product_img,
             product_variant.product_color
@@ -42,16 +50,16 @@ $product_variant = $conn->query("SELECT
                                  FROM product_variant
                                  JOIN products
                                  ON product_variant.product_id = products.id")
-                        ->fetch_all(MYSQLI_ASSOC);
+  ->fetch_all(MYSQLI_ASSOC);
 
 $sql = $conn->prepare("SELECT * FROM user_policy_agreement
                        WHERE user_id = ?");
 $sql->bind_param("i", $userID);
 $sql->execute();
 $agreement = $sql->get_result();
-if($agreement->num_rows > 0){
+if ($agreement->num_rows > 0) {
   $agree = 1;
-}else{
+} else {
   $agree = 0;
 }
 $sql->close();

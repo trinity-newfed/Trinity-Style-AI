@@ -17,31 +17,90 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] != "adminTan" && $_SESSION['
     exit();
 }
 
-$file = fopen("products.csv", "r");
-$variant = fopen("product_variant.csv", "r");
+$conn->begin_transaction();
 
-$stmt = $conn->prepare("INSERT INTO products 
-    (product_name, product_group, product_price, product_category, product_type, product_describe, product_size, product_img, product_img1, product_img2) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+try {
+    $file = fopen("products.csv", "r");
+    $variant = fopen("product_variant.csv", "r");
 
-while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {
-    $stmt->bind_param("sdssssssss", $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9]);
-    $stmt->execute();
+    if (!$file || !$variant) {
+        throw new Exception("Cannot open csv.");
+    }
+
+    $sql_products = "INSERT INTO products 
+        (product_name, product_group, product_price, product_category, product_type, product_describe, color_display, product_img, product_img1, product_img2) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+        product_group    = VALUES(product_group),
+        product_price    = VALUES(product_price),
+        product_type     = VALUES(product_type),
+        product_describe = VALUES(product_describe),
+        color_display     = VALUES(color_display),
+        product_img      = VALUES(product_img),
+        product_img1     = VALUES(product_img1),
+        product_img2     = VALUES(product_img2)";
+
+    $stmt = $conn->prepare($sql_products);
+
+    while (($data = fgetcsv($file, 0, ",")) !== FALSE) {
+        $stmt->bind_param(
+            "sdssssssss", 
+            $data[0], 
+            $data[1],  
+            $data[2],
+            $data[3],
+            $data[4],
+            $data[5],
+            $data[6],
+            $data[7],
+            $data[8],
+            $data[9]
+        );
+        $stmt->execute();
+    }
+    $stmt->close();
+
+    $sql_variants = "INSERT INTO product_variant 
+        (product_id, product_price, product_color, product_size, product_img, product_img1, product_img2)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+        product_price = VALUES(product_price),
+        product_size  = VALUES(product_size),
+        product_img   = VALUES(product_img),
+        product_img1  = VALUES(product_img1),
+        product_img2  = VALUES(product_img2)";
+
+    $stmt2 = $conn->prepare($sql_variants);
+
+    while (($data = fgetcsv($variant, 1000, ",")) !== FALSE) {
+
+        $p_id = (int)$data[0];
+        $p_price = (double)$data[1];
+
+        $stmt2->bind_param(
+            "idsssss", 
+            $p_id,
+            $p_price,
+            $data[2],
+            $data[3],
+            $data[4],
+            $data[5],
+            $data[6]
+        );
+        $stmt2->execute();
+    }
+    $stmt2->close();
+
+    fclose($file);
+    fclose($variant);
+
+    $conn->commit();
+
+} catch (Exception $e) {
+    $conn->rollback();
+    die("Import thất bại: " . $e->getMessage());
 }
-$stmt->close();
 
-$stmt2 = $conn->prepare("INSERT INTO product_variant 
-    (product_id, product_price, product_color, product_size, product_img, product_img1, product_img2)
-    VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-while (($data = fgetcsv($variant, 1000, ",")) !== FALSE) {
-    $stmt2->bind_param("sdsssss", $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6]);
-    $stmt2->execute();
-}
-$stmt2->close();
-
-fclose($file);
-fclose($variant);
 $conn->close();
 
 header("Location: admin.php");

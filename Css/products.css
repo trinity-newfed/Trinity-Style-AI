@@ -1,4 +1,5 @@
-html,body{
+html,
+body {
     top: 0;
     left: 0;
     position: relative;
@@ -14,7 +15,7 @@ html::-webkit-scrollbar {
     height: 0;
 }
 
-.hide::-webkit-scrollbar{
+.hide::-webkit-scrollbar {
     height: 0;
     width: 0;
 }
@@ -133,13 +134,14 @@ html::-webkit-scrollbar {
     margin-bottom: 10px;
 }
 
-.toast.active{
+.toast.active {
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
     transition: .3s all;
 }
-.toast.active::before{
+
+.toast.active::before {
     content: "";
     position: absolute;
     top: 0;
@@ -150,14 +152,16 @@ html::-webkit-scrollbar {
     animation: toast 5s forwards;
     animation-delay: .1s;
 }
- @keyframes toast {
-    from{
+
+@keyframes toast {
+    from {
         width: 100%;
     }
-    to{
+
+    to {
         width: 0;
     }
- }
+}
 
 
 .sizes label:hover,
@@ -166,12 +170,15 @@ html::-webkit-scrollbar {
     cursor: pointer;
     border: 1px solid black;
 }
-.color.active{
-  border: 1px solid black;
+
+.color.active {
+    border: 1px solid black;
 }
-.color:hover{
-  border: 1px solid black;
+
+.color:hover {
+    border: 1px solid black;
 }
+
 .modal-add {
     align-self: flex-start;
     width: 100%;
@@ -260,70 +267,104 @@ html::-webkit-scrollbar {
 
 
 /* Animations */
-.animate-1{
+.animate-1 {
     animation: appear 2s forwards;
     z-index: 1001 !important;
 }
-.animate-2{
+
+.animate-2 {
     scale: 1.2;
     animation: appear2 1s forwards;
     animation-delay: .2s;
 }
-.collections-child{
+
+.collections-child {
     opacity: 0;
 }
-.products-child{
+
+.products-child {
     opacity: 0;
 }
-.collections.animate .collections-child:nth-child(1){
+
+.collections.animate .collections-child:nth-child(1) {
     animation: luxuryFade .75s forwards;
     animation-delay: 0s;
 }
-.collections.animate .collections-child:nth-child(2){
+
+.collections.animate .collections-child:nth-child(2) {
     animation: luxuryFade .75s forwards;
     animation-delay: .1s;
-    
+
 }
-.collections.animate .collections-child:nth-child(3){
+
+.collections.animate .collections-child:nth-child(3) {
     animation: luxuryFade .75s forwards;
     animation-delay: .3s;
-    
+
 }
-.collections.animate .collections-child:nth-child(4){
+
+.collections.animate .collections-child:nth-child(4) {
     animation: luxuryFade .75s forwards;
     animation-delay: .5s;
 }
 
-.products.animate .products-child:nth-child(1){
+.products.animate .products-child:nth-child(1) {
     animation: luxuryFade .75s forwards;
     animation-delay: 0s;
 }
-.products.animate .products-child:nth-child(2){
+
+.products.animate .products-child:nth-child(2) {
     animation: luxuryFade .75s forwards;
     animation-delay: .1s;
-    
+
 }
-.products.animate .products-child:nth-child(3){
+
+.products.animate .products-child:nth-child(3) {
     animation: luxuryFade .75s forwards;
     animation-delay: .3s;
-    
+
 }
-.products.animate .products-child:nth-child(4){
+
+.products.animate .products-child:nth-child(4) {
     animation: luxuryFade .75s forwards;
     animation-delay: .5s;
 }
-.products.animate .products-child:nth-child(5){
+
+.products.animate .products-child:nth-child(5) {
     animation: luxuryFade .75s forwards;
     animation-delay: .7s;
 }
-.products.animate .products-child:is(:nth-child(6), :nth-child(7), :nth-child(8), :nth-child(9), :nth-child(10)) {
-    opacity: 1;
+
+.products.animate .products-child:nth-child(6) {
+    animation: luxuryFade .75s forwards;
+    animation-delay: .9s;
+}
+
+.products.animate .products-child:nth-child(7) {
+    animation: luxuryFade .75s forwards;
+    animation-delay: 1.1s;
+}
+
+.products.animate .products-child:nth-child(8) {
+    animation: luxuryFade .75s forwards;
+    animation-delay: 1.3s;
+}
+
+.products.animate .products-child:nth-child(9) {
+    animation: luxuryFade .75s forwards;
+    animation-delay: 1.5s;
+}
+
+.products.animate .products-child:nth-child(10) {
+    animation: luxuryFade .75s forwards;
+    animation-delay: 1.7s;
 }
 @keyframes appear {
-    from{
+    from {
         opacity: 1;
     }
-    to{
+
+    to {
         opacity: 0;
         visibility: hidden;
         z-index: -1;
@@ -331,10 +372,11 @@ html::-webkit-scrollbar {
 }
 
 @keyframes appear2 {
-    from{
+    from {
         scale: 1.2;
     }
-    to{
+
+    to {
         scale: 1;
     }
 }
@@ -346,6 +388,7 @@ html::-webkit-scrollbar {
         opacity: 0;
         transform: translateY(40px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -357,6 +400,7 @@ html::-webkit-scrollbar {
         opacity: 0;
         transform: scale(0.8);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -402,6 +446,7 @@ html::-webkit-scrollbar {
         color: #999;
         letter-spacing: 4px;
     }
+
     #modal-detail {
         padding-top: 0;
     }

@@ -1,4 +1,4 @@
-<?php foreach ($baseProduct as $base): ?>
+<?php foreach ($collection as $base): ?>
     <?php if ($base['product_category'] !== "collections" || $base['product_name'] !== "Summer Shirt")
         continue; ?>
     <div class="group cursor-pointer collections-child">

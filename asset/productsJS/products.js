@@ -197,31 +197,3 @@
         modal.addEventListener('click', function(e){
             if(!conModal.contains(e.target)) modal.style.display = "none";
         });
-
-
-        //Button Next - Previous
-        let currentIndex = 0;
-        const steps = 5;
-        const productScrolls = document.querySelectorAll(".product");
-
-        function scrollProduct(dir){
-            currentIndex = (currentIndex + dir * steps) % productScrolls.length;
-            if(productScrolls.length > 6){
-                productScrolls.forEach(product =>{
-                    product.style.animation = "none";
-                    product.style.opacity = "1";
-                });
-
-                const target = productScrolls[currentIndex];
-
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "nearest",
-                    inline: "start"
-                });
-            }
-        }
-
-        document.querySelector(".next").addEventListener('click', ()=>scrollProduct(1));
-
-        document.querySelector(".previous").addEventListener('click', ()=>scrollProduct(-1));
