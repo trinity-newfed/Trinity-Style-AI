@@ -14,7 +14,7 @@
         <div id="text"
             class="hidden md:flex space-x-12 text-[10px] tracking-[0.25em] pointer-events-auto uppercase font-light">
             <a href="../Pages/home.php" class="hover:opacity-40 transition-opacity">Home</a>
-            <a href="products.php?#product-section" class="hover:opacity-40 transition-opacity">Shop</a>
+            <a href="products.php" class="hover:opacity-40 transition-opacity">Shop</a>
             <a href="search.php?content=collections" class="hover:opacity-40 transition-opacity">Collection</a>
             <a href="contact.php" class="hover:opacity-40 transition-opacity">Contact</a>
         </div>

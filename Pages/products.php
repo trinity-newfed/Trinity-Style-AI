@@ -157,7 +157,7 @@
 
         <div class="flex gap-2 sm:gap-3 pt-2 sm:pt-3 mt-10 w-[100%]">
           <button class="w-[50%] modal-add text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2">ADD TO CART</button>
-          <button class="w-[50%] modal-try text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2" type="button">TRY WITH
+          <button class="w-[50%] modal-try text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2" id="tryonBtn">TRY WITH
             AI✨</button>
         </div>
 
