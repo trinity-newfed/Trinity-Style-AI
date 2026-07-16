@@ -10,7 +10,7 @@ foreach ($baseProduct as $item):
         if ($variant['product_id'] == $item['id']):
             ?> data-id="<?= $item['id'] ?>"
                 data-img="../<?= $item['product_img'] ?>" data-name="<?= $item['product_name'] ?>"
-                data-price="<?= $item['product_price'] ?>" data-color="<?= $variant['product_color'] ?>"
+                data-price="<?= $item['product_price'] ?>" data-color="<?=  $item['color_display'] ?>"
                 data-category="<?= $item['product_category'] ?>" <?php
         endif;
     endforeach;
@@ -27,7 +27,7 @@ foreach ($baseProduct as $item):
         <?php foreach ($product_variant as $variant):
             ?>
             <?php if ($variant['product_id'] == $item['id']):
-                $activeClass = ($variant['product_color'] === $item['color_display']) ? 'active' : '';
+                $activeClass = ($variant['product_color'] == $item['color_display']) ? 'active' : '';
                 ?>
                 <div class="variants <?= $activeClass ?>" data-id="<?= $variant['product_id'] ?>"
                     data-variant="<?= $variant['product_color'] ?>" data-img="../<?= $variant['variant_img'] ?>"
