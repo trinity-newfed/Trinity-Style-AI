@@ -1,15 +1,10 @@
 <?php 
-// 1. Luôn khai báo Header JSON ở đầu file
 header('Content-Type: application/json; charset=utf-8');
 
-// Tắt hiển thị lỗi thô ra màn hình để tránh làm vỡ định dạng JSON khi có sự cố
 ini_set('display_errors', 0); 
 error_reporting(E_ALL);
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('host.php');
 
 try{
     $conn = new mysqli($host, $user, $password, $dbname);

@@ -3,18 +3,13 @@ header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('host.php');
 
-$conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
     echo json_encode([
         'status' => false,

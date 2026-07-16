@@ -1,12 +1,7 @@
 <?php
 session_start();
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
+include('host.php');
 
 if (isset($_POST['submit']) && isset($_FILES['img'])) {
 

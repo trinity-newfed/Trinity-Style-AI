@@ -1,10 +1,6 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('../Database/host.php');
 
-$conn = new mysqli($host, $user, $password, $dbname);
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header("Location: reglog.php");

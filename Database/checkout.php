@@ -2,12 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
+include('host.php');
 
 if ($conn->connect_error) {
     echo json_encode(['status' => 'error', 'message' => 'Database connection failed']);
