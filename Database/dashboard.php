@@ -195,7 +195,7 @@ $result = $conn->query("SELECT u.id, u.email, o.created_at, SUM(o.order_final_pr
                         WHERE o.order_state = 'delivered'
                         AND MONTH(o.created_at) >= MONTH(NOW())
                         AND YEAR(o.created_at) = $year
-                        GROUP BY u.id, u.email
+                        GROUP BY u.id, u.email, o.created_at
                         ORDER BY totalsPayment DESC
                         LIMIT 5
                      ");

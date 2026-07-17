@@ -142,8 +142,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($passless == 1) {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
         $host = $_SERVER['HTTP_HOST'];
+        $baseUrl = $_ENV['APP_URL'] ?? ($protocol . $host);
 
-        $url = $protocol . $host . "/Trinity-Style-AI/Database/loginMail.php";
+        $url = rtrim($baseUrl, '/') . "/Database/loginMail.php";
 
         $key = "trinitySMTP2026";
         $timestamp = time();
@@ -155,12 +156,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'token' => $tempToken,
             'content' => 'Passwordless OTP Login'
         ];
+        
+        $redisHost = $_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis';
+        $redisPort = $_ENV['REDIS_PORT'] ?? 6379;
 
         try {
             $redis = new Predis\Client([
                 'scheme' => 'tcp',
-                'host' => '127.0.0.1',
-                'port' => 6379,
+                'host'   => $redisHost,
+                'port'   => (int)$redisPort,
             ]);
 
             $job_data = json_encode([
@@ -170,8 +174,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ]);
 
             $redis->rpush('smtp_mail_queue', $job_data);
-        } catch (Exception $e) {
-            error_log("Redis Queue Error: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            echo json_encode([
+                'status' => false,
+                'color' => '#FFCCCC',
+                'message' => 'Redis Error: ' . $e->getMessage()
+            ]);
+            exit;
         }
 
 

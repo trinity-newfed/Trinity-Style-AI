@@ -1,4 +1,6 @@
 import os
+os.environ["HSA_OVERRIDE_GFX_VERSION"] = "11.0.0"
+os.environ["HSA_ENABLE_SDMA"] = "0"
 import torch
 import cv2
 import numpy as np
@@ -37,22 +39,42 @@ pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     torch_dtype=dtype
 )
 
-if device == "cuda":
-    pipe.to(device)
-    pipe.enable_xformers_memory_efficient_attention()
-    pipe.enable_model_cpu_offload()
-else:
-    pipe.enable_vae_slicing()
-
-pipe.safety_checker = None
-
 pipe.load_ip_adapter(
     "h94/IP-Adapter",
     subfolder="models",
     weight_name="ip-adapter-plus_sd15.bin"
 )
-
 pipe.set_ip_adapter_scale(0.9)
+
+if device == "cuda":
+    pipe.to(device)
+
+    if hasattr(pipe, "image_encoder") and pipe.image_encoder is not None:
+        pipe.image_encoder.to(device, dtype=torch.float16)
+    
+    try:
+        pipe.enable_xformers_memory_efficient_attention()
+        pipe.enable_model_cpu_offload()
+        print("--> Running on GPU - NVIDIA (with xformers)")
+    except (ModuleNotFoundError, RuntimeError, ValueError):
+        if hasattr(pipe, "unet") and hasattr(pipe.unet, "set_default_attn_processor"):
+            pipe.unet.set_default_attn_processor() 
+        else:
+            pipe.enable_attention_slicing()
+        
+        try:
+            pipe.enable_model_cpu_offload()
+        except Exception:
+            pass
+            
+        print("--> Running on GPU - AMD / Standard CUDA (with SDPA/Slicing)")
+else:
+    pipe.to("cpu")
+    pipe.enable_vae_slicing()
+    pipe.enable_attention_slicing()
+    print("--> Running on CPU")
+
+pipe.safety_checker = None
 
 def resize_with_padding(img, target_size=(768,1024)):
     w, h = img.size
@@ -145,6 +167,9 @@ def api_generate():
             if percent > current:
                 progress_dict[userID] = percent
 
+    if device == "cuda" and hasattr(pipe, "image_encoder") and pipe.image_encoder is not None:
+        pipe.image_encoder.to(device, dtype=torch.float16)
+
     result = pipe(
         prompt="""
         A realistic photo of the same person wearing the clothing from the reference image,
@@ -221,4 +246,4 @@ def get_progress(userID):
         })
 
 if __name__ == "__main__":
-    app.run(debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)

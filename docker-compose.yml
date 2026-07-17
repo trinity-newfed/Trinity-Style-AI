@@ -1,0 +1,84 @@
+services:
+  trinity_db:
+    image: mysql:8.0
+    container_name: trinity_mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: tf_database
+    ports:
+      - "3306:3306"
+    volumes:
+      - trinity_db_data:/var/lib/mysql
+      - ./database_init:/docker-entrypoint-initdb.d
+    networks:                     
+      - trinity_net
+    healthcheck:                    
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  trinity_redis:
+    image: redis:alpine
+    container_name: trinity_redis_container
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - trinity_redis_data:/data
+    networks:                     
+      - trinity_net
+
+  web_xampp:
+    build:
+      context: .        
+      dockerfile: Dockerfile.web 
+    container_name: trinity_style_web
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www/html 
+    environment:
+      - REDIS_HOST=trinity_redis       
+      - REDIS_MAIL_HOST=trinity_redis   
+      - REDIS_PORT=6379
+      - DB_HOST=trinity_db
+    networks:
+      - trinity_net
+    depends_on:
+      trinity_db:
+        condition: service_healthy    
+      trinity_redis:
+        condition: service_started
+
+  worker_mail:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: redis_mail_service
+    restart: always
+    command: php /var/www/html/Database/worker.php
+    volumes:
+      - .:/var/www/html
+    environment:                       
+      - REDIS_HOST=trinity_redis
+      - REDIS_MAIL_HOST=trinity_redis
+      - REDIS_PORT=6379
+      - DB_HOST=trinity_db
+    networks:                         
+      - trinity_net
+    depends_on:
+      trinity_db:
+        condition: service_healthy
+      trinity_redis:
+        condition: service_started
+
+volumes:
+  trinity_db_data:
+  trinity_redis_data:
+  ollama_storage:
+  
+networks:
+  trinity_net:
+    driver: bridge

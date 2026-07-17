@@ -1,57 +1,95 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
-use PHPMailer\PHPMailer\Exception;
-
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-
 set_time_limit(0);
+ob_implicit_flush(true);
 
-$redis = new Predis\Client([
-    'scheme' => 'tcp',
-    'host' => '127.0.0.1',
-    'port' => 6379,
-    'read_write_timeout' => 0
-]);
+function logToStdout($message) {
+    $out = fopen('php://stdout', 'w');
+    fwrite($out, date('[Y-m-d H:i:s] ') . $message . PHP_EOL);
+    fclose($out);
+}
 
-echo "Worker dang tuc truc cho don hang gui mail...\n";
+if (class_exists('Dotenv\Dotenv')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+    $dotenv->safeLoad();
+}
+
+$redisHost = getenv('REDIS_MAIL_HOST') ?: ($_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis');
+$redisPort = getenv('REDIS_PORT') ?: ($_ENV['REDIS_PORT'] ?? 6379);
+
+logToStdout("Worker Mail Service Running..");
+
+$redis = null;
+while ($redis === null) {
+    try {
+        $client = new Predis\Client([
+            'scheme'             => 'tcp',
+            'host'               => $redisHost,
+            'port'               => (int)$redisPort,
+            'read_write_timeout' => -1,
+        ]);
+        $client->connect();
+        $redis = $client;
+        logToStdout("Connect To Redis Success {$redisHost}:{$redisPort}");
+    } catch (\Throwable $e) {
+        logToStdout("Cannot Connect To Redis ({$e->getMessage()}). Trying To Reconnect...");
+        sleep(3);
+    }
+}
 
 while (true) {
     try {
-        $job = $redis->blpop('smtp_mail_queue', 0);
+        $job = $redis->blpop(['smtp_mail_queue'], 0);
 
-        if ($job) {
+        if ($job && isset($job[1])) {
+            logToStdout("Job Pending: " . $job[1]);
             $data = json_decode($job[1], true);
 
-
             if (!isset($data['url']) || !isset($data['param'])) {
-                echo "Du lieu Job khong hop le, bo qua.\n";
+                logToStdout("Skipping Invalid Request.");
                 continue;
             }
 
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $data['url']);
+            $targetUrl = $data['url'];
+            
+            curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data['param']));
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            
+            $isHttps = (strpos($targetUrl, 'https://') === 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $isHttps);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $isHttps ? 2 : 0);
 
             $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
             if ($response === false) {
-                echo "cURL Error: " . curl_error($ch) . "\n";
+                logToStdout("cURL Error: " . curl_error($ch) . " - Target: " . $targetUrl);
             } else {
-                echo "Da xu ly xong 1 mail ngam cho: " . $data['url'] . "\n";
+                logToStdout("[HTTP $httpCode] Mail push for: " . ($data['param']['email'] ?? 'N/A'));
             }
 
             curl_close($ch);
         }
-    } catch (Exception $e) {
-        echo "Loi he thong: " . $e->getMessage() . "\n";
-        sleep(2);
+    } catch (\Throwable $e) { 
+        logToStdout("Worker Loop Error: " . $e->getMessage() . " - Auto Restarting...");
+        sleep(3); 
+        
+        try {
+            $redis->ping();
+        } catch (\Throwable $ex) {
+            logToStdout("Redis Connection Lost. Trying to reconnect...");
+            try {
+                $redis->connect();
+            } catch (\Throwable $conEx) {
+                
+            }
+        }
     }
+
+    gc_collect_cycles();
 }
-?>
