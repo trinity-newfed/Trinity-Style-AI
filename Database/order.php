@@ -3,7 +3,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
@@ -11,12 +10,7 @@ $dotenv->load();
 
 session_start();
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
+include('host.php');
 
 if ($conn->connect_error) {
     die("Database connection error: " . $conn->connect_error);

@@ -2,7 +2,8 @@
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 
-$conn = new mysqli("localhost", "root", "", "TF_Database");
+include('host.php');
+
 if ($conn->connect_error) {
     die(json_encode(['status' => false, 'message' => 'Connect error']));
 }

@@ -1,10 +1,5 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
-
-$conn = new mysqli($host, $user, $password, $dbname);
+include('../Database/host.php');
 
 session_start();
 $username = $_SESSION['username'] ?? null;

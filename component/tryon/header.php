@@ -1,10 +1,6 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('../Database/host.php');
 
-$conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
     echo json_encode([
         "status" => "failed",

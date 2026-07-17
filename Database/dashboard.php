@@ -1,10 +1,6 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('host.php');
 
-$conn = new mysqli($host, $user, $password, $dbname);
 session_start();
 if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_SESSION['role']) && $_SESSION['role'] != "adminTrung")){
     $_SESSION['error'] = "Restrict permission!";

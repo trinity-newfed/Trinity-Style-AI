@@ -8,12 +8,8 @@ use PHPMailer\PHPMailer\Exception;
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__)); 
 $dotenv->load();
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "TF_Database";
+include('host.php');
 
-$conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error){
     die("Database Connection Failed: " . $conn->connect_error);
 }
