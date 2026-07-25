@@ -9,7 +9,7 @@ services:
       - trinity_db
       - trinity_ollama
       - trinity_redis_ai    
-    command: python AI/promt.py
+    command: python AI/llm.py
     ports:
       - "5000:5000"
     environment:
@@ -48,7 +48,7 @@ services:
       - trinity_db
       - trinity_ollama
       - trinity_redis_ai    
-    command: python AI/sd15cpu.py
+    command: python AI/generative.py
     environment:
       - OLLAMA_BASE_URL=http://trinity_ollama:11434
       - REDIS_AI_HOST=trinity_redis_ai

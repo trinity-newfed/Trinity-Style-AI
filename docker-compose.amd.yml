@@ -34,7 +34,7 @@ services:
     group_add:
       - "44"
       - "990"
-    command: python AI/sd15cpu.py
+    command: python AI/generative.py
     environment:
       - HSA_OVERRIDE_GFX_VERSION=11.0.0
       - OLLAMA_BASE_URL=http://trinity_ollama:11434
