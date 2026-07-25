@@ -15,8 +15,8 @@ if (class_exists('Dotenv\Dotenv')) {
     $dotenv->safeLoad();
 }
 
-$redisHost = getenv('REDIS_MAIL_HOST') ?: ($_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis');
-$redisPort = getenv('REDIS_PORT') ?: ($_ENV['REDIS_PORT'] ?? 6379);
+$redisHost = getenv('REDIS_MAIL_HOST') ?: ($_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis_mail');
+$redisPort = getenv('REDIS_MAIL_PORT') ?: ($_ENV['REDIS_MAIL_PORT'] ?? 6379);
 
 logToStdout("Worker Mail Service Running..");
 

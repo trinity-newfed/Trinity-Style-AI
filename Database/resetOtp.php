@@ -85,8 +85,9 @@ if ($check) {
 try {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
-    
-    $url = $protocol . $host . "/Trinity-Style-AI/Database/loginMail.php";
+    $baseUrl = $_ENV['APP_URL'] ?? ($protocol . $host);
+
+    $url = rtrim($baseUrl, '/') . "/Database/loginMail.php";
 
     $key = "trinitySMTP2026";
     $timestamp = time();
@@ -99,19 +100,33 @@ try {
         'content' => 'Reset OTP'
     ];
 
-    $redis = new Predis\Client([
-        'scheme' => 'tcp',
-        'host' => '127.0.0.1',
-        'port' => 6379,
-    ]);
+    $redisHost = $_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis_mail';
+    $redisPort = $_ENV['REDIS_MAIL_PORT'] ?? 6379;
 
-    $job_data = json_encode([
-        'url' => $url,
-        'param' => $param,
-        'created_at' => time()
-    ]);
+    try {
+        $redis = new Predis\Client([
+            'scheme' => 'tcp',
+            'host'   => $redisHost,
+            'port'   => $redisPort,
+            'timeout' => 2.0,
+        ]);
 
-    $redis->rpush('smtp_mail_queue', $job_data);
+        $job_data = json_encode([
+            'url' => $url,
+            'param' => $param,
+            'created_at' => time()
+        ]);
+
+        $redis->rpush('smtp_mail_queue', $job_data);
+
+    } catch (\Throwable $e) {
+        echo json_encode([
+            'status' => false,
+            'color' => '#FFCCCC',
+            'message' => 'Redis Error: ' . $e->getMessage()
+        ]);
+        exit;
+    }
 } catch (Exception $e) {
     error_log("Redis Queue Error: " . $e->getMessage());
 }

@@ -190,4 +190,20 @@ $conn->query("CREATE TABLE IF NOT EXISTS tryon(
     product_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
+
+//Agent Chat Support 
+try {
+    $conn->query("CREATE USER IF NOT EXISTS 'chat-agent-support'@'%' IDENTIFIED BY 'chatagent123'");
+
+    $conn->query("REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'chat-agent-support'@'%'");
+
+    $conn->query("GRANT SELECT ON {$dbname}.products TO 'chat-agent-support'@'%'");
+    $conn->query("GRANT SELECT ON {$dbname}.product_variant TO 'chat-agent-support'@'%'");
+    $conn->query("GRANT SELECT ON {$dbname}.vouchers TO 'chat-agent-support'@'%'");
+
+    $conn->query("FLUSH PRIVILEGES");
+} catch (Exception $e) {
+    echo $e;
+    exit;
+}
 ?>

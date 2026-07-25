@@ -157,8 +157,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'content' => 'Passwordless OTP Login'
         ];
         
-        $redisHost = $_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis';
-        $redisPort = $_ENV['REDIS_PORT'] ?? 6379;
+        $redisHost = $_ENV['REDIS_MAIL_HOST'] ?? 'trinity_redis_mail';
+        $redisPort = $_ENV['REDIS_MAIL_PORT'] ?? 6379;
 
         try {
             $redis = new Predis\Client([

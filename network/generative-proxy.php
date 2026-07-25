@@ -1,4 +1,5 @@
 <?php
+include "../Database/host.php";
 header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -10,8 +11,20 @@ $dotenv->load();
 
 session_start();
 
-$redisHost = $_ENV['REDIS_AI_SERVICE_HOST'] ?? $_ENV['REDIS_HOST'] ?? '127.0.0.1';
-$redisPort = (int) ($_ENV['REDIS_PORT'] ?? 6379);
+$clientToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+$sessionToken = $_SESSION['csrf_token'] ?? null;
+
+if (!$clientToken || !$sessionToken || !hash_equals($sessionToken, $clientToken)) {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Security validation failed: Request unauthorized.'
+    ]);
+    exit;
+}
+
+$redisHost = $_ENV['REDIS_AI_HOST'] ?? 'trinity_redis_ai';
+$redisPort = (int) ($_ENV['REDIS_AI_PORT'] ?? 6379);
 
 try {
     $redis = new PredisClient([
@@ -19,7 +32,6 @@ try {
         'host'   => $redisHost,
         'port'   => $redisPort,
     ]);
-
     $redis->ping();
 } catch (Exception $e) {
     http_response_code(500);
@@ -29,6 +41,15 @@ try {
 
 $userId = $_SESSION['user_id'] ?? null;
 $authToken = $_SERVER['HTTP_AUTHORIZATION'] ?? $_POST['token'] ?? null;
+
+if ($userId) {
+    $userLimit = $conn->execute_query("SELECT user_limit_tryon FROM userdata WHERE id = ?", [$userId])->fetch_assoc()['user_limit_tryon'];
+
+    if ($userLimit == 0) {
+        echo json_encode(['success' => false, 'message' => 'You reached Virtual Try On for today, please try after 24 hours.']);
+        exit;
+    }
+}
 
 if (!$userId && !$authToken) {
     http_response_code(401);
@@ -42,7 +63,6 @@ $userActiveKey = "user_active_task:{$clientIdentifier}";
 $activeTaskId = $redis->get($userActiveKey);
 
 if ($activeTaskId) {
-
     $rawStatus = $redis->get("task_status:{$activeTaskId}");
     if ($rawStatus) {
         $statusData = json_decode($rawStatus, true);
@@ -113,6 +133,10 @@ $imageData = base64_encode(file_get_contents($tempPath));
 
 $color = $_POST['color'] ?? 'white';
 $productId = $_POST['product_id'] ?? 1;
+$productImg = $conn->execute_query("SELECT product_variant.product_img 
+                FROM products 
+                JOIN product_variant ON products.id = product_variant.product_id 
+                WHERE products.id = ? AND product_variant.product_color = ?", [$productId, $color])->fetch_assoc()['product_img'];
 
 $taskPayload = [
     'task_id' => $taskId,
@@ -120,23 +144,26 @@ $taskPayload = [
     'image_base64' => $imageData,
     'color' => $color,
     'product_id' => $productId,
+    'product_img' => $productImg,
     'created_at' => time()
 ];
 
 $redis->setex("task_status:{$taskId}", 600, json_encode([
     'status' => 'pending',
     'progress' => 0,
+    'owner' => $clientIdentifier,
     'message' => 'Đang chờ máy chủ AI tiếp nhận...'
 ]));
 
 $redis->setex($userActiveKey, 300, $taskId);
 
-$redis->lPush('ai_tryon_queue', json_encode($taskPayload));
+$redis->hSet('ai_pending_tasks', $taskId, json_encode($taskPayload));
 
 http_response_code(200);
 echo json_encode([
     'success' => true,
-    'message' => 'Khởi tạo tiến trình AI thành công.',
+    'message' => 'AI process initiated successfully.',
     'task_id' => $taskId
 ]);
 exit;
+?>

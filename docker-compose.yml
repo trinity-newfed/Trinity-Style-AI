@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   trinity_db:
     image: mysql:8.0
@@ -19,14 +21,26 @@ services:
       timeout: 5s
       retries: 5
 
-  trinity_redis:
+  trinity_redis_mail:
     image: redis:alpine
-    container_name: trinity_redis_container
+    container_name: trinity_redis_mail_container
     restart: always
     ports:
-      - "6379:6379"
+      - "6379:6379"  
     volumes:
-      - trinity_redis_data:/data
+      - trinity_redis_mail_data:/data
+    networks:                     
+      - trinity_net
+
+  trinity_redis_ai:
+    image: redis:alpine
+    container_name: trinity_redis_ai_container
+    restart: always
+    command: ["redis-server", "--protected-mode", "no", "--bind", "0.0.0.0"]
+    ports:
+      - "6380:6379" 
+    volumes:
+      - trinity_redis_ai_data:/data
     networks:                     
       - trinity_net
 
@@ -40,16 +54,18 @@ services:
     volumes:
       - .:/var/www/html 
     environment:
-      - REDIS_HOST=trinity_redis       
-      - REDIS_MAIL_HOST=trinity_redis   
-      - REDIS_PORT=6379
+      - REDIS_AI_HOST=trinity_redis_ai       
+      - REDIS_MAIL_HOST=trinity_redis_mail 
+      - REDIS_PORT=6379                    
       - DB_HOST=trinity_db
     networks:
       - trinity_net
     depends_on:
       trinity_db:
         condition: service_healthy    
-      trinity_redis:
+      trinity_redis_mail:
+        condition: service_started
+      trinity_redis_ai:
         condition: service_started
 
   worker_mail:
@@ -62,8 +78,8 @@ services:
     volumes:
       - .:/var/www/html
     environment:                       
-      - REDIS_HOST=trinity_redis
-      - REDIS_MAIL_HOST=trinity_redis
+      - REDIS_HOST=trinity_redis_mail   
+      - REDIS_MAIL_HOST=trinity_redis_mail
       - REDIS_PORT=6379
       - DB_HOST=trinity_db
     networks:                         
@@ -71,14 +87,35 @@ services:
     depends_on:
       trinity_db:
         condition: service_healthy
-      trinity_redis:
+      trinity_redis_mail:
         condition: service_started
+
+  worker_ai:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    container_name: redis_ai_service
+    restart: always
+    command: python /app/Database/worker.py
+    volumes:
+      - .:/app
+    depends_on:
+      - trinity_redis_ai                  
+    environment:
+      - REDIS_AI_HOST=trinity_redis_ai 
+      - REDIS_PORT=6379                   
+      - PYTHONUNBUFFERED=1
+    networks:                            
+      - trinity_net
 
 volumes:
   trinity_db_data:
-  trinity_redis_data:
+  trinity_redis_mail_data:                
+  trinity_redis_ai_data:                  
   ollama_storage:
   
 networks:
   trinity_net:
     driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
