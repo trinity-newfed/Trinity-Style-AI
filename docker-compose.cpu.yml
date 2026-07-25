@@ -1,4 +1,30 @@
 services:
+  ai_chat_backend:
+    build: 
+      context: .        
+      dockerfile: Dockerfile.cpu 
+    container_name: trinity_chat_container
+    restart: always 
+    depends_on:
+      - trinity_db
+      - trinity_ollama
+      - trinity_redis_ai    
+    command: python AI/promt.py
+    ports:
+      - "5000:5000"
+    environment:
+      - OLLAMA_BASE_URL=http://trinity_ollama:11434
+      - REDIS_AI_HOST=trinity_redis_ai
+      - REDIS_AI_PORT=6379
+      - PYTHONUNBUFFERED=1 
+    volumes:
+      - .:/workspace 
+    working_dir: /workspace
+    networks:          
+      - trinity_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   trinity_ollama:
     image: ollama/ollama:latest
     container_name: trinity_ollama_container
@@ -9,25 +35,29 @@ services:
       - ollama_storage:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0
+    networks:
+      - trinity_net
 
   ai_backend:
     build: 
       context: .        
       dockerfile: Dockerfile.cpu
     container_name: trinity_ai_container
-    tty: true
-    stdin_open: true
-    privileged: true
+    restart: always 
     depends_on:
       - trinity_db
       - trinity_ollama
+      - trinity_redis_ai    
+    command: python AI/sd15cpu.py
     environment:
       - OLLAMA_BASE_URL=http://trinity_ollama:11434
-      - FLASK_RUN_HOST=0.0.0.0
+      - REDIS_AI_HOST=trinity_redis_ai
+      - REDIS_AI_PORT=6379
+      - PYTHONUNBUFFERED=1 
     volumes:
-      - .:/workspace    
+      - .:/workspace 
     working_dir: /workspace
-    ports:
-      - "5000:5000"
+    networks:          
+      - trinity_net
     extra_hosts:
       - "host.docker.internal:host-gateway"

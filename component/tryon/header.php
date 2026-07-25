@@ -15,6 +15,10 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 $username = $_SESSION['username'] ?? null;
 $userID = $_SESSION['user_id'] ?? null;
 

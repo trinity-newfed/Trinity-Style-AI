@@ -66,7 +66,7 @@ function handleImageUpload(inputSelector, imgSelector) {
     const imgElement = document.querySelector(imgSelector);
 
     if (!fileInput || !imgElement) {
-        console.warn("Không tìm thấy thẻ input file hoặc thẻ img preview.");
+        console.warn("No Input File Found.");
         return;
     }
 
@@ -76,7 +76,7 @@ function handleImageUpload(inputSelector, imgSelector) {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            alert("Vui lòng chỉ tải lên tệp hình ảnh (.jpg, .png, .webp,...)");
+            alert("Only Accept (.jpg, .png, .webp,...)");
             fileInput.value = '';
             return;
         }
@@ -101,46 +101,61 @@ if (uploadInput && img) {
     });
 }
 
-
 //Try on
 const tryonBtn = document.querySelector(".tryonBtn");
-
+const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
 function listenTaskProgress(taskId, onComplete) {
     const mainPreview = document.getElementById('main-preview');
+    const tryonBtn = document.getElementById('tryonBtn');
 
-    const eventSource = new EventSource(`stream-progress.php?task_id=${taskId}`);
+    const intervalId = setInterval(async () => {
+        try {
+            const response = await fetch(`../network/check_progress.php?task_id=${taskId}`);
+            const result = await response.json();
 
-    eventSource.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-
-        if (data.status === 'processing') {
-            console.log(`Đang tạo ảnh: ${data.progress}%`);
-        }
-
-        else if (data.status === 'completed') {
-            img.src = data.src;
-
-            if (mainPreview && data.result_url) {
-                mainPreview.src = data.result_url;
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "Cannot fetch task status.");
             }
 
-            eventSource.close();
+            const task = result.data || result; 
+
+            if (!task || !task.status) {
+                throw new Error("Invalid data format received from server.");
+            }
+
+            if (task.status === 'pending' || task.status === 'processing') {
+                console.log(`AI Progress: ${task.progress}% - Status: ${task.status}`);
+                if (tryonBtn) {
+                    tryonBtn.innerHTML = `<span>Processing AI (${task.progress}%)...</span>`;
+                }
+            }
+            
+            else if (task.status === 'complete') {
+                clearInterval(intervalId); 
+                console.log("[✓] Tryon completed successfully!");
+
+                if (mainPreview && task.result_url) {
+                    mainPreview.src = `/static/${task.result_url}`; 
+                }
+
+                if (onComplete) onComplete();
+            }
+            
+            else if (task.status === 'failed' || task.status === 'db_error') {
+                clearInterval(intervalId);
+                alert(`AI Generation Failed: ${task.status}`);
+                if (onComplete) onComplete();
+            }
+
+        } catch (err) {
+            console.error("Polling Error:", err);
+            clearInterval(intervalId);
+            alert("Lost connection to progress tracker."); 
             if (onComplete) onComplete();
         }
-
-        else if (data.status === 'failed') {
-            alert("Failed: " + (data.error || "Undefied error"));
-            eventSource.close();
-            if (onComplete) onComplete();
-        }
-    };
-
-    eventSource.onerror = function (err) {
-        console.error("SSE Error:", err);
-        eventSource.close();
-        if (onComplete) onComplete();
-    };
+    }, 1500); 
 }
 
 if (tryonBtn) {
@@ -156,11 +171,10 @@ if (tryonBtn) {
         tryonBtn.disabled = true;
         tryonBtn.classList.add('opacity-50', 'cursor-not-allowed');
         const originalText = tryonBtn.innerHTML;
-        tryonBtn.innerHTML = `<span>Processing AI...</span>`;
+        tryonBtn.innerHTML = `<span>Uploading Assets...</span>`;
 
         try {
             const formData = new FormData();
-
             formData.append('image', file);
 
             const activeColorEl = document.querySelector(".activeColor");
@@ -168,13 +182,14 @@ if (tryonBtn) {
                 formData.append('color', activeColorEl.dataset.color || '');
             }
 
-            const activeID = document.getElementById("productID").dataset.id;
+            const activeID = document.getElementById("productID")?.dataset.id;
             if (activeID) {
                 formData.append('product_id', activeID || '');
             }
 
-            const response = await fetch('../Database/generative-proxy.php', {
+            const response = await fetch('../network/generative-proxy.php', {
                 method: 'POST',
+                headers: {'X-CSRF-TOKEN': csrfToken || ''},
                 body: formData
             });
 
@@ -196,11 +211,9 @@ if (tryonBtn) {
         } catch (error) {
             console.error("Tryon Error:", error);
             alert(error.message || "Something went wrong, please try again later!");
-
             tryonBtn.disabled = false;
             tryonBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             tryonBtn.innerHTML = originalText;
         }
     });
 }
-

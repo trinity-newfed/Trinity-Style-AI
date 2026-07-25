@@ -20,26 +20,35 @@ services:
       context: .        
       dockerfile: Dockerfile.amd
     container_name: trinity_ai_container
+    restart: always
     tty: true
     stdin_open: true
     privileged: true
     depends_on:
       - trinity_db
       - trinity_ollama
+      - trinity_redis_ai 
     devices:
       - "/dev/kfd:/dev/kfd"
       - "/dev/dri:/dev/dri"
     group_add:
       - "44"
       - "990"
+    command: python AI/sd15cpu.py
     environment:
       - HSA_OVERRIDE_GFX_VERSION=11.0.0
       - OLLAMA_BASE_URL=http://trinity_ollama:11434
       - FLASK_RUN_HOST=0.0.0.0
+      - ROCM_PATH=/opt/rocm
     volumes:
       - .:/workspace    
     working_dir: /workspace
-    ports:
-      - "5000:5000"
+    networks:          
+      - trinity_net
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+
+networks:
+  trinity_net:
+    driver: bridge

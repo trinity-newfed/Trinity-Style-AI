@@ -1,33 +1,25 @@
 FROM ubuntu:22.04
 
-WORKDIR /workspace
-
 ENV DEBIAN_FRONTEND=noninteractive
-
-ENV HSA_OVERRIDE_GFX_VERSION=11.0.0 
 ENV PYTHONUNBUFFERED=1
+ENV HSA_OVERRIDE_GFX_VERSION=11.0.0
+ENV ROCM_VISIBLE_DEVICES=all
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-dev \
-    libgl1 \
-    libglib2.0-0 \
-    numactl \
-    pciutils \
-    rocminfo \
+    python3 python3-pip python3-dev python-is-python3 \
+    libgl1 libglib2.0-0 numactl pciutils \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -g 990 render || true
-
-RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
-
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip3 install --no-cache-dir \
     torch torchvision \
-    --index-url https://download.pytorch.org/whl/rocm6.0 \
-    --extra-index-url https://pypi.org/simple
+    --index-url https://download.pytorch.org/whl/rocm6.0
+
+WORKDIR /workspace
 
 COPY requirements-amd.txt .
 RUN pip3 install --no-cache-dir -r requirements-amd.txt
 
 COPY . .
+
+CMD ["python3", "main.py"]

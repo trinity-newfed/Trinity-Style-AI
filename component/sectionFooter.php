@@ -1,3 +1,8 @@
+<style>
+    .chat-bubble-user { background: #3b82f6; align-self: flex-end; border-radius: 12px 12px 0 12px; padding: 8px 12px; margin-bottom: 8px; color: white; width: fit-content; max-width: 80%; }
+    .chat-bubble-bot { background: #2a2a2a; align-self: flex-start; border-radius: 12px 12px 12px 0; padding: 8px 12px; margin-bottom: 8px; color: #ddd; width: fit-content; max-width: 80%; }
+</style> 
+
 <section
     class="py-24 px-6 md:px-16 max-w-7xl mx-auto border-t border-neutral-100 grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
     <div class="space-y-3 reveal-target">
@@ -87,5 +92,89 @@
         const chatWindow = document.getElementById('chatWindow');
         const liveChat = document.getElementById('chat');
         if (!chatWindow.contains(e.target) && e.target !== liveChat) chatWindow.classList.add('hidden');
-    })
+    });
+
+const chatWindow = document.getElementById('chatWindow');
+const chatDisplay = chatWindow.querySelector('.overflow-y-auto');
+const chatInput = chatWindow.querySelector('input');
+
+function addMessage(text, sender) {
+    const div = document.createElement('div');
+    div.className = sender === 'user' ? 'chat-bubble-user ml-auto' : 'chat-bubble-bot';
+    div.textContent = text;
+    chatDisplay.appendChild(div);
+    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    return div;
+}
+
+chatInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user');
+        chatInput.value = '';
+        chatInput.disabled = true;
+
+        const botBubble = addMessage('', 'bot');
+
+        try {
+            const proxyResponse = await fetch('../network/llm-proxy.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+
+            if (!proxyResponse.ok) {
+                const errData = await proxyResponse.json();
+                throw new Error(errData.error || "Proxy rejected request");
+            }
+
+            const proxyData = await proxyResponse.json();
+            const { task_id, fastapi_url } = proxyData;
+
+            if (!task_id || !fastapi_url) {
+                throw new Error("Invalid response from proxy");
+            }
+
+            const sseUrl = `${fastapi_url}/stream?task_id=${encodeURIComponent(task_id)}&message=${encodeURIComponent(message)}`;
+            const eventSource = new EventSource(sseUrl);
+
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.token) {
+                    botBubble.textContent += data.token;
+                    chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                }
+
+                if (data.status === 'completed' || data.status === 'error') {
+                    eventSource.close();
+                    chatInput.disabled = false;
+                    chatInput.focus();
+                }
+            };
+
+            eventSource.onerror = (error) => {
+                console.error("SSE Error:", error);
+                eventSource.close();
+                if (!botBubble.textContent) {
+                    botBubble.textContent = "Connect error (SSE).";
+                }
+                chatInput.disabled = false;
+                chatInput.focus();
+            };
+
+        } catch (error) {
+            console.error(error);
+            botBubble.textContent = "System in busy, please try again later.";
+            chatInput.disabled = false;
+            chatInput.focus();
+        }
+    }
+});
+
+function closeChat() {
+    document.getElementById('chatWindow').classList.add('hidden');
+}
 </script>

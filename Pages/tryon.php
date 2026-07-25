@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Virtual Try-On | Luxury Fashion</title>
+    <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
