@@ -1,4 +1,33 @@
+version: '3.8'
+
 services:
+
+  ai_chat_backend:
+    build: 
+      context: .        
+      dockerfile: Dockerfile.cpu 
+    container_name: trinity_chat_container
+    restart: always 
+    depends_on:
+      - trinity_db
+      - trinity_ollama
+      - trinity_redis_ai    
+    command: python AI/llm.py
+    ports:
+      - "5000:5000"
+    environment:
+      - OLLAMA_BASE_URL=http://trinity_ollama:11434
+      - REDIS_AI_HOST=trinity_redis_ai
+      - REDIS_AI_PORT=6379
+      - PYTHONUNBUFFERED=1 
+    volumes:
+      - .:/workspace 
+    working_dir: /workspace
+    networks:          
+      - trinity_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      
   trinity_ollama:
     image: ollama/ollama:latest
     container_name: trinity_ollama_container
@@ -9,45 +38,15 @@ services:
       - ollama_storage:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0
-    devices:
-      - "/dev/kfd:/dev/kfd"
-      - "/dev/dri:/dev/dri"
-    group_add:
-      - "44"
-
-  ai_backend:
-    build: 
-      context: .        
-      dockerfile: Dockerfile.amd
-    container_name: trinity_ai_container
-    restart: always
-    tty: true
-    stdin_open: true
-    privileged: true
-    depends_on:
-      - trinity_db
-      - trinity_ollama
-      - trinity_redis_ai 
-    devices:
-      - "/dev/kfd:/dev/kfd"
-      - "/dev/dri:/dev/dri"
-    group_add:
-      - "44"
-      - "990"
-    command: python AI/generative.py
-    environment:
-      - HSA_OVERRIDE_GFX_VERSION=11.0.0
-      - OLLAMA_BASE_URL=http://trinity_ollama:11434
-      - FLASK_RUN_HOST=0.0.0.0
-      - ROCM_PATH=/opt/rocm
-    volumes:
-      - .:/workspace    
-    working_dir: /workspace
-    networks:          
+      - OLLAMA_NUM_PARALLEL=1
+      - CUDA_VISIBLE_DEVICES=""
+      - HIP_VISIBLE_DEVICES=""
+      - ROCR_VISIBLE_DEVICES=""
+    networks:
       - trinity_net
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
+volumes:
+  ollama_storage:
 
 networks:
   trinity_net:

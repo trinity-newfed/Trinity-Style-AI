@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 import redis
+import requests
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_ollama import ChatOllama
@@ -18,6 +19,9 @@ app = FastAPI(title="Trinity-Style API")
 REDIS_HOST = os.getenv("REDIS_AI_HOST", "trinity_redis_ai")
 REDIS_PORT = int(os.getenv("REDIS_AI_PORT", 6379))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://trinity_ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,13 +46,45 @@ db = SQLDatabase.from_uri(
     sample_rows_in_table_info=3
 )
 
+def check_ollama_model_availability(base_url: str, preferred_model: str) -> str:
+    """
+    Kiểm tra xem model ưu tiên có tồn tại trong Ollama hay không.
+    Nếu không tìm thấy hoặc máy yếu không chạy được, tự động fallback về model nhẹ hơn.
+    """
+py
+    try:
+        response = requests.get(f"{base_url}/api/tags", timeout=3)
+        if response.status_code == 200:
+            models = [m["name"] for m in response.json().get("models", [])]
+            print(f"[*] Các mô hình có sẵn trên Ollama: {models}")
+            
+            if preferred_model in models:
+                return preferred_model
+            
+            fallbacks = ["qwen2.5:3b", "qwen2.5:1.5b", "qwen2.5:0.5b"]
+            for fb in fallbacks:
+                if fb in models:
+                    print(f"[!] Không tìm thấy hoặc không đủ tài nguyên cho {preferred_model}. Fallback về: {fb}")
+                    return fb
+                    
+            if models:
+                print(f"[!] Sử dụng mô hình thay thế khả dụng đầu tiên: {models[0]}")
+                return models[0]
+    except Exception as e:
+        print(f"[!] Không thể kết nối tới Ollama service để kiểm tra model: {e}")
+    
+    return preferred_model
+
+active_model = check_ollama_model_availability(OLLAMA_BASE_URL, OLLAMA_MODEL)
+print(f"[*] Đang khởi tạo ChatOllama với model: {active_model}")
+
 llm = ChatOllama(
-    base_url="http://trinity_ollama:11434", 
-    model="qwen2.5:7b", 
+    base_url=OLLAMA_BASE_URL, 
+    model=active_model, 
     temperature=0
 )
 
-system_prompt = system_prompt = """You are an expert SQL assistant for the fashion store "Trinity-Style".
+system_prompt = """You are an expert SQL assistant for the fashion store "Trinity-Style".
 Your main job is to analyze the user query, generate the correct MySQL query, EXECUTE IT immediately using your database tools, and then present the actual data back to the user.
 
 CRITICAL RULES FOR SQL GENERATION:
@@ -131,10 +167,8 @@ async def stream_ai(
     if not task_info:
         raise HTTPException(status_code=403, detail="Invalid or expired task ID.")
 
-
     async def event_generator():
         try:
-
             response = await run_in_threadpool(agent_executor.invoke, {"input": message})
             final_text = response["output"]
 
