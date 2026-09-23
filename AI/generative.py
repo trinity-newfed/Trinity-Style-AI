@@ -1,29 +1,63 @@
 import os
 import sys
-
-sys.stdout.reconfigure(line_buffering=True)
-
-import io
 import time
+import gc
+import io
 import json
 import base64
-import logging
+import redis
+from pathlib import Path
+
+os.environ["HIP_VISIBLE_DEVICES"] = "1"
+os.environ["HSA_OVERRIDE_GFX_VERSION"] = "11.0.0"
+os.environ["PYTORCH_ROCM_ARCH"] = "gfx1100"
+
+os.environ["PYTORCH_HIP_ALLOC_CONF"] = "expandable_segments:True"
+os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
+os.environ["USE_HIPBLASLT"] = "0"
+os.environ["HSA_ENABLE_SDMA"] = "0"
+os.environ["ROCM_PATH"] = "/opt/rocm"
 
 import torch
 import cv2
 import numpy as np
-from PIL import Image
-import mysql.connector
-import redis
+from PIL import Image, ImageFilter
+
+import torch.backends.cuda
+torch.backends.cuda.enable_flash_sdp(False)
+torch.backends.cuda.enable_mem_efficient_sdp(True)
+torch.backends.cuda.enable_math_sdp(True)
+
 from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation
-from diffusers import ControlNetModel, StableDiffusionControlNetInpaintPipeline
-from dotenv import load_dotenv
+from diffusers import (
+    ControlNetModel,
+    StableDiffusionControlNetInpaintPipeline,
+    DPMSolverMultistepScheduler
+)
 
-load_dotenv()
-print("[*] Loading environment variables from .env...")
+sys.stdout.reconfigure(line_buffering=True)
 
-REDIS_HOST = os.getenv("REDIS_AI_HOST", "trinity_redis_ai")
-REDIS_PORT = int(os.getenv("REDIS_AI_PORT", 6379))
+device = "cuda" if torch.cuda.is_available() else "cpu"
+dtype = torch.float16 if device == "cuda" else torch.float32
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)
+    print(f"[*] Target hardware detected: {device.upper()} - {gpu_name} ({dtype})")
+else:
+    print(f"[*] Target hardware detected: {device.upper()} ({dtype})")
+
+is_nvidia = torch.cuda.is_available() and "nvidia" in torch.cuda.get_device_name(0).lower()
+is_amd = torch.cuda.is_available() and (("amd" in torch.cuda.get_device_name(0).lower()) or (torch.version.hip is not None))
+
+print(f"[*] Optimizing pipeline for: {'NVIDIA' if is_nvidia else 'AMD' if is_amd else 'CPU'}")
+
+# Dynamic IP Mapping
+DEFAULT_REDIS_HOST = "127.0.0.1" if is_amd else "trinity_redis_ai"
+DEFAULT_REDIS_PORT = 6380 if is_amd else 6379
+DEFAULT_DB_HOST = "127.0.0.1" if is_amd else "trinity_db"
+
+REDIS_HOST = os.getenv("REDIS_AI_HOST", DEFAULT_REDIS_HOST)
+REDIS_PORT = int(os.getenv("REDIS_AI_PORT", os.getenv("REDIS_PORT", DEFAULT_REDIS_PORT)))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 PENDING_HASH = "ai_pending_tasks"
 
@@ -42,261 +76,234 @@ def get_redis_client():
         print(f"[X] Critical: Failed to connect to Redis Pool: {e}")
         raise e
 
+def update_redis_status(client, task_id, progress, status):
+    try:
+        client.hset(f"task:{task_id}", mapping={"progress": progress, "status": status})
+    except Exception as e:
+        print(f"[!] Cannot update Redis task progress {task_id}: {e}")
+
+# DB Config
 DB_CONFIG = {
-    "host": "trinity_db",
-    "user": "root",
-    "password": "root_password",
-    "database": "TF_Database",
+    "host": os.getenv("DB_HOST", DEFAULT_DB_HOST),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", "root_password"),
+    "database": os.getenv("DB_NAME", "TF_Database"),
     "connection_timeout": 10
 }
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-dtype = torch.float16 if device == "cuda" else torch.float32
-
-print(f"[*] Target hardware detected: {device.upper()} ({dtype})")
-
-try:
-    seg_model_name = "sayeed99/segformer_b3_clothes"
-    seg_processor = SegformerImageProcessor.from_pretrained(seg_model_name)
-    seg_model = SegformerForSemanticSegmentation.from_pretrained(seg_model_name)
-    seg_model.to(device).eval()
-    print("[✓] Segformer Model loaded successfully.")
-except Exception as e:
-    print(f"[X] Critical: Failed to load Segformer Model: {e}")
-    raise e
-
-try:
-    controlnet = ControlNetModel.from_pretrained("lllyasviel/control_v11p_sd15_canny", torch_dtype=dtype)
-    pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
-        "runwayml/stable-diffusion-v1-5",
-        controlnet=controlnet,
-        torch_dtype=dtype
-    )
-    print("[✓] Stable Diffusion 1.5 & ControlNet Pipeline initialized.")
-except Exception as e:
-    print(f"[X] Critical: Failed to load SD-ControlNet Pipeline: {e}")
-    raise e
-
-# Optimize hardware
-is_nvidia = torch.cuda.is_available() and "nvidia" in torch.cuda.get_device_name(0).lower()
-is_amd = torch.cuda.is_available() and (("amd" in torch.cuda.get_device_name(0).lower()) or (torch.version.hip is not None))
-
-print(f"[*] Optimizing pipeline for: {'NVIDIA' if is_nvidia else 'AMD' if is_amd else 'CPU'}")
-
-print("[*] Setting up Attention Processor...")
-pipe.unet.set_attn_processor(torch.nn.functional.scaled_dot_product_attention)
-
-if is_nvidia:
-    pipe.to(device)
-    pipe.enable_xformers_memory_efficient_attention()
-    
-
-    try:
-        print("[*] Linking IP-Adapter-Plus...")
-        pipe.load_ip_adapter("h94/IP-Adapter", subfolder="models", weight_name="ip-adapter-plus_sd15.safetensors")
-        pipe.set_ip_adapter_scale(1.0)
-    except Exception as e:
-        print(f"[X] Error during IP-Adapter configuration: {e}")
-        raise e
-
-    pipe.enable_model_cpu_offload()
-elif is_amd:
-    print("[*] Linking IP-Adapter...")
-    pipe.load_ip_adapter("h94/IP-Adapter", subfolder="models", weight_name="ip-adapter-plus_sd15.safetensors")
-    pipe.set_ip_adapter_scale(1.0)
-    # pipe.to(device)
-    # pipe.enable_model_cpu_offload()
-    # <4GB Vram Optimize, Please Comment This If Your Hardware Vram Is Greater Than 4GB 
-    pipe.enable_attention_slicing(slice_size="max")
-    pipe.enable_vae_tiling()
-    pipe.enable_sequential_cpu_offload(device=device)
-else:
-    pipe.to("cpu")
-
-pipe.safety_checker = None
-
-
-
-
-def resize_with_padding(img, target_size=(512, 768)):
+def resize_with_padding(img: Image.Image, target_size=(512, 768)):
     w, h = img.size
-    scale = min(target_size[0]/w, target_size[1]/h)
-    new_w, new_h = int(w*scale), int(h*scale)
+    scale = min(target_size[0] / w, target_size[1] / h)
+    new_w, new_h = int(w * scale), int(h * scale)
     img_resized = img.resize((new_w, new_h), Image.LANCZOS)
     new_img = Image.new("RGB", target_size, (0, 0, 0))
-    new_img.paste(img_resized, ((target_size[0]-new_w)//2, (target_size[1]-new_h)//2))
+    paste_x = (target_size[0] - new_w) // 2
+    paste_y = (target_size[1] - new_h) // 2
+    new_img.paste(img_resized, (paste_x, paste_y))
     return new_img
 
-
-def generate_robust_mask(image: Image.Image):
-    """
-    Generate sharper mask, reduce gradient blur
-    """
-    orig_w, orig_h = image.size
-    inputs = seg_processor(images=image, return_tensors="pt").to(device)
+def get_raw_segformer_mask(person_img: Image.Image, seg_processor, seg_model):
+    orig_w, orig_h = person_img.size
+    inputs = seg_processor(images=person_img, return_tensors="pt")
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    
     with torch.no_grad():
         outputs = seg_model(**inputs)
-        upsampled_logits = torch.nn.functional.interpolate(
-            outputs.logits, size=(orig_h, orig_w), mode="bilinear", align_corners=False
-        )
-        pred = upsampled_logits.argmax(dim=1)[0].cpu().numpy()
+        
+    logits = outputs.logits
+    upsampled_logits = torch.nn.functional.interpolate(
+        logits, size=(orig_h, orig_w), mode="bilinear", align_corners=False
+    )
+    pred = upsampled_logits.argmax(dim=1)[0].cpu().numpy()
     
-    mask = np.zeros_like(pred, dtype=np.uint8)
-    mask[(pred == 4) | (pred == 5) | (pred == 6) | (pred == 9)] = 255
-    
-    kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    mask = cv2.erode(mask, kernel_erode, iterations=1)
-    
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_erode)
-    
-    mask = cv2.GaussianBlur(mask, (3, 3), 0)
-    
-    return Image.fromarray(mask)
+    raw_mask = np.zeros_like(pred, dtype=np.uint8)
+    raw_mask[pred == 4] = 255
+    return raw_mask
 
-
-def preprocess_warp_alignment(person_img: Image.Image, cloth_img: Image.Image):
+def process_mask_and_canny(person_img: Image.Image, raw_mask_np: np.ndarray):
     person_np = np.array(person_img)
-    cloth_np = np.array(cloth_img)
     
-    seg_mask = generate_robust_mask(person_img)
-    mask_np = np.array(seg_mask)
+    contours, _ = cv2.findContours(raw_mask_np, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    filled_mask = np.zeros_like(raw_mask_np)
+    cv2.drawContours(filled_mask, contours, -1, 255, thickness=cv2.FILLED)
     
-    y_indices, x_indices = np.where(mask_np > 128)
-    if len(x_indices) > 0 and len(y_indices) > 0:
-        p_min_x, p_max_x = np.min(x_indices), np.max(x_indices)
-        p_min_y, p_max_y = np.min(y_indices), np.max(y_indices)
-        p_width = p_max_x - p_min_x
-        p_height = p_max_y - p_min_y
-        
-        cloth_gray = cv2.cvtColor(cloth_np, cv2.COLOR_RGB2GRAY)
-        _, cloth_thresh = cv2.threshold(cloth_gray, 10, 255, cv2.THRESH_BINARY)
-        cx, cy, cw, ch = cv2.boundingRect(cloth_thresh)
-        cropped_cloth = cloth_np[cy:cy+ch, cx:cx+cw]
+    kernel_dilate = np.ones((13, 13), np.uint8)
+    expanded_mask = cv2.dilate(filled_mask, kernel_dilate, iterations=1)
+    
+    expanded_mask = cv2.GaussianBlur(expanded_mask, (5, 5), 0)
+    _, final_mask_np = cv2.threshold(expanded_mask, 127, 255, cv2.THRESH_BINARY)
+    
+    edges = cv2.Canny(person_np, 50, 150)
+    
+    kernel_erase = np.ones((17, 17), np.uint8)
+    mask_for_erase = cv2.dilate(final_mask_np, kernel_erase, iterations=1)
+    
+    if edges.shape == mask_for_erase.shape:
+        edges[mask_for_erase == 255] = 0
+    else:
+        mask_for_erase = cv2.resize(mask_for_erase, (edges.shape[1], edges.shape[0]), interpolation=cv2.INTER_NEAREST)
+        edges[mask_for_erase == 255] = 0
+    
+    final_mask = Image.fromarray(final_mask_np)
+    canny_image = Image.fromarray(np.stack([edges] * 3, axis=-1))
+    
+    return final_mask, canny_image
 
-        aligned_cloth_segment = cv2.resize(cropped_cloth, (p_width, p_height), interpolation=cv2.INTER_LANCZOS4)
-        
-        warped_cloth = np.zeros_like(cloth_np)
-        warped_cloth[p_min_y:p_max_y, p_min_x:p_max_x] = aligned_cloth_segment
-        
-        mask_expanded = np.expand_dims(mask_np, axis=2) / 255.0
-        blended_np = (warped_cloth * mask_expanded + person_np * (1.0 - mask_expanded)).astype(np.uint8)
-        return Image.fromarray(blended_np), mask_np
-        
-    return person_img, mask_np
-
-
-def update_redis_status(r_client, task_id, progress_percent, status, path=None):
-    try:
-        status_payload = {"status": status, "progress": progress_percent, "result_url": path}
-        r_client.set(f"task_status:{task_id}", json.dumps(status_payload), ex=900)
-    except Exception as e:
-        print(f"[X] Redis Error: {e}")
-
+def restore_face_and_upscale(original_img: Image.Image, generated_img: Image.Image, mask_img: Image.Image, target_size=(1024, 1536)):
+    orig_upscaled = resize_with_padding(original_img, target_size)
+    
+    gen_upscaled = generated_img.resize(target_size, Image.LANCZOS)
+    gen_upscaled = gen_upscaled.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
+    
+    mask_upscaled = mask_img.resize(target_size, Image.LANCZOS).convert("L")
+    mask_blurred = mask_upscaled.filter(ImageFilter.GaussianBlur(radius=7))
+    
+    final_img = Image.composite(gen_upscaled, orig_upscaled, mask_blurred)
+    return final_img
 
 def process_task(r_client, task_data):
     task_id = task_data.get("task_id")
-    user_id = task_data.get("user_id")
-    product_id = task_data.get("product_id")
+    user_id = task_data.get("user_id", "default_user")
     cloth_path_raw = task_data.get("product_img")
-    color = task_data.get("color")
     base64_str = task_data.get("image_base64")
 
     print(f"\n[+] Processing High-Fidelity Task ID: {task_id}")
+    update_redis_status(r_client, task_id, 10, "processing")
+
+    if not base64_str or not cloth_path_raw:
+        print("[X] Missing data base64 from Redis!")
+        update_redis_status(r_client, task_id, 0, "failed")
+        return
+
+    cloth_path = os.path.join("picture-uploads", cloth_path_raw) if not cloth_path_raw.startswith("picture-uploads") else cloth_path_raw
+    
+    script_dir = Path(__file__).resolve().parent
+    project_root = script_dir.parent if script_dir.name == "AI" else script_dir
+    
+    style_image_path = project_root / cloth_path
+    if not style_image_path.exists():
+        print(f"[X] Couldn't locate dir path: {style_image_path}")
+        update_redis_status(r_client, task_id, 0, "failed")
+        return
+
+    output_dir = script_dir / "static" / str(user_id)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     try:
-        if not base64_str or not cloth_path_raw:
-            update_redis_status(r_client, task_id, 0, "failed")
-            return
-
-        cloth_path = os.path.join("picture-uploads", cloth_path_raw) if not cloth_path_raw.startswith("picture-uploads") else cloth_path_raw
-        if not os.path.exists(cloth_path):
-            update_redis_status(r_client, task_id, 0, "failed")
-            return
-
-        if "," in base64_str: base64_str = base64_str.split(",")[1]
+        if "," in base64_str:
+            base64_str = base64_str.split(",")[1]
         
-        person_img_orig = Image.open(io.BytesIO(base64.b64decode(base64_str))).convert("RGB")
-        cloth_img_orig = Image.open(cloth_path).convert("RGB")
+        person_bytes = base64.b64decode(base64_str)
+        person_img = Image.open(io.BytesIO(person_bytes)).convert("RGB")
+    except Exception as e:
+        print(f"[X] Failed to resolve image from Redis: {e}")
+        update_redis_status(r_client, task_id, 0, "failed")
+        return
 
-        inference_size = (512, 768)
-        person_img_low = resize_with_padding(person_img_orig, target_size=inference_size)
-        cloth_img_low = resize_with_padding(cloth_img_orig, target_size=inference_size)
+    try:
+        cloth_img = Image.open(style_image_path).convert("RGB")
+    except Exception as e:
+        print(f"[X] Failed to read at {style_image_path}: {e}")
+        update_redis_status(r_client, task_id, 0, "failed")
+        return
 
-        person_blended, mask_np = preprocess_warp_alignment(person_img_low, cloth_img_low)
+    person_resized = resize_with_padding(person_img, target_size=(512, 768))
+    cloth_resized = resize_with_padding(cloth_img, target_size=(512, 768))
 
-        edges = cv2.Canny(np.array(person_img_low), 50, 150)
-        canny_image = Image.fromarray(np.stack([edges]*3, axis=-1))
+def load_ai_models():
+    global seg_processor, seg_model, controlnet, pipe
 
-        seed = torch.randint(0, 1_000_000, (1,)).item()
-        generator = torch.Generator(device).manual_seed(seed)
+    seg_model_name = "sayeed99/segformer_b3_clothes"
+    seg_processor = SegformerImageProcessor.from_pretrained(seg_model_name)
+    seg_model = SegformerForSemanticSegmentation.from_pretrained(seg_model_name).to(device).eval()
 
-        update_redis_status(r_client, task_id, 40, "processing")
-        
+    controlnet = ControlNetModel.from_pretrained(
+        "lllyasviel/control_v11p_sd15_canny",
+        torch_dtype=dtype
+    )
+
+    pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+        "runwayml/stable-diffusion-inpainting",
+        controlnet=controlnet,
+        torch_dtype=dtype
+    )
+
+    pipe.scheduler = DPMSolverMultistepScheduler.from_config(
+        pipe.scheduler.config,
+        algorithm_type="dpmsolver++",
+        use_karras_sigmas=True
+    )
+
+    pipe.load_ip_adapter(
+        "h94/IP-Adapter",
+        subfolder="models",
+        weight_name="ip-adapter-plus_sd15.bin"
+    )
+    pipe.set_ip_adapter_scale(0.85)
+
+    if device == "cuda":
+        pipe.to("cuda")
+        pipe.enable_vae_slicing()
+
+    pipe.safety_checker = None
+
+    print("[✓] Pipeline Loaded!")
+
+    prompt = "A highly realistic photo of the same person wearing the clothing from the reference image, natural lighting, realistic fabric texture, symmetrical collar, centered zipper, perfect anatomy, high quality"
+    negative_prompt = "color change, faded colors, blurry, distorted body, extra arms, halo, white aura, glowing background, misaligned zipper, messy edges"
+
+    seed = torch.randint(0, 1_000_000, (1,)).item()
+    generator = torch.Generator(device=device).manual_seed(seed)
+
+    print(f"\n[*]Seed: {seed})...")
+    start_time = time.time()
+
+    with torch.inference_mode():
         result = pipe(
-            prompt=f"A highly professional studio fashion catalog photo of a person wearing a symmetrical clean {color} jacket garment item, perfectly fitted to body pose shape, realistic sleeves and elbows folds, accurate zipper closure line, model lookbook, 8k resolution, crisp texture",
-            negative_prompt="crooked zipper, misplaced sleeves, asymmetrical arms, deformed elbows, cut-off torso, blurry anatomy, low fidelity, bad layout, shifted left, shifted right, bad body proportion",
-            image=person_blended,
-            mask_image=Image.fromarray(mask_np),
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            image=person_resized,
+            mask_image=final_mask,
             control_image=canny_image,
-            ip_adapter_image=[cloth_img_low], 
-            num_inference_steps=35,
-            strength=0.75,
-            generator=generator,
-            guidance_scale=7.5
+            ip_adapter_image=cloth_resized, 
+            num_inference_steps=30,
+            strength=1.0,
+            guidance_scale=7.5,
+            controlnet_conditioning_scale=0.6,
+            generator=generator
         )
 
-        final_image_low = result.images[0] if hasattr(result, "images") and result.images is not None else result[0]
-        
-        # Upscale
-        target_high_res = (1024, 1536)
-        person_high_res = resize_with_padding(person_img_orig, target_size=target_high_res)
-        ai_output_high_res = final_image_low.resize(target_high_res, Image.LANCZOS)
-        
-        mask_high_res = generate_robust_mask(person_high_res)
-        mask_high_res_np = np.array(mask_high_res)
-        if mask_high_res_np.ndim == 3: mask_high_res_np = mask_high_res_np[:, :, 0]
+    final_generated_image = result.images[0]
+    perfect_upscaled_image = restore_face_and_upscale(
+        original_img=person_img, 
+        generated_img=final_generated_image, 
+        mask_img=final_mask, 
+        target_size=(1024, 1536)
+    )
 
-        person_hr_np = np.array(person_high_res)
-        ai_hr_np = np.array(ai_output_high_res)
-        
-        alpha = mask_high_res_np.astype(float) / 255.0
-        alpha = np.expand_dims(alpha, axis=2) 
-        
-        composite_np = (ai_hr_np * alpha + person_hr_np * (1.0 - alpha)).astype(np.uint8)
-        final_image = Image.fromarray(composite_np)
+    output_path = output_dir / f"final_result_optimized_{seed}.png"
+    perfect_upscaled_image.save(output_path)
 
-        # Insert 
-        output_dir = os.path.join("static", "outputs", f"user_{user_id}")
-        os.makedirs(output_dir, exist_ok=True)
-        filename = f"output_{seed}.png"
-        output_path = os.path.join(output_dir, filename)
-        relative_web_path = f"outputs/user_{user_id}/{filename}"
-        final_image.save(output_path)
-        print(f"Output at: {output_path}")
-
-        try:
-            db = mysql.connector.connect(**DB_CONFIG)
-            cursor = db.cursor()
-            cursor.execute(
-                "INSERT INTO tryon (user_id, cloth_path, result_img, product_id) VALUES (%s, %s, %s, %s)",
-                (user_id, cloth_path_raw, filename, product_id)
-            )
-            db.commit()
-            cursor.close()
-            db.close()
-            update_redis_status(r_client, task_id, 100, "complete", path=relative_web_path)
-            print(f"{filename} has been insert into the database")
-        except Exception as db_err:
-            update_redis_status(r_client, task_id, 100, "db_error", path=relative_web_path)
-
-    except Exception as e:
-        print(f"[X] Runtime Exception: {e}")
-        update_redis_status(r_client, task_id, 0, "failed")
-
+    update_redis_status(r_client, task_id, 100, "success")
+    print("==================================================")
+    print(f"[✓] Done ({time.time() - start_time:.2f}s)!")
+    print(f"[✓] Path: {output_path}")
+    print("==================================================")
 
 def main():
-    print(f"\n[*] AI CORE ENGINE ONLINE - PERSPECTIVE FIXED V3.0.")
-    try: r = get_redis_client()
-    except: return
+    print(f"\n[*] AI CORE ENGINE ONLINE - PRE-LOADING MODELS...")
+    
+    try:
+        load_ai_models()
+    except Exception as e:
+        print(f"[X] Fatal error with AI pipeline: {e}")
+        return
+
+    try: 
+        r = get_redis_client()
+    except Exception as e: 
+        print(f"[X] Couldn't connect to Redis.")
+        return
 
     while True:
         try:
@@ -306,12 +313,21 @@ def main():
                 continue
             for task_id, raw_payload in tasks.items():
                 if r.hdel(PENDING_HASH, task_id):
-                    process_task(r, json.loads(raw_payload))
+                    try:
+                        task_data = json.loads(raw_payload)
+                        process_task(r, task_data)
+                    except Exception as inner_err:
+                        print(f"[X] Task error {task_id}: {inner_err}")
+                        update_redis_status(r, task_id, 0, "failed")
         except (redis.ConnectionError, redis.TimeoutError):
+            print("[!] Try again after 5s...")
             time.sleep(5)
-            try: r = get_redis_client()
-            except: pass
+            try: 
+                r = get_redis_client()
+            except: 
+                pass
         except KeyboardInterrupt:
+            print("\n[*] Stopping AI Engine.")
             break
 
 if __name__ == "__main__":

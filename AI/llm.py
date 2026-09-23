@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 import redis
+import requests
+import torch
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_ollama import ChatOllama
@@ -18,6 +20,22 @@ app = FastAPI(title="Trinity-Style API")
 REDIS_HOST = os.getenv("REDIS_AI_HOST", "trinity_redis_ai")
 REDIS_PORT = int(os.getenv("REDIS_AI_PORT", 6379))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
+
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://trinity_ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+dtype = torch.float16 if device == "cuda" else torch.float32
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)
+    print(f"[*] Target hardware detected: {device.upper()} - {gpu_name} ({dtype})")
+else:
+    print(f"[*] Target hardware detected: {device.upper()} ({dtype})")
+
+is_nvidia = torch.cuda.is_available() and "nvidia" in torch.cuda.get_device_name(0).lower()
+is_amd = torch.cuda.is_available() and (("amd" in torch.cuda.get_device_name(0).lower()) or (torch.version.hip is not None))
+print(f"[*] Optimizing pipeline for: {'NVIDIA' if is_nvidia else 'AMD' if is_amd else 'CPU'}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,13 +60,44 @@ db = SQLDatabase.from_uri(
     sample_rows_in_table_info=3
 )
 
+def check_ollama_model_availability(base_url: str, preferred_model: str) -> str:
+    """
+    Check if Ollama light models is available.
+    Automatically fallback to lighter model.
+    """
+    try:
+        response = requests.get(f"{base_url}/api/tags", timeout=3)
+        if response.status_code == 200:
+            models = [m["name"] for m in response.json().get("models", [])]
+            print(f"[*] Available models: {models}")
+            
+            if preferred_model in models:
+                return preferred_model
+            
+            fallbacks = ["qwen2.5:3b", "qwen2.5:1.5b", "qwen2.5:0.5b"]
+            for fb in fallbacks:
+                if fb in models:
+                    print(f"[!] {preferred_model} is missing. Fallback: {fb}")
+                    return fb
+                    
+            if models:
+                print(f"[!] Try different model: {models[0]}")
+                return models[0]
+    except Exception as e:
+        print(f"[!] Failed to connect: {e}")
+    
+    return preferred_model
+
+active_model = check_ollama_model_availability(OLLAMA_BASE_URL, OLLAMA_MODEL)
+print(f"[*] Model: {active_model}")
+
 llm = ChatOllama(
-    base_url="http://trinity_ollama:11434", 
-    model="qwen2.5:7b", 
+    base_url=OLLAMA_BASE_URL, 
+    model=active_model, 
     temperature=0
 )
 
-system_prompt = system_prompt = """You are an expert SQL assistant for the fashion store "Trinity-Style".
+system_prompt = """You are an expert SQL assistant for the fashion store "Trinity-Style".
 Your main job is to analyze the user query, generate the correct MySQL query, EXECUTE IT immediately using your database tools, and then present the actual data back to the user.
 
 CRITICAL RULES FOR SQL GENERATION:
@@ -95,10 +144,10 @@ def verify_and_consume_task(task_id: str) -> dict:
     
     try:
         exists = redis_client.exists(redis_key)
-        print(f"DEBUG: Key {redis_key} ton tai? {exists}")
+        print(f"DEBUG: Key {redis_key} exist? {exists}")
         
         task_data = redis_client.get(redis_key)
-        print(f"DEBUG: Data lay duoc: {task_data}")
+        print(f"DEBUG: {task_data}")
     except Exception as e:
         print(f"DEBUG: Redis Error: {e}")
         return None
@@ -116,8 +165,8 @@ def verify_and_consume_task(task_id: str) -> dict:
 
 @app.get("/stream")
 async def stream_ai(
-    task_id: str = Query(..., description="Task ID từ Redis"), 
-    message: str = Query(..., description="Tin nhắn của user")
+    task_id: str = Query(..., description="Task ID from Redis"), 
+    message: str = Query(..., description="User message")
 ):
     if not message.strip() or not task_id.strip():
         raise HTTPException(status_code=400, detail="Missing message or task_id.")
@@ -131,10 +180,8 @@ async def stream_ai(
     if not task_info:
         raise HTTPException(status_code=403, detail="Invalid or expired task ID.")
 
-
     async def event_generator():
         try:
-
             response = await run_in_threadpool(agent_executor.invoke, {"input": message})
             final_text = response["output"]
 

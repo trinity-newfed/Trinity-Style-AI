@@ -4,6 +4,9 @@ vendor/
 node_modules/
 AI/static/
 sd15/
+venv-sd15/
+AI/test_amd_egpu.py
+gdb_trace.log
 __pycache__/
 .env
 .DS_Store
