@@ -7,6 +7,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 import redis
 import requests
+import torch
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_ollama import ChatOllama
@@ -22,6 +23,19 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://trinity_ollama:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+dtype = torch.float16 if device == "cuda" else torch.float32
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)
+    print(f"[*] Target hardware detected: {device.upper()} - {gpu_name} ({dtype})")
+else:
+    print(f"[*] Target hardware detected: {device.upper()} ({dtype})")
+
+is_nvidia = torch.cuda.is_available() and "nvidia" in torch.cuda.get_device_name(0).lower()
+is_amd = torch.cuda.is_available() and (("amd" in torch.cuda.get_device_name(0).lower()) or (torch.version.hip is not None))
+print(f"[*] Optimizing pipeline for: {'NVIDIA' if is_nvidia else 'AMD' if is_amd else 'CPU'}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,15 +62,14 @@ db = SQLDatabase.from_uri(
 
 def check_ollama_model_availability(base_url: str, preferred_model: str) -> str:
     """
-    Kiểm tra xem model ưu tiên có tồn tại trong Ollama hay không.
-    Nếu không tìm thấy hoặc máy yếu không chạy được, tự động fallback về model nhẹ hơn.
+    Check if Ollama light models is available.
+    Automatically fallback to lighter model.
     """
-py
     try:
         response = requests.get(f"{base_url}/api/tags", timeout=3)
         if response.status_code == 200:
             models = [m["name"] for m in response.json().get("models", [])]
-            print(f"[*] Các mô hình có sẵn trên Ollama: {models}")
+            print(f"[*] Available models: {models}")
             
             if preferred_model in models:
                 return preferred_model
@@ -64,19 +77,19 @@ py
             fallbacks = ["qwen2.5:3b", "qwen2.5:1.5b", "qwen2.5:0.5b"]
             for fb in fallbacks:
                 if fb in models:
-                    print(f"[!] Không tìm thấy hoặc không đủ tài nguyên cho {preferred_model}. Fallback về: {fb}")
+                    print(f"[!] {preferred_model} is missing. Fallback: {fb}")
                     return fb
                     
             if models:
-                print(f"[!] Sử dụng mô hình thay thế khả dụng đầu tiên: {models[0]}")
+                print(f"[!] Try different model: {models[0]}")
                 return models[0]
     except Exception as e:
-        print(f"[!] Không thể kết nối tới Ollama service để kiểm tra model: {e}")
+        print(f"[!] Failed to connect: {e}")
     
     return preferred_model
 
 active_model = check_ollama_model_availability(OLLAMA_BASE_URL, OLLAMA_MODEL)
-print(f"[*] Đang khởi tạo ChatOllama với model: {active_model}")
+print(f"[*] Model: {active_model}")
 
 llm = ChatOllama(
     base_url=OLLAMA_BASE_URL, 
@@ -131,10 +144,10 @@ def verify_and_consume_task(task_id: str) -> dict:
     
     try:
         exists = redis_client.exists(redis_key)
-        print(f"DEBUG: Key {redis_key} ton tai? {exists}")
+        print(f"DEBUG: Key {redis_key} exist? {exists}")
         
         task_data = redis_client.get(redis_key)
-        print(f"DEBUG: Data lay duoc: {task_data}")
+        print(f"DEBUG: {task_data}")
     except Exception as e:
         print(f"DEBUG: Redis Error: {e}")
         return None
@@ -152,8 +165,8 @@ def verify_and_consume_task(task_id: str) -> dict:
 
 @app.get("/stream")
 async def stream_ai(
-    task_id: str = Query(..., description="Task ID từ Redis"), 
-    message: str = Query(..., description="Tin nhắn của user")
+    task_id: str = Query(..., description="Task ID from Redis"), 
+    message: str = Query(..., description="User message")
 ):
     if not message.strip() or not task_id.strip():
         raise HTTPException(status_code=400, detail="Missing message or task_id.")

@@ -21,7 +21,7 @@ services:
       - REDIS_AI_PORT=6379
       - PYTHONUNBUFFERED=1 
     volumes:
-      - .:/workspace 
+      - .:/workspace
     working_dir: /workspace
     networks:          
       - trinity_net
@@ -39,9 +39,12 @@ services:
     environment:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_NUM_PARALLEL=1
-      - CUDA_VISIBLE_DEVICES=""
-      - HIP_VISIBLE_DEVICES=""
-      - ROCR_VISIBLE_DEVICES=""
+      - OLLAMA_VULKAN=true
+      - OLLAMA_IGPU_ENABLE=1
+      - GGML_VK_VISIBLE_DEVICES=0
+    devices: 
+      - /dev/kfd:/dev/kfd  
+      - /dev/dri:/dev/dri 
     networks:
       - trinity_net
 
