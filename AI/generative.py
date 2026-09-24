@@ -61,6 +61,11 @@ REDIS_PORT = int(os.getenv("REDIS_AI_PORT", os.getenv("REDIS_PORT", DEFAULT_REDI
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 PENDING_HASH = "ai_pending_tasks"
 
+seg_processor = None
+seg_model = None
+controlnet = None
+pipe = None
+
 def get_redis_client():
     print(f"[*] Connecting to Redis at {REDIS_HOST}:{REDIS_PORT}...")
     try:
@@ -161,55 +166,6 @@ def restore_face_and_upscale(original_img: Image.Image, generated_img: Image.Ima
     final_img = Image.composite(gen_upscaled, orig_upscaled, mask_blurred)
     return final_img
 
-def process_task(r_client, task_data):
-    task_id = task_data.get("task_id")
-    user_id = task_data.get("user_id", "default_user")
-    cloth_path_raw = task_data.get("product_img")
-    base64_str = task_data.get("image_base64")
-
-    print(f"\n[+] Processing High-Fidelity Task ID: {task_id}")
-    update_redis_status(r_client, task_id, 10, "processing")
-
-    if not base64_str or not cloth_path_raw:
-        print("[X] Missing data base64 from Redis!")
-        update_redis_status(r_client, task_id, 0, "failed")
-        return
-
-    cloth_path = os.path.join("picture-uploads", cloth_path_raw) if not cloth_path_raw.startswith("picture-uploads") else cloth_path_raw
-    
-    script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parent if script_dir.name == "AI" else script_dir
-    
-    style_image_path = project_root / cloth_path
-    if not style_image_path.exists():
-        print(f"[X] Couldn't locate dir path: {style_image_path}")
-        update_redis_status(r_client, task_id, 0, "failed")
-        return
-
-    output_dir = script_dir / "static" / str(user_id)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    try:
-        if "," in base64_str:
-            base64_str = base64_str.split(",")[1]
-        
-        person_bytes = base64.b64decode(base64_str)
-        person_img = Image.open(io.BytesIO(person_bytes)).convert("RGB")
-    except Exception as e:
-        print(f"[X] Failed to resolve image from Redis: {e}")
-        update_redis_status(r_client, task_id, 0, "failed")
-        return
-
-    try:
-        cloth_img = Image.open(style_image_path).convert("RGB")
-    except Exception as e:
-        print(f"[X] Failed to read at {style_image_path}: {e}")
-        update_redis_status(r_client, task_id, 0, "failed")
-        return
-
-    person_resized = resize_with_padding(person_img, target_size=(512, 768))
-    cloth_resized = resize_with_padding(cloth_img, target_size=(512, 768))
-
 def load_ai_models():
     global seg_processor, seg_model, controlnet, pipe
 
@@ -249,46 +205,105 @@ def load_ai_models():
 
     print("[✓] Pipeline Loaded!")
 
-    prompt = "A highly realistic photo of the same person wearing the clothing from the reference image, natural lighting, realistic fabric texture, symmetrical collar, centered zipper, perfect anatomy, high quality"
-    negative_prompt = "color change, faded colors, blurry, distorted body, extra arms, halo, white aura, glowing background, misaligned zipper, messy edges"
+def process_task(r_client, task_data):
+    task_id = task_data.get("task_id")
+    user_id = task_data.get("user_id", "default_user")
+    cloth_path_raw = task_data.get("product_img")
+    base64_str = task_data.get("image_base64")
 
-    seed = torch.randint(0, 1_000_000, (1,)).item()
-    generator = torch.Generator(device=device).manual_seed(seed)
+    print(f"\n[+] Processing High-Fidelity Task ID: {task_id}")
+    update_redis_status(r_client, task_id, 10, "processing")
 
-    print(f"\n[*]Seed: {seed})...")
-    start_time = time.time()
+    try:
+        if not base64_str or not cloth_path_raw:
+            print("[X] Missing data base64 from Redis!")
+            update_redis_status(r_client, task_id, 0, "failed")
+            return
 
-    with torch.inference_mode():
-        result = pipe(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            image=person_resized,
-            mask_image=final_mask,
-            control_image=canny_image,
-            ip_adapter_image=cloth_resized, 
-            num_inference_steps=30,
-            strength=1.0,
-            guidance_scale=7.5,
-            controlnet_conditioning_scale=0.6,
-            generator=generator
+        cloth_path = os.path.join("picture-uploads", cloth_path_raw) if not cloth_path_raw.startswith("picture-uploads") else cloth_path_raw
+        
+        script_dir = Path(__file__).resolve().parent
+        project_root = script_dir.parent if script_dir.name == "AI" else script_dir
+        
+        style_image_path = project_root / cloth_path
+        if not style_image_path.exists():
+            print(f"[X] Couldn't locate dir path: {style_image_path}")
+            update_redis_status(r_client, task_id, 0, "failed")
+            return
+
+        output_dir = script_dir / "static" / str(user_id)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        try:
+            if "," in base64_str:
+                base64_str = base64_str.split(",")[1]
+            
+            person_bytes = base64.b64decode(base64_str)
+            person_img = Image.open(io.BytesIO(person_bytes)).convert("RGB")
+        except Exception as e:
+            print(f"[X] Failed to resolve image from Redis: {e}")
+            update_redis_status(r_client, task_id, 0, "failed")
+            return
+
+        try:
+            cloth_img = Image.open(style_image_path).convert("RGB")
+        except Exception as e:
+            print(f"[X] Failed to read at {style_image_path}: {e}")
+            update_redis_status(r_client, task_id, 0, "failed")
+            return
+
+        person_resized = resize_with_padding(person_img, target_size=(512, 768))
+        cloth_resized = resize_with_padding(cloth_img, target_size=(512, 768))
+
+        raw_mask_np = get_raw_segformer_mask(person_resized, seg_processor, seg_model)
+        final_mask, canny_image = process_mask_and_canny(person_resized, raw_mask_np)
+
+        prompt = "A highly realistic photo of the same person wearing the clothing from the reference image, natural lighting, realistic fabric texture, symmetrical collar, centered zipper, perfect anatomy, high quality"
+        negative_prompt = "color change, faded colors, blurry, distorted body, extra arms, halo, white aura, glowing background, misaligned zipper, messy edges"
+
+        seed = torch.randint(0, 1_000_000, (1,)).item()
+        generator = torch.Generator(device=device).manual_seed(seed)
+
+        print(f"\n[*] Generating with Seed: {seed}...")
+        start_time = time.time()
+
+        with torch.inference_mode():
+            result = pipe(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                image=person_resized,
+                mask_image=final_mask,
+                control_image=canny_image,
+                ip_adapter_image=cloth_resized, 
+                num_inference_steps=35,
+                strength=1.0,
+                guidance_scale=7.5,
+                controlnet_conditioning_scale=0.6,
+                generator=generator
+            )
+
+        final_generated_image = result.images[0]
+        perfect_upscaled_image = restore_face_and_upscale(
+            original_img=person_img, 
+            generated_img=final_generated_image, 
+            mask_img=final_mask, 
+            target_size=(1024, 1536)
         )
 
-    final_generated_image = result.images[0]
-    perfect_upscaled_image = restore_face_and_upscale(
-        original_img=person_img, 
-        generated_img=final_generated_image, 
-        mask_img=final_mask, 
-        target_size=(1024, 1536)
-    )
+        output_path = output_dir / f"final_result_optimized_{seed}.png"
+        perfect_upscaled_image.save(output_path)
 
-    output_path = output_dir / f"final_result_optimized_{seed}.png"
-    perfect_upscaled_image.save(output_path)
+        update_redis_status(r_client, task_id, 100, "success")
+        print("==================================================")
+        print(f"[✓] Done ({time.time() - start_time:.2f}s)!")
+        print(f"[✓] Path: {output_path}")
+        print("==================================================")
 
-    update_redis_status(r_client, task_id, 100, "success")
-    print("==================================================")
-    print(f"[✓] Done ({time.time() - start_time:.2f}s)!")
-    print(f"[✓] Path: {output_path}")
-    print("==================================================")
+    finally:
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
 
 def main():
     print(f"\n[*] AI CORE ENGINE ONLINE - PRE-LOADING MODELS...")
