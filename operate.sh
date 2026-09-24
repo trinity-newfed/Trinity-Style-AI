@@ -113,6 +113,19 @@ run_build() {
     echo -e "${PURPLE}--> Running services...${NC}"
     docker compose $COMPOSE_FILES up -d
 
+    echo -e "${PURPLE}--> Waiting for MySQL to be ready...${NC}"
+    until docker exec trinity_mysql_container mysqladmin ping -h localhost -uroot -proot_password --silent; do
+        sleep 2
+    done
+
+    echo -e "${PURPLE}--> Granting SELECT privileges to chat-agent-support...${NC}"
+    docker exec -i trinity_mysql_container mysql -u root -proot_password <<EOF
+CREATE USER IF NOT EXISTS 'chat-agent-support'@'%' IDENTIFIED BY 'chatagent123';
+GRANT SELECT ON tf_database.* TO 'chat-agent-support'@'%';
+FLUSH PRIVILEGES;
+EOF
+    echo -e "${GREEN}--> Granted privileges successfully!${NC}"
+
     if [ "$IS_AMD" = true ]; then
         echo -e "${PURPLE}--> Initializing AMD Native Host Environment (amd.sh)...${NC}"
         if [ -f "./amd.sh" ]; then
