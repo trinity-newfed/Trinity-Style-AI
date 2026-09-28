@@ -41,10 +41,48 @@
         <section
             class="lg:col-span-7 bg-zinc-900/40 border border-zinc-800 rounded-2xl p-3.5 sm:p-5 md:p-6 flex flex-col gap-4 lg:sticky lg:top-24">
 
-            <div
-                class="relative aspect-[3/4] max-h-[65vh] sm:max-h-[75vh] lg:max-h-none w-full bg-zinc-950 rounded-xl overflow-hidden group flex items-center justify-center border border-zinc-800/80">
-                <img id="main-preview" src="" alt="AI Try On Model"
-                    class="w-full h-full object-cover transition-opacity duration-300">
+            <div id="slider-container" class="relative aspect-[3/4] max-h-[65vh] sm:max-h-[75vh] lg:max-h-none w-full bg-zinc-950 rounded-xl overflow-hidden group flex items-center justify-center border border-zinc-800/80 select-none">
+                <div id="progressContainer" class="relative hidden w-40 h-40 flex items-center justify-center z-[3]">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle
+                        cx="50"
+                        cy="50"
+                        r="20"
+                        stroke-width="8"
+                        class="text-zinc-800 stroke-current fill-none"
+                        />
+                        <circle
+                        id="progress-circle"
+                        cx="50"
+                        cy="50"
+                        r="20"
+                        stroke-width="8"
+                        stroke-dasharray="125.66"
+                        stroke-dashoffset="125.66"
+                        stroke-linecap="round"
+                        class="text-indigo-500 stroke-current fill-none transition-all duration-500 ease-out"
+                        />
+                    </svg>
+
+                    <div class="absolute flex items-center justify-center">
+                        <span id="progress-text" class="text-1xl font-bold text-white">0%</span>
+                    </div>
+                </div>
+
+                <img id="main-preview" src="" 
+                    class="absolute inset-0 w-full h-full object-cover z-[2]"/>
+
+                <img id="sub-preview" src="" 
+                    class="absolute z-[1] inset-0 w-full h-full object-cover z-[1] opacity-0" /> 
+
+                <input type="range" min="0" max="100" value="0" id="slider" 
+                    class="absolute inset-0 w-full h-full opacity-0 z-[4] cursor-ew-resize" />
+
+                <div id="slider-line" class="absolute top-0 bottom-0 z-[3] w-0.5 bg-white pointer-events-none right-0 -translate-x-1/2 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-zinc-800 text-sm font-bold border border-zinc-200">
+                        ↔
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 gap-3">
@@ -104,6 +142,16 @@
                     <a class="text-sky-400 hover:underline" href="../legal/ai-usage-policy.php" target="_blank"
                         rel="noopener noreferrer">AI Usage Policy</a> for detailed guidance prior to use.
                 </div>
+            </div>
+
+            <div class="flex items-start gap-3 rounded-xl border border-neutral-800 bg-neutral-900/60 p-3.5 text-xs text-neutral-300 backdrop-blur-md shadow-sm">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z" />
+                </svg>
+    
+                <p class="leading-relaxed">
+                    <span class="font-medium text-white">For best results:</span> Upload a clear, <span class="text-white underline underline-offset-2 decoration-neutral-600">full-body photo</span>. AI try-on is a preview and may have minor imperfections.
+                </p>
             </div>
 
             <div class="border-t border-zinc-800/80 pt-5 sm:pt-6 flex flex-col gap-3 pb-6 lg:pb-0">

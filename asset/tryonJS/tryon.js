@@ -37,28 +37,12 @@ otherProduct.forEach(product => {
 
 //Img Main
 const img = document.getElementById("main-preview");
+const subImg = document.getElementById("sub-preview");
 
 img.src = document.querySelector(".activeColor").dataset.path;
 
-const variantBtn = document.querySelectorAll(".variantBtn");
-
-if (variantBtn) {
-    variantBtn.forEach(btn => {
-        btn.addEventListener('click', function () {
-            variantBtn.forEach(btn => {
-                btn.classList.remove("activeColor");
-                btn.classList.add("border-zinc-800");
-            });
-            const src = this.dataset.path;
-
-            this.classList.add("activeColor");
-            this.classList.remove("border-zinc-800");
-            img.src = src;
-        });
-    });
-}
-
 //Upload Img
+let subImgStatus = false;
 const uploadInput = document.getElementById('uploadInput');
 
 function handleImageUpload(inputSelector, imgSelector) {
@@ -96,8 +80,52 @@ if (uploadInput && img) {
         const file = event.target.files[0];
 
         if (file && file.type.startsWith('image/')) {
+            if(img.src !== null && !subImgStatus) subImg.src = img.src;
+            subImg.classList.remove("opacity-0");
             img.src = URL.createObjectURL(file);
+
+            document.getElementById("slider-line").classList.remove("right-0");
+            document.getElementById("slider-line").classList.add("left-0");
+
+            subImgStatus = true;
         }
+    });
+}
+
+//Variant Img Update
+const variantBtn = document.querySelectorAll(".variantBtn");
+
+if (variantBtn) {
+
+    variantBtn.forEach(btn => {
+        btn.addEventListener('click', function () {
+            variantBtn.forEach(btn => {
+                btn.classList.remove("activeColor");
+                btn.classList.add("border-zinc-800");
+            });
+            const src = this.dataset.path;
+
+            this.classList.add("activeColor");
+            this.classList.remove("border-zinc-800");
+
+            if(!subImgStatus) img.src = src;
+            subImg.src = src;
+        });
+    });
+}
+
+//Slider
+const slider = document.getElementById('slider');
+const mainPreview = document.getElementById('main-preview');
+const sliderLine = document.getElementById('slider-line');
+
+if(uploadInput) {
+    slider.addEventListener('input', (e) => {
+        const value = e.target.value;
+    
+        mainPreview.style.clipPath = `inset(0 ${100 - value}% 0 0)`;
+    
+        sliderLine.style.left = `${value}%`;
     });
 }
 
@@ -105,6 +133,26 @@ if (uploadInput && img) {
 const tryonBtn = document.querySelector(".tryonBtn");
 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
 const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+const progressContainer = document.getElementById("progressContainer");
+const circle = document.getElementById('progress-circle');
+const text = document.getElementById('progress-text');
+const CIRCUMFERENCE = 125.66;
+
+function resetProgress() {
+    img.classList.replace("blur-[0]", "blur-[5px]");
+    text.innerText = "0%";
+    circle.style.strokeDashoffset = 360;
+}
+
+function setProgress(percent) {  
+  const clampedPercent = Math.min(100, Math.max(0, percent));
+  
+  const offset = CIRCUMFERENCE - (clampedPercent / 100) * CIRCUMFERENCE;
+
+  circle.style.strokeDashoffset = offset;
+  text.innerText = `${Math.round(clampedPercent)}%`;
+}
 
 function listenTaskProgress(taskId, onComplete) {
     const mainPreview = document.getElementById('main-preview');
@@ -126,10 +174,8 @@ function listenTaskProgress(taskId, onComplete) {
             }
 
             if (task.status === 'pending' || task.status === 'processing') {
-                console.log(`AI Progress: ${task.progress}% - Status: ${task.status}`);
-                if (tryonBtn) {
-                    tryonBtn.innerHTML = `<span>Processing AI (${task.progress}%)...</span>`;
-                }
+                resetProgress();
+                setProgress(task.progress);
             }
             
             else if (task.status === 'complete') {
@@ -137,7 +183,10 @@ function listenTaskProgress(taskId, onComplete) {
                 console.log("[✓] Tryon completed successfully!");
 
                 if (mainPreview && task.result_url) {
-                    mainPreview.src = `/static/${task.result_url}`; 
+                    mainPreview.src = `../AI/static/${task.result_url}`; 
+                    mainPreview.style.display = 'block';
+                    progressContainer.classList.add("hidden");
+                    img.classList.replace("blur-[5px]", "blur-[0]");
                 }
 
                 if (onComplete) onComplete();
@@ -162,6 +211,10 @@ if (tryonBtn) {
     tryonBtn.addEventListener('click', async function () {
         const uploadInput = document.getElementById('uploadInput');
         const file = uploadInput?.files[0];
+
+        progressContainer.classList.remove("hidden");
+        img.classList.add("blur-[5px]");
+        resetProgress();
 
         if (!file) {
             alert("Please upload your image before proceed!");

@@ -1,4 +1,7 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
+
 include "host.php";
 header('Content-Type: application/json; charset=utf-8');
 
@@ -13,7 +16,7 @@ $taskId = $_GET['task_id'] ?? null;
 
 if (!$taskId) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Thiếu tham số task_id.']);
+    echo json_encode(['success' => false, 'message' => 'Task id required!']);
     exit;
 }
 
@@ -32,8 +35,15 @@ try {
     $rawStatus = $redis->get("task_status:{$taskId}");
 
     if (!$rawStatus) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Không tìm thấy tiến trình hoặc đã quá hạn.']);
+        http_response_code(200); 
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'status' => 'pending',
+                'progress' => 0,
+                'message' => 'Waiting...'
+            ]
+        ]);
         exit;
     }
 
@@ -42,7 +52,7 @@ try {
     echo json_encode([
         'success' => true,
         'data' => [
-            'status' => $statusData['status'] ?? 'unknown',
+            'status' => $statusData['status'] ?? 'pending',
             'progress' => $statusData['progress'] ?? 0,
             'result_url' => $statusData['result_url'] ?? null,
             'message' => $statusData['message'] ?? ''
@@ -52,6 +62,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Lỗi kết nối Redis: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Redis Error: ' . $e->getMessage()]);
     exit;
 }

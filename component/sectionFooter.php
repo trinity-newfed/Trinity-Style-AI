@@ -1,6 +1,25 @@
 <style>
     .chat-bubble-user { background: #3b82f6; align-self: flex-end; border-radius: 12px 12px 0 12px; padding: 8px 12px; margin-bottom: 8px; color: white; width: fit-content; max-width: 80%; }
     .chat-bubble-bot { background: #2a2a2a; align-self: flex-start; border-radius: 12px 12px 12px 0; padding: 8px 12px; margin-bottom: 8px; color: #ddd; width: fit-content; max-width: 80%; }
+    @layer utilities {
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #18181b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #3f3f46 #18181b;
+        }
+    }
 </style> 
 
 <section
@@ -66,8 +85,9 @@
             </button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto text-white/60 text-xs font-light custom-scrollbar">
+        <div class="flex-1 p-4 overflow-y-auto text-white/60 text-xs font-light custom-scrollbar relative">
             <p class="mb-2">How can we assist your journey today?</p>
+            <span class="text-white/10 text-xs font-light bottom-0">AI Assistant may generate inaccurate information. Please verify product details and pricing prior to checkout.</span>
         </div>
 
         <div class="p-3 border-t border-white/10 bg-[#1a1a1a] pb-safe">
