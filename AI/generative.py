@@ -61,6 +61,10 @@ REDIS_PORT = int(os.getenv("REDIS_AI_PORT", os.getenv("REDIS_PORT", DEFAULT_REDI
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 PENDING_HASH = "ai_pending_tasks"
 
+TOTAL_STEPS = 30
+current_task_id = None
+r_client_global = None
+
 seg_processor = None
 seg_model = None
 controlnet = None
@@ -81,9 +85,19 @@ def get_redis_client():
         print(f"[X] Critical: Failed to connect to Redis Pool: {e}")
         raise e
 
-def update_redis_status(client, task_id, progress, status):
+def update_redis_status(client, task_id, progress, status, result_url="", message=""):
     try:
-        client.hset(f"task:{task_id}", mapping={"progress": progress, "status": status})
+        if status == "success":
+            status = "complete"
+
+        payload = json.dumps({
+            "status": status,
+            "progress": progress,
+            "result_url": result_url,
+            "message": message
+        })
+        
+        client.set(f"task_status:{task_id}", payload, ex=3600)
     except Exception as e:
         print(f"[!] Cannot update Redis task progress {task_id}: {e}")
 
@@ -195,7 +209,7 @@ def load_ai_models():
         subfolder="models",
         weight_name="ip-adapter-plus_sd15.bin"
     )
-    pipe.set_ip_adapter_scale(0.85)
+    pipe.set_ip_adapter_scale(0.9)
 
     if device == "cuda":
         pipe.to("cuda")
@@ -205,19 +219,41 @@ def load_ai_models():
 
     print("[✓] Pipeline Loaded!")
 
+def step_callback(pipe, step_index, timestep, callback_kwargs):
+    global current_task_id, r_client_global
+    
+    if current_task_id and r_client_global:
+        current_step = step_index + 1
+        progress_percent = int(30 + (current_step / TOTAL_STEPS) * 55)
+        
+        update_redis_status(
+            r_client_global, 
+            current_task_id, 
+            progress_percent, 
+            "processing", 
+            message=f"({current_step}/{TOTAL_STEPS} steps)..."
+        )
+    
+    return callback_kwargs
+
 def process_task(r_client, task_data):
+    global current_task_id, r_client_global
+    
     task_id = task_data.get("task_id")
     user_id = task_data.get("user_id", "default_user")
     cloth_path_raw = task_data.get("product_img")
     base64_str = task_data.get("image_base64")
 
+    current_task_id = task_id
+    r_client_global = r_client
+
     print(f"\n[+] Processing High-Fidelity Task ID: {task_id}")
-    update_redis_status(r_client, task_id, 10, "processing")
+    update_redis_status(r_client, task_id, 10, "processing", message="Processing...")
 
     try:
         if not base64_str or not cloth_path_raw:
             print("[X] Missing data base64 from Redis!")
-            update_redis_status(r_client, task_id, 0, "failed")
+            update_redis_status(r_client, task_id, 0, "failed", message="Input image is missing...")
             return
 
         cloth_path = os.path.join("picture-uploads", cloth_path_raw) if not cloth_path_raw.startswith("picture-uploads") else cloth_path_raw
@@ -228,7 +264,7 @@ def process_task(r_client, task_data):
         style_image_path = project_root / cloth_path
         if not style_image_path.exists():
             print(f"[X] Couldn't locate dir path: {style_image_path}")
-            update_redis_status(r_client, task_id, 0, "failed")
+            update_redis_status(r_client, task_id, 0, "failed", message="Can not find image path")
             return
 
         output_dir = script_dir / "static" / str(user_id)
@@ -242,14 +278,14 @@ def process_task(r_client, task_data):
             person_img = Image.open(io.BytesIO(person_bytes)).convert("RGB")
         except Exception as e:
             print(f"[X] Failed to resolve image from Redis: {e}")
-            update_redis_status(r_client, task_id, 0, "failed")
+            update_redis_status(r_client, task_id, 0, "failed", message="Image base64 error")
             return
 
         try:
             cloth_img = Image.open(style_image_path).convert("RGB")
         except Exception as e:
             print(f"[X] Failed to read at {style_image_path}: {e}")
-            update_redis_status(r_client, task_id, 0, "failed")
+            update_redis_status(r_client, task_id, 0, "failed", message="Input error!")
             return
 
         person_resized = resize_with_padding(person_img, target_size=(512, 768))
@@ -275,11 +311,13 @@ def process_task(r_client, task_data):
                 mask_image=final_mask,
                 control_image=canny_image,
                 ip_adapter_image=cloth_resized, 
-                num_inference_steps=35,
+                num_inference_steps=TOTAL_STEPS,
                 strength=1.0,
                 guidance_scale=7.5,
                 controlnet_conditioning_scale=0.6,
-                generator=generator
+                generator=generator,
+                callback_on_step_end=step_callback,
+                callback_on_step_end_tensor_inputs=["latents"]
             )
 
         final_generated_image = result.images[0]
@@ -290,14 +328,22 @@ def process_task(r_client, task_data):
             target_size=(1024, 1536)
         )
 
-        output_path = output_dir / f"final_result_optimized_{seed}.png"
+        file_name = f"final_result_optimized_{seed}.png"
+        output_path = output_dir / file_name
         perfect_upscaled_image.save(output_path)
 
-        update_redis_status(r_client, task_id, 100, "success")
+        relative_result_url = f"{user_id}/{file_name}"
+
+        update_redis_status(r_client, task_id, 100, "complete", result_url=relative_result_url, message="Done!")
+
         print("==================================================")
         print(f"[✓] Done ({time.time() - start_time:.2f}s)!")
         print(f"[✓] Path: {output_path}")
         print("==================================================")
+
+    except Exception as e:
+        print(f"[X] Unexpected Error Task {task_id}: {e}")
+        update_redis_status(r_client, task_id, 0, "failed", message=str(e))
 
     finally:
         gc.collect()
@@ -324,7 +370,7 @@ def main():
         try:
             tasks = r.hgetall(PENDING_HASH)
             if not tasks:
-                time.sleep(1)
+                time.sleep(2)
                 continue
             for task_id, raw_payload in tasks.items():
                 if r.hdel(PENDING_HASH, task_id):
