@@ -173,6 +173,7 @@ if (modal) {
 
 //Add cart
 let isAddingToCart = false;
+const cartNum = document.getElementById("cartNumber");
 
 if (modalAddCart) {
     modalAddCart.addEventListener('click', function (e) {
@@ -190,6 +191,7 @@ if (modalAddCart) {
                 if (data.status == "success") {
                     Toast();
                     modal.style.display = "none";
+                    cartNum.innerText = data.quantity;
                 } else if (data.status == "failed" && data.redirect == "true") {
                     window.location.replace(data.href);
                 } else alert(data.message);

@@ -41,6 +41,7 @@ $stock = $product['product_stock'] ?? 0;
 $conn->execute_query("INSERT INTO cart (user_id, product_id, product_category, product_color, cart_size, quantity)
                       VALUES (?, ?, ?, ?, ?, ?)
                       ON DUPLICATE KEY UPDATE quantity = IF(quantity + ? <= ?, quantity + ?, ?)", [$userID, $product_id, $product_category, $product_color, $cart_size, $quantity, $quantity, $stock, $quantity, $stock]);
+require "../component/cartItem.php";
 
 if ($conn->affected_rows === 0) {
     echo json_encode([
@@ -50,7 +51,8 @@ if ($conn->affected_rows === 0) {
 } else {
     echo json_encode([
         "status" => "success",
-        "message" => "Item successfully added to bag."
+        "message" => "Item successfully added to bag.",
+        "quantity" => $noti
     ]);
 }
 exit();
