@@ -124,7 +124,7 @@ agent_executor = create_sql_agent(
     agent_type="zero-shot-react-description",
     extra_tools=fast_tools,
     prefix=react_prefix,
-    max_iterations=4,
+    max_iterations=6,
     early_stopping_method="force",
     verbose=False
 )
