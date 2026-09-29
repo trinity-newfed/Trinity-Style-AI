@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRINITY — Size & Fit Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #fafafa;
+      color: #171717;
+    }
+
+    .font-serif-editorial {
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .border-subtle {
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+
+<body class="bg-[#fafafa] text-neutral-900 antialiased selection:bg-black selection:text-white">
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+
+    <header class="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+      <span class="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-medium block mb-3">Customer Care</span>
+      <h1 class="text-3xl md:text-5xl font-serif-editorial font-light tracking-wide uppercase text-neutral-900 mb-4">
+        Size & Fit Guide
+      </h1>
+      <p class="text-xs md:text-sm text-neutral-500 font-light tracking-wide leading-relaxed">
+        Our garments are engineered for a contemporary structured fit. Use this guide to determine your ideal TRINITY silhouette.
+      </p>
+    </header>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pb-6 mb-10 border-b border-subtle">
+      
+      <div class="flex items-center space-x-1 sm:space-x-2 bg-neutral-100 p-1 rounded-full text-xs uppercase tracking-widest font-medium">
+        <button id="tab-tops" onclick="switchCategory('tops')" class="px-5 py-2.5 rounded-full bg-white text-black shadow-sm transition-all">
+          Tops & Jackets
+        </button>
+        <button id="tab-bottoms" onclick="switchCategory('bottoms')" class="px-5 py-2.5 rounded-full text-neutral-500 hover:text-black transition-all">
+          Trousers & Skirts
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs uppercase tracking-wider text-neutral-400 font-medium">Unit:</span>
+        <div class="inline-flex border border-neutral-300 rounded-sm p-0.5 text-xs uppercase font-medium tracking-wider">
+          <button id="unit-cm" onclick="switchUnit('cm')" class="px-3 py-1 bg-black text-white transition-all">CM</button>
+          <button id="unit-in" onclick="switchUnit('in')" class="px-3 py-1 text-neutral-500 hover:text-black transition-all">IN</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+
+      <div class="lg:col-span-5 bg-white p-8 md:p-10 border border-subtle shadow-sm flex flex-col items-center relative">
+        <span class="text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-semibold mb-6 block w-full text-left">
+          Measurement Diagram
+        </span>
+
+        <div class="relative w-full max-w-[260px] py-4">
+          <svg viewBox="0 0 200 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto text-neutral-800">
+            <path d="M100 20 C108 20 114 26 114 34 C114 42 108 48 100 48 C92 48 86 42 86 34 C86 26 92 20 100 20 Z" stroke="#171717" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M100 48 L100 60 M86 60 C70 62 55 75 50 95 L40 180 C39 188 44 192 48 190 L56 120 L60 230 C60 235 65 240 70 240 L78 240 L80 390 C80 398 88 400 92 400 L98 400 L98 220 L102 220 L102 400 L108 400 C112 400 120 398 120 390 L122 240 L130 240 C135 240 140 235 140 230 L144 120 L152 190 C156 192 161 188 160 180 L150 95 C145 75 130 62 114 60 Z" stroke="#d4d4d4" stroke-width="1.2" stroke-linejoin="round"/>
+            
+            <line x1="50" y1="72" x2="150" y2="72" stroke="#171717" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle cx="50" cy="72" r="2.5" fill="#171717"/>
+            <circle cx="150" cy="72" r="2.5" fill="#171717"/>
+            
+            <line x1="52" y1="108" x2="148" y2="108" stroke="#171717" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle cx="52" cy="108" r="2.5" fill="#171717"/>
+            <circle cx="148" cy="108" r="2.5" fill="#171717"/>
+
+            <line x1="64" y1="155" x2="136" y2="155" stroke="#171717" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle cx="64" cy="155" r="2.5" fill="#171717"/>
+            <circle cx="136" cy="155" r="2.5" fill="#171717"/>
+
+            <line x1="58" y1="205" x2="142" y2="205" stroke="#171717" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle cx="58" cy="205" r="2.5" fill="#171717"/>
+            <circle cx="142" cy="205" r="2.5" fill="#171717"/>
+          </svg>
+
+          <div class="absolute top-[16%] -right-2 sm:-right-6 text-[10px] tracking-widest uppercase font-medium bg-white px-2 py-0.5 border border-neutral-200">
+            A. Shoulder
+          </div>
+          <div class="absolute top-[25%] -left-2 sm:-left-6 text-[10px] tracking-widest uppercase font-medium bg-white px-2 py-0.5 border border-neutral-200">
+            B. Chest
+          </div>
+          <div class="absolute top-[36%] -right-2 sm:-right-6 text-[10px] tracking-widest uppercase font-medium bg-white px-2 py-0.5 border border-neutral-200">
+            C. Waist
+          </div>
+          <div class="absolute top-[48%] -left-2 sm:-left-6 text-[10px] tracking-widest uppercase font-medium bg-white px-2 py-0.5 border border-neutral-200">
+            D. Hips
+          </div>
+        </div>
+
+        <p class="text-[11px] text-neutral-400 text-center tracking-wide mt-6">
+          * Measurements refer to body dimensions rather than garment dimensions.
+        </p>
+      </div>
+
+      <div class="lg:col-span-7 space-y-10">
+        
+        <div class="bg-white border border-subtle overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-neutral-50 border-b border-subtle text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">
+                  <th class="py-4 px-5">Size</th>
+                  <th class="py-4 px-5">Shoulder (A)</th>
+                  <th class="py-4 px-5">Chest (B)</th>
+                  <th id="col-dynamic-1" class="py-4 px-5">Waist (C)</th>
+                  <th id="col-dynamic-2" class="py-4 px-5">Hips (D)</th>
+                </tr>
+              </thead>
+              <tbody id="size-table-body" class="divide-y divide-neutral-100 text-xs tracking-wider text-neutral-700">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <h3 class="text-xs uppercase tracking-[0.25em] font-semibold text-neutral-900 border-b border-subtle pb-3">
+            How to Measure
+          </h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs leading-relaxed text-neutral-600 font-light">
+            <div>
+              <span class="font-medium text-neutral-900 block mb-1">A. Shoulder Width</span>
+              Measure across the back from the tip of one shoulder bone to the other.
+            </div>
+            <div>
+              <span class="font-medium text-neutral-900 block mb-1">B. Chest / Bust</span>
+              Measure around the fullest part of your chest, keeping the tape horizontal.
+            </div>
+            <div>
+              <span class="font-medium text-neutral-900 block mb-1">C. Natural Waist</span>
+              Measure around your narrowest waistline (typically where your body bends side to side).
+            </div>
+            <div>
+              <span class="font-medium text-neutral-900 block mb-1">D. Hips</span>
+              Stand with feet together and measure around the fullest part of your hips.
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-neutral-900 text-white p-6 sm:p-8 rounded-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.25em] text-amber-400 font-semibold block mb-1">Fit Recommendation</span>
+            <p class="text-xs text-neutral-300 tracking-wide font-light max-w-md">
+              TRINITY pieces are tailored with a relaxed, architectural fall. If you are between sizes, we recommend taking your true size for the intended silhouette.
+            </p>
+          </div>
+          <a href="mailto:support@trinity.com" class="text-xs uppercase tracking-widest border-b border-white hover:text-neutral-300 hover:border-neutral-300 transition-colors shrink-0 pt-2 sm:pt-0">
+            Stylist Assistance &rarr;
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const sizeData = {
+      tops: {
+        cm: [
+          { size: "S", shoulder: "43 - 45", chest: "88 - 92", waist: "74 - 78", sleeve: "61 - 62" },
+          { size: "M", shoulder: "45 - 47", chest: "93 - 98", waist: "79 - 84", sleeve: "62 - 63" },
+          { size: "L", shoulder: "47 - 49", chest: "99 - 104", waist: "85 - 90", sleeve: "63 - 64" },
+          { size: "XL", shoulder: "49 - 51", chest: "105 - 110", waist: "91 - 96", sleeve: "64 - 65" }
+        ],
+        in: [
+          { size: "S", shoulder: "16.9 - 17.7", chest: "34.6 - 36.2", waist: "29.1 - 30.7", sleeve: "24.0 - 24.4" },
+          { size: "M", shoulder: "17.7 - 18.5", chest: "36.6 - 38.6", waist: "31.1 - 33.1", sleeve: "24.4 - 24.8" },
+          { size: "L", shoulder: "18.5 - 19.3", chest: "39.0 - 40.9", waist: "33.5 - 35.4", sleeve: "24.8 - 25.2" },
+          { size: "XL", shoulder: "19.3 - 20.1", chest: "41.3 - 43.3", waist: "35.8 - 37.8", sleeve: "25.2 - 25.6" }
+        ]
+      },
+      bottoms: {
+        cm: [
+          { size: "S", shoulder: "—", chest: "—", waist: "72 - 76", hips: "90 - 94" },
+          { size: "M", shoulder: "—", chest: "—", waist: "77 - 82", hips: "95 - 99" },
+          { size: "L", shoulder: "—", chest: "—", waist: "83 - 88", hips: "100 - 105" },
+          { size: "XL", shoulder: "—", chest: "—", waist: "89 - 94", hips: "106 - 111" }
+        ],
+        in: [
+          { size: "S", shoulder: "—", chest: "—", waist: "28.3 - 29.9", hips: "35.4 - 37.0" },
+          { size: "M", shoulder: "—", chest: "—", waist: "30.3 - 32.3", hips: "37.4 - 39.0" },
+          { size: "L", shoulder: "—", chest: "—", waist: "32.7 - 34.6", hips: "39.4 - 41.3" },
+          { size: "XL", shoulder: "—", chest: "—", waist: "35.0 - 37.0", hips: "41.7 - 43.7" }
+        ]
+      }
+    };
+
+    let currentCategory = 'tops';
+    let currentUnit = 'cm';
+
+    function renderTable() {
+      const tbody = document.getElementById('size-table-body');
+      const rows = sizeData[currentCategory][currentUnit];
+
+      tbody.innerHTML = rows.map(row => `
+        <tr class="hover:bg-neutral-50/80 transition-colors">
+          <td class="py-4 px-5 font-semibold text-neutral-900">${row.size}</td>
+          <td class="py-4 px-5">${row.shoulder}</td>
+          <td class="py-4 px-5">${row.chest}</td>
+          <td class="py-4 px-5">${row.waist}</td>
+          <td class="py-4 px-5">${row.sleeve || row.hips}</td>
+        </tr>
+      `).join('');
+    }
+
+    function switchCategory(cat) {
+      currentCategory = cat;
+      const tabTops = document.getElementById('tab-tops');
+      const tabBottoms = document.getElementById('tab-bottoms');
+      const colDynamic2 = document.getElementById('col-dynamic-2');
+
+      if (cat === 'tops') {
+        tabTops.className = "px-5 py-2.5 rounded-full bg-white text-black shadow-sm transition-all";
+        tabBottoms.className = "px-5 py-2.5 rounded-full text-neutral-500 hover:text-black transition-all";
+        colDynamic2.textContent = "Sleeve Length";
+      } else {
+        tabBottoms.className = "px-5 py-2.5 rounded-full bg-white text-black shadow-sm transition-all";
+        tabTops.className = "px-5 py-2.5 rounded-full text-neutral-500 hover:text-black transition-all";
+        colDynamic2.textContent = "Hips (D)";
+      }
+      renderTable();
+    }
+
+    function switchUnit(unit) {
+      currentUnit = unit;
+      const btnCm = document.getElementById('unit-cm');
+      const btnIn = document.getElementById('unit-in');
+
+      if (unit === 'cm') {
+        btnCm.className = "px-3 py-1 bg-black text-white transition-all";
+        btnIn.className = "px-3 py-1 text-neutral-500 hover:text-black transition-all";
+      } else {
+        btnIn.className = "px-3 py-1 bg-black text-white transition-all";
+        btnCm.className = "px-3 py-1 text-neutral-500 hover:text-black transition-all";
+      }
+      renderTable();
+    }
+
+    renderTable();
+  </script>
+
+</body>
+
+</html>
