@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Birthstone&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Playwrite+NO:wght@100..400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
     rel="stylesheet">
   <style>
     body {
@@ -22,155 +22,278 @@
     }
 
     .font-serif-custom {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Cormorant Garamond', 'Playfair Display', serif;
+    }
+
+    @media (min-width: 768px) {
+      .modal-container {
+        flex-direction: row;
+        overflow: hidden;
+      }
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      font-size: 1.75rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #171717;
+      transition: transform 0.2s;
+    }
+
+    .close-modal:hover {
+      transform: scale(1.15);
+    }
+
+    .modal-left {
+      width: 100%;
+      background-color: #f5f5f5;
+    }
+
+    @media (min-width: 768px) {
+      .modal-left {
+        width: 50%;
+      }
+    }
+
+    .modal-left img {
+      width: 100%;
+      height: 100%;
+      max-height: 520px;
+      object-fit: cover;
+    }
+
+    .modal-right {
+      width: 100%;
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 768px) {
+      .modal-right {
+        width: 50%;
+      }
+    }
+
+    .size-select .sizes label.active {
+      background-color: #000000;
+      color: #ffffff;
+      border-color: #000000;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
 
-<body class="bg-white text-black antialiased isolate" id="body">
+<body class="bg-[#FCFCFC] text-neutral-900 antialiased isolate selection:bg-neutral-900 selection:text-white" id="body">
 
   <?php require "../component/sectionMenu.php" ?>
 
-  <section id="head" class="relative bg-[#E5E5E5] overflow-hidden min-h-[500px] md:h-[100vh] flex items-center">
-    <div class="absolute bg-[black] z-[100] w-[100%] h-[100%] animate-1"></div>
-    <div class="absolute inset-0 bg-cover bg-center opacity-90">
-      <img class="object-cover w-[100%] h-[100%] animate-2 sm:brightness-[90%]" src="../Pictures/Banners/Product-Banner.png" alt="">
+  <section id="head" class="relative bg-neutral-900 overflow-hidden h-[85vh] md:h-[100vh] flex items-center justify-center">
+
+    <div class="absolute bg-black z-[10] w-full h-full animate-1 pointer-events-none opacity-40"></div>
+    <div class="absolute inset-0 bg-cover bg-center">
+      <img class="object-cover w-full h-full animate-2 brightness-[80%] scale-105 transition-transform duration-500" 
+           src="../Pictures/Banners/Product-Banner.png" alt="Trinity Ready To Wear">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
     </div>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center py-20 z-10">
-      <h1 class="text-4xl md:text-7xl font-serif-custom tracking-widest uppercase mb-4 text-gray-900">
+    <div class="relative max-w-5xl mx-auto px-6 text-center z-20 text-white pt-12">
+      <p class="text-xs tracking-[0.3em] uppercase mb-3 text-neutral-300 font-light">Autum / Winter Collection</p>
+      <h1 class="text-5xl md:text-8xl font-serif-custom tracking-[0.15em] uppercase mb-6 font-normal leading-tight">
         READY-TO-WEAR
       </h1>
-      <p class="text-sm md:text-base text-gray-700 max-w-md mx-auto mb-8 font-light tracking-wide">
-        Contemporary silhouettes<br>crafted for the modern individual.
+      <p class="text-xs md:text-sm text-neutral-300 max-w-md mx-auto mb-10 font-light tracking-widest leading-relaxed">
+        Contemporary silhouettes & architectural precision<br class="hidden sm:inline">crafted for the modern minimalist.
       </p>
-      <div class="flex flex-col sm:flex-row justify-center gap-4 text-xs tracking-widest uppercase">
+      <div class="flex flex-col sm:flex-row justify-center items-center gap-4 text-xs tracking-[0.2em] uppercase">
         <a href="search.php?content=collections"
-          class="bg-black text-white px-8 py-3.5 hover:bg-transparent border-black transition">Explore Collection</a>
+          class="w-full sm:w-auto bg-white text-black px-9 py-4 hover:bg-neutral-900 hover:text-white border border-white transition-all duration-300 font-medium">
+          Explore Collection
+        </a>
         <a href="search.php?content=new"
-          class="border border-black text-black px-8 py-3.5 hover:bg-black hover:text-white transition">New Arrivals</a>
+          class="w-full sm:w-auto backdrop-blur-md bg-white/10 text-white border border-white/40 px-9 py-4 hover:bg-white hover:text-black transition-all duration-300">
+          New Arrivals
+        </a>
       </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 hidden md:flex flex-col items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+      <span class="text-[10px] uppercase tracking-[0.25em] text-white">Scroll</span>
+      <div class="w-[1px] h-8 bg-gradient-to-b from-white to-transparent"></div>
     </div>
   </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="flex justify-between items-baseline mb-8">
-      <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">Featured Collection</h2>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="flex justify-between items-end mb-12 border-b border-neutral-200 pb-4">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-medium block mb-1">Curated Selection</span>
+        <h2 class="text-2xl md:text-3xl font-serif-custom uppercase tracking-wider font-light">Featured Collection</h2>
+      </div>
       <a href="search.php?content=collections"
-        class="text-xs uppercase tracking-widest text-gray-500 hover:text-black underline underline-offset-4">View
-        All</a>
+        class="text-xs uppercase tracking-[0.2em] text-neutral-500 hover:text-black transition-colors border-b border-transparent hover:border-black pb-1">
+        View All
+      </a>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8 collections animate-on-scroll">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12 collections animate-on-scroll">
       <?php require "../component/products/product.php" ?>
     </div>
   </section>
 
-  <section class="grid grid-cols-1 md:grid-cols-2 bg-[#F9F9F9] items-center">
-    <div class="h-96 md:h-[600px] w-full bg-cover bg-center"
+  <section class="grid grid-cols-1 md:grid-cols-2 bg-[#F4F4F3] items-center my-10 overflow-hidden">
+    <div class="h-96 md:h-[650px] w-full bg-cover bg-center transition-transform duration-700 hover:scale-105"
       style="background-image: url('../Pictures/Banners/Products-Section-3-Img.png');"></div>
-    <div class="p-12 md:p-24 text-center md:text-left">
-      <h2 class="text-3xl font-serif-custom tracking-widest uppercase mb-4">Tailoring Redefined</h2>
-      <p class="text-xs text-gray-600 tracking-wide max-w-sm mb-8 leading-relaxed">
-        Precision cuts, elevated textures, and timeless forms designed beyond seasonal trends.
+    <div class="p-10 md:p-24 text-center md:text-left flex flex-col items-center md:items-start justify-center">
+      <span class="text-[10px] uppercase tracking-[0.3em] text-neutral-400 font-medium mb-3">Craftsmanship</span>
+      <h2 class="text-3xl md:text-5xl font-serif-custom tracking-wider uppercase mb-6 font-normal text-neutral-900 leading-tight">
+        Tailoring<br class="hidden md:inline"> Redefined
+      </h2>
+      <p class="text-xs md:text-sm text-neutral-600 tracking-wider max-w-md mb-10 leading-relaxed font-light">
+        Precision cuts, elevated textures, and timeless forms designed beyond seasonal trends. Designed in Paris, meticulously tailored.
       </p>
       <a href="search.php?content=all"
-        class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">Discover
-        More</a>
+        class="inline-block border border-neutral-900 text-neutral-900 text-xs uppercase tracking-[0.2em] px-9 py-4 hover:bg-neutral-900 hover:text-white transition-all duration-300">
+        Discover More
+      </a>
     </div>
   </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-lg md:text-xl font-serif-custom uppercase tracking-wider">New Items</h2>
-      <div class="flex space-x-2">
-        <button class="previous p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="flex justify-between items-end mb-10 border-b border-neutral-200 pb-4">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-medium block mb-1">Fresh Drops</span>
+        <h2 class="text-2xl md:text-3xl font-serif-custom uppercase tracking-wider font-light">New Items</h2>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button class="previous p-2.5 border border-neutral-300 rounded-full hover:border-black hover:bg-black hover:text-white transition-all text-neutral-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path>
-          </svg></button>
-        <button class="next p-1 border border-gray-200 rounded-full hover:border-black"><svg class="w-4 h-4" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
+          </svg>
+        </button>
+        <button class="next p-2.5 border border-neutral-300 rounded-full hover:border-black hover:bg-black hover:text-white transition-all text-neutral-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
-          </svg></button>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div
-      class="grid grid-cols-2 sm:grid-cols-5 gap-x-5 gap-y-2 max-w-[100%] scrollbar-hide hide products animate-on-scroll">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-x-5 gap-y-8 max-w-full scrollbar-hide hide products animate-on-scroll">
       <?php require "../component/products/classic.php" ?>
     </div>
   </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-    <div class="h-[450px] bg-cover bg-center"
-      style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
-    <div class="h-[450px] bg-cover bg-center"
-      style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
-    <div class="p-4">
-      <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-2">Hot Collection</span>
-      <hr class="w-12 border-black mb-6">
-      <p class="text-xs text-gray-600 leading-relaxed tracking-wide mb-8">
-        A curated drop featuring structured tailoring and contemporary essentials inspired by urban architecture.
-      </p>
-      <a href="search.php?content=collections"
-        class="inline-block border border-black text-xs uppercase tracking-widest px-8 py-3 hover:bg-black hover:text-white transition">View
-        Collection</a>
+  <section class="bg-neutral-900 text-white py-20 my-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+      <div class="h-[480px] bg-cover bg-center rounded-sm overflow-hidden group">
+        <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+             style="background-image: url('../Pictures/Banners/Products-Section-5-Img-1.png');"></div>
+      </div>
+      <div class="h-[480px] bg-cover bg-center rounded-sm overflow-hidden group hidden md:block">
+        <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+             style="background-image: url('../Pictures/Banners/Products-Section-5-Img-2.png');"></div>
+      </div>
+      <div class="p-4 md:p-8 flex flex-col justify-center">
+        <span class="text-[10px] tracking-[0.3em] text-neutral-400 uppercase block mb-3 font-medium">Limited Edition</span>
+        <h3 class="text-3xl font-serif-custom tracking-wider uppercase mb-4 font-light">The Urban Capsule</h3>
+        <hr class="w-12 border-neutral-700 mb-6">
+        <p class="text-xs text-neutral-400 leading-relaxed tracking-wider mb-8 font-light">
+          A curated drop featuring structured tailoring and contemporary essentials inspired by modern urban architecture and brutalist aesthetics.
+        </p>
+        <a href="search.php?content=collections"
+          class="inline-block border border-white text-white text-xs uppercase tracking-[0.2em] px-8 py-3.5 hover:bg-white hover:text-black transition-all duration-300 text-center">
+          View Collection
+        </a>
+      </div>
     </div>
   </section>
 
   <?php require "../component/sectionFooter.php" ?>
 
 
-  <div id="product-modal">
+<div id="product-modal" class="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
 
-    <div class="modal-container">
-      <span class="close-modal z-[101]">&times;</span>
-      <div class="modal-left">
-        <img id="modal-img" src="" alt="Product Image">
+  <div class="modal-container relative w-full max-w-4xl bg-white text-neutral-900 shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[100vh] sm:max-h-[90vh] md:max-h-[85vh]">
+    
+    <span class="close-modal absolute top-3 right-3 sm:top-4 sm:right-4 z-[101] w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-black hover:bg-neutral-100 transition-all rounded-full cursor-pointer text-2xl font-light">
+      &times;
+    </span>
+
+    <div class="modal-left w-full md:w-1/2 bg-neutral-100/70 flex items-center justify-center p-6 sm:p-8 relative min-h-[260px] sm:min-h-[340px] md:min-h-[480px]">
+      <img id="modal-img" src="" alt="Product Image" class="w-full h-full max-h-[280px] sm:max-h-[360px] md:max-h-[440px] object-contain transition-transform duration-700 ease-out hover:scale-105">
+    </div>
+
+    <div class="modal-right w-full md:w-1/2 p-6 sm:p-8 md:p-10 flex flex-col justify-between overflow-y-auto bg-white">
+      
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.25em] text-neutral-400 block mb-1.5 font-medium">TRINITY Essential</span>
+        <h2 id="modal-name" class="font-serif-custom font-normal text-2xl sm:text-3xl tracking-wide text-neutral-900 mb-2 leading-tight"></h2>
+        <p id="modal-price" class="w-full font-light text-lg sm:text-xl pb-4 border-b border-neutral-200 text-neutral-800"></p>
       </div>
 
-      <div class="modal-right">
-        <h2 id="modal-name" class="font-normal opacity-[0.8] text-[24px] lg:text-[32px]"></h2>
-        <p id="modal-price"
-          class="w-[100%] font-light text-[14px] lg:text-[24px] pb-2 sm:pb-5 border-b border-[rgba(0,0,0,0.1)]"></p>
-
-        <div>
-          <div class="size-select">
-            <p class="pt-3 lg:pt-4 pb-1">Size</p>
-            <div class="sizes flex gap-2">
-              <label for="S-size"
-                class="active text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">S</label>
-              <label for="M-size"
-                class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">M</label>
-              <label for="L-size"
-                class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">L</label>
-              <label for="XL-size"
-                class="text-[12px] sm:text-[14px] w-[30px] h-[30px] sm:w-[40px] sm:h-[40px] p-2 flex items-center justify-center border border-[rgba(0,0,0,0.3)] hover:border-[black] cursor-pointer">XL</label>
-            </div>
+      <div class="my-6 space-y-6">
+        
+        <div class="size-select">
+          <div class="flex justify-between items-center mb-2.5">
+            <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium">Select Size</p>
+            <button class="text-[10px] uppercase tracking-widest text-neutral-400 underline underline-offset-4 hover:text-black transition-colors" onclick="window.location.href='size-guide.html'">Size Guide</button>
           </div>
-
-          <div class="color-select">
-            <p class="pt-3 lg:pt-4 pb-1">Color</p>
-            <div class="colors grid grid-cols-3 gap-y-1 lg:grid-cols-4 gap-x-1 sm:gap-x-2"></div>
+          <div class="sizes flex gap-2">
+            <label for="S-size" class="active text-xs w-10 h-10 flex items-center justify-center border border-neutral-300 hover:border-black transition-all cursor-pointer font-medium tracking-wider">S</label>
+            <label for="M-size" class="text-xs w-10 h-10 flex items-center justify-center border border-neutral-300 hover:border-black transition-all cursor-pointer font-medium tracking-wider">M</label>
+            <label for="L-size" class="text-xs w-10 h-10 flex items-center justify-center border border-neutral-300 hover:border-black transition-all cursor-pointer font-medium tracking-wider">L</label>
+            <label for="XL-size" class="text-xs w-10 h-10 flex items-center justify-center border border-neutral-300 hover:border-black transition-all cursor-pointer font-medium tracking-wider">XL</label>
           </div>
         </div>
 
-        <div class="flex gap-2 sm:gap-3 pt-2 sm:pt-3 mt-10 w-[100%]">
-          <button class="w-[50%] modal-add text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2">ADD TO CART</button>
-          <button class="w-[50%] modal-try text-[0.7rem] sm:text-[0.9rem] p-1 sm:p-2" id="tryonBtn">TRY WITH
-            AI✨</button>
+        <div class="color-select">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-medium mb-2.5">Color Option</p>
+          <div class="colors grid grid-cols-4 gap-2"></div>
         </div>
 
-        <div class="modal-detail cursor-pointer hover:underline pt-2 sm:pt-4">Details</div>
       </div>
+
+      <div class="space-y-3 pt-4 border-t border-neutral-100 w-full">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button class="w-full sm:w-1/2 modal-add text-xs uppercase tracking-[0.2em] bg-black text-white py-3.5 hover:bg-neutral-800 transition-all font-medium active:scale-[0.99]">
+            ADD TO CART
+          </button>
+          <button id="tryonBtn" class="w-full sm:w-1/2 modal-try text-xs uppercase tracking-[0.2em] border border-black bg-white text-black py-3.5 hover:bg-black transition-all font-medium flex items-center justify-center gap-2 active:scale-[0.99] shadow-sm">
+            <span>TRY WITH AI</span>
+            <span class="text-amber-300 text-sm">✨</span>
+          </button>
+        </div>
+        
+        <div class="modal-detail text-center text-[11px] uppercase tracking-[0.2em] text-neutral-400 cursor-pointer hover:text-black hover:underline underline-offset-4 pt-2 transition-colors">
+          View Full Details &rarr;
+        </div>
+      </div>
+
     </div>
 
   </div>
 
-  <div
-    class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
-    <span>Item added to bag</span>
-    <button class="underline" onclick="window.location.href='cart.php'">View</button>
+</div>
+
+  <div class="toast opacity-0 invisible translate-y-4 transition-all duration-300 fixed bottom-6 right-6 z-50 bg-black text-white px-5 py-3.5 rounded-none shadow-2xl flex items-center gap-4 text-xs tracking-wider border border-neutral-800">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span>Item added to bag</span>
+    </div>
+    <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">View Bag</button>
   </div>
 
   <script src="../asset/contact.js"></script>

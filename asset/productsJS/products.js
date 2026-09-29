@@ -241,6 +241,6 @@ const closeBtn = document.querySelector(".close-modal");
 
 if (closeBtn) {
     closeBtn.addEventListener('click', () => {
-        modal.style.disZplay = "none";
+        modal.style.display = "none";
     });
 }
