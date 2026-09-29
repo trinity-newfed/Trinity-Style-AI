@@ -113,6 +113,7 @@
         let isAddingToCart = false;
         const mainId = document.getElementById("mainId").dataset.id;
         const mainCategory = document.getElementById("mainCategory").dataset.category;
+        const cartNum = document.getElementById("cartNumber");
 
         addCart.addEventListener('click', function(e){
             e.preventDefault();
@@ -126,7 +127,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                if(data.status == "success") Toast();
+                if(data.status == "success"){
+                  Toast();
+                  cartNum.innerText = data.quantity;
+                } 
                 else console.warn('Server warning:', data.message);
             })
             .catch(error => {
