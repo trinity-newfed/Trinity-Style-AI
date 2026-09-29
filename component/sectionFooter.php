@@ -20,6 +20,50 @@
             scrollbar-color: #3f3f46 #18181b;
         }
     }
+
+    .chat-bubble-bot.animate {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-height: 24px;
+        padding: 8px 12px;
+        margin-bottom: 20px;
+    }
+
+    .chat-bubble-bot.animate::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: currentColor;
+        box-shadow: 10px 0 0 currentColor, 20px 0 0 currentColor;
+        margin-right: 20px;
+        animation: typingDots 1.4s infinite ease-in-out;
+    }
+
+    .chat-bubble-bot.animate::after {
+        content: attr(data-status);
+        position: absolute;
+        top: 100%;
+        left: 4px;
+        margin-top: 4px;
+        font-size: 11px;
+        color: #888;
+        font-style: italic;
+        white-space: nowrap;
+    }
+
+    @keyframes typingDots {
+        0%, 100% {
+            transform: translateY(0);
+            opacity: 0.4;
+        }
+        50% {
+            transform: translateY(-4px);
+            opacity: 1;
+        }
+    }
 </style> 
 
 <section
@@ -120,8 +164,63 @@ const chatInput = chatWindow.querySelector('input');
 
 function addMessage(text, sender) {
     const div = document.createElement('div');
-    div.className = sender === 'user' ? 'chat-bubble-user ml-auto' : 'chat-bubble-bot';
+    div.className = sender === 'user' ? 'chat-bubble-user ml-auto' : 'chat-bubble-bot animate';
     div.textContent = text;
+
+    function startStatusAnimation(element) {
+
+        const statuses = [
+            'Parsing user request...',
+            'Identifying target tables...',
+            'Understanding query intent...',
+            'Extracting search parameters...',
+            'Validating input parameters...',
+
+            'Building SQL query...',
+            'Optimizing SQL query...',
+            'Checking database schema...',
+            'Preparing database connection...',
+            'Validating table permissions...',
+
+            'Executing query...',
+            'Fetching inventory data...',
+            'Querying product catalog...',
+            'Checking warehouse stock...',
+            'Scanning product variants...',
+
+            'Processing search results...',
+            'Calculating stock totals...',
+            'Formatting product details...',
+            'Checking item availability...',
+            'Structuring response data...'
+        ];
+
+        const shuffledStatuses = [...statuses].sort(() => Math.random() - 0.5);
+        
+        let statusQueue = ['Thinking...', ...shuffledStatuses];
+        let index = 0;
+
+        function next() {
+            if (index < statusQueue.length) {
+                element.setAttribute('data-status', statusQueue[index]);
+                index++;
+
+                const randomDelay = Math.floor(Math.random() * (4500 - 1500 + 1)) + 3500;
+                
+                element._statusTimer = setTimeout(next, randomDelay);
+            }
+        }
+
+        next();
+
+        return function stop() {
+            clearTimeout(element._statusTimer);
+            element.removeAttribute('data-status');
+        };
+    }
+
+    startStatusAnimation(div);
+
     chatDisplay.appendChild(div);
     chatDisplay.scrollTop = chatDisplay.scrollHeight;
     return div;
@@ -164,6 +263,7 @@ chatInput.addEventListener('keypress', async (e) => {
                 const data = JSON.parse(event.data);
 
                 if (data.token) {
+                    botBubble.classList.remove("animate");
                     botBubble.textContent += data.token;
                     chatDisplay.scrollTop = chatDisplay.scrollHeight;
                 }
