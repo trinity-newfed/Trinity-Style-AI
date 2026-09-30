@@ -136,6 +136,22 @@ EOF
         fi
     fi
 
+    echo -e "${PURPLE}--> Waiting for Ollama service to be ready...${NC}"
+    until docker exec trinity_ollama_container ollama list > /dev/null 2>&1; do
+        sleep 2
+    done
+
+    MODEL_NAME="qwen2.5:14b"
+    echo -e "${PURPLE}--> Checking for Ollama model: ${CYAN}${MODEL_NAME}${NC}..."
+    
+    if docker exec trinity_ollama_container ollama list | grep -q "$MODEL_NAME"; then
+        echo -e "${GREEN}--> Model '${MODEL_NAME}' is already downloaded.${NC}"
+    else
+        echo -e "${YELLOW}--> Model '${MODEL_NAME}' not found. Pulling now (this may take a while)...${NC}"
+        docker exec -it trinity_ollama_container ollama pull "$MODEL_NAME"
+        echo -e "${GREEN}--> Model '${MODEL_NAME}' pulled successfully!${NC}"
+    fi
+
     echo -e "${BLUE}==============================================${NC}"
     echo -e "${GREEN}                 System Ready                 ${NC}"
     echo -e "${BLUE}==============================================${NC}"
