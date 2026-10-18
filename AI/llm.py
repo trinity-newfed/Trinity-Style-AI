@@ -21,7 +21,7 @@ REDIS_PORT = int(os.getenv("REDIS_AI_PORT", 6379))
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://trinity_ollama:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b-instruct-q3_K_M")
 
 DB_HOST = os.getenv("DB_HOST", "trinity_db")
 DB_USER = os.getenv("DB_USER", "chat-agent-support")
