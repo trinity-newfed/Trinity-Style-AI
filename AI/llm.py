@@ -1,8 +1,9 @@
 import os
 import json
+import re
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
@@ -109,8 +110,8 @@ SCHEMA INFORMATION:
 
 ROUTING RULES:
 1. SEARCH BY ITEM TYPE/NAME (coat, shirt, tank crop top, etc.):
-   - JOIN `products` with `product_variant` (`products.id = product_variant.product_id`).
-   - WHERE `products.product_name LIKE '%keyword%'` AND `product_variant.product_is_delete = 0` AND `product_variant.product_state = 'active'`.
+- JOIN `products` with `product_variant` (`products.id = product_variant.product_id`).
+- WHERE `products.product_name LIKE '%keyword%'` AND `product_variant.product_is_delete = 0` AND `product_variant.product_state = 'active'`.
 2. ALWAYS apply `LIMIT 10`.
 
 STRICT OUTPUT RULES:
@@ -124,14 +125,25 @@ agent_executor = create_sql_agent(
     agent_type="zero-shot-react-description",
     extra_tools=fast_tools,
     prefix=react_prefix,
-    max_iterations=6,
+    max_iterations=10,
     early_stopping_method="force",
     verbose=False
 )
 
+GREETING_PATTERNS = re.compile(
+    r"^(hi|hello|hey|greetings|good\s+(morning|afternoon|evening)|sup|howdy|what's up)[\s!.]*$",
+    re.IGNORECASE
+)
+
+def is_greeting(text: str) -> bool:
+    cleaned = text.strip()
+    if len(cleaned) < 30 and GREETING_PATTERNS.match(cleaned):
+        return True
+    return False
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print(f"Model: {OLLAMA_MODEL}...")
+    print(f"Model: {OLLAMA_MODEL} initialized...")
     try:
         await run_in_threadpool(agent_executor.invoke, {"input": "Ping"})
     except Exception as e:
@@ -166,6 +178,7 @@ def verify_and_consume_task(task_id: str) -> dict:
 
 @app.get("/stream")
 async def stream_ai(
+    request: Request, 
     task_id: str = Query(..., description="Task ID from Redis"), 
     message: str = Query(..., description="User message")
 ):
@@ -181,12 +194,22 @@ async def stream_ai(
         raise HTTPException(status_code=403, detail="Invalid task ID.")
 
     async def event_generator():
+        if is_greeting(message):
+            greeting_response = "Hello! Welcome to Trinity-Style. How can I help you find your favorite outfits or vouchers today?"
+            yield f"data: {json.dumps({'token': greeting_response})}\n\n"
+            yield f"data: {json.dumps({'status': 'completed'})}\n\n"
+            return
+
         try:
             buffer = ""
             final_answer_found = False
             marker = "final answer:"
 
             async for event in agent_executor.astream_events({"input": message}, version="v2"):
+                if await request.is_disconnected():
+                    print("[!] Client disconnected. Aborting LLM generation.")
+                    break
+
                 kind = event["event"]
 
                 if kind == "on_chat_model_start":
@@ -217,6 +240,9 @@ async def stream_ai(
 
             yield f"data: {json.dumps({'status': 'completed'})}\n\n"
 
+        except asyncio.CancelledError:
+            print("[!] Stream task cancelled by client disconnection.")
+            raise
         except Exception as e:
             print(f"[!] Streaming Error: {str(e)}")
             fallback_msg = "I encountered an issue checking our inventory. Please try again."
