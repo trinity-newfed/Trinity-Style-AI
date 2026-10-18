@@ -97,7 +97,7 @@ pkill -f "generative.py" 2>/dev/null
 sleep 2
 
 if [ -f "$GEN_FILE" ]; then
-    echo "[+] Starting generative.py (Radeon 780M / ROCm GFX1100 / ROCm 5.7)..."
+    echo "[+] Starting generative.py..."
     
     nohup env \
         HSA_OVERRIDE_GFX_VERSION=11.0.0 \

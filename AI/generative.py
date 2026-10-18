@@ -61,7 +61,7 @@ REDIS_PORT = int(os.getenv("REDIS_AI_PORT", os.getenv("REDIS_PORT", DEFAULT_REDI
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 PENDING_HASH = "ai_pending_tasks"
 
-TOTAL_STEPS = 30
+TOTAL_STEPS = 40
 current_task_id = None
 r_client_global = None
 
@@ -209,15 +209,49 @@ def load_ai_models():
         subfolder="models",
         weight_name="ip-adapter-plus_sd15.bin"
     )
-    pipe.set_ip_adapter_scale(0.9)
+    pipe.set_ip_adapter_scale(1.05)
 
     if device == "cuda":
         pipe.to("cuda")
         pipe.enable_vae_slicing()
+        pipe.enable_vae_tiling()
 
     pipe.safety_checker = None
 
     print("[✓] Pipeline Loaded!")
+
+def warmup_ai_models():
+    global seg_processor, seg_model, pipe
+    print("[*] Warming up AI models to allocate VRAM buffers...")
+    try:
+        dummy_person = Image.new("RGB", (512, 768), color=(128, 128, 128))
+        dummy_cloth = Image.new("RGB", (512, 768), color=(200, 200, 200))
+
+        raw_mask_np = get_raw_segformer_mask(dummy_person, seg_processor, seg_model)
+        final_mask, canny_image = process_mask_and_canny(dummy_person, raw_mask_np)
+
+        with torch.inference_mode():
+            _ = pipe(
+                prompt="warmup prompt",
+                negative_prompt="warmup negative",
+                image=dummy_person,
+                mask_image=final_mask,
+                control_image=canny_image,
+                ip_adapter_image=dummy_cloth,
+                num_inference_steps=1,
+                strength=1.0,
+                guidance_scale=7.5,
+                controlnet_conditioning_scale=0.6,
+            )
+
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+        print("[✓] AI Models Warm-up Completed Successfully!")
+    except Exception as e:
+        print(f"[!] Warm-up Warning: {e}")
 
 def step_callback(pipe, step_index, timestep, callback_kwargs):
     global current_task_id, r_client_global
@@ -356,6 +390,7 @@ def main():
     
     try:
         load_ai_models()
+        warmup_ai_models()
     except Exception as e:
         print(f"[X] Fatal error with AI pipeline: {e}")
         return
@@ -365,6 +400,8 @@ def main():
     except Exception as e: 
         print(f"[X] Couldn't connect to Redis.")
         return
+
+    processed_count = 0
 
     while True:
         try:
@@ -377,6 +414,12 @@ def main():
                     try:
                         task_data = json.loads(raw_payload)
                         process_task(r, task_data)
+                        
+                        processed_count += 1
+                        if processed_count % 5 == 0:
+                            print(f"[*] Processed {processed_count} requests. Resting for 10s...")
+                            time.sleep(10)
+
                     except Exception as inner_err:
                         print(f"[X] Task error {task_id}: {inner_err}")
                         update_redis_status(r, task_id, 0, "failed")
