@@ -74,7 +74,7 @@
     <div class="flex items-center gap-2">
       <span>Item removed from bag</span>
     </div>
-    <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">View Bag</button>
+    <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">Undo</button>
   </div>
 
   <script src="../asset/headerEmail.js"></script>
