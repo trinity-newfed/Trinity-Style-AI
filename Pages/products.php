@@ -288,9 +288,6 @@
 
   <div class="toast opacity-0 invisible translate-y-4 transition-all duration-300 fixed bottom-6 right-6 z-50 bg-black text-white px-5 py-3.5 rounded-none shadow-2xl flex items-center gap-4 text-xs tracking-wider border border-neutral-800">
     <div class="flex items-center gap-2">
-      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-      </svg>
       <span>Item added to bag</span>
     </div>
     <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">View Bag</button>

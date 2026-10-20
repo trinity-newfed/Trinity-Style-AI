@@ -82,6 +82,7 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
     position: relative;
 }
 .deleteItem{
+    margin-top: 12px;
     width: 15px;
     height: 15px;
     position: absolute;
@@ -125,7 +126,6 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
     height: 100%;
     min-height: fit-content;
     border-radius: 5px;
-    position: relative;
 }
 .item-img-container img{
     background: #e8e8e8;
@@ -211,6 +211,7 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
     justify-content: center;
     width: 40%;
     border-bottom: 1px solid black;
+    padding-bottom: 5px;
 }
 .color{
     width: 15px;
@@ -548,11 +549,10 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
     .cartItem{
         gap: 10%;
         width: 95%;
-        position: relative;
-        margin: auto;
-        justify-content: start;
+        justify-content: center;
         margin-top: 10px;
         min-height: 380px;
+        display: grid;
     }
     #product-container{
         width: 100%;
@@ -562,7 +562,6 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
     .item-left{
         max-width: none;
         margin-top: 60px;
-        margin-left: 16px;
     }
     .nameContainer{
         width: 100vw;
@@ -582,6 +581,11 @@ html::-webkit-scrollbar, .simillar-product-container::-webkit-scrollbar{
         gap: 5%;
         display: grid;
     }
+
+    .deleteItem {
+        top: 1px;
+    }
+
     #items-quantity-container span:nth-child(1){
         font-size: 13px;
         height: 23px;
