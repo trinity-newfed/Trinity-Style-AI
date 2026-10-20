@@ -138,10 +138,11 @@
 
   <?php require "../component/sectionFooter.php" ?>
 
-  <div
-    class="toast opacity-0 invisible translate-y-[100%] transition-all duration-300 fixed max-w-[250px] h-[40px] bg-[#000000] text-[#ffffff] bottom-[0] p-2 sm:p-4 flex justify-center items-center gap-2">
-    <span>Item added to bag</span>
-    <button class="underline" onclick="window.location.href='cart.php'">View</button>
+  <div class="toast opacity-0 invisible translate-y-4 transition-all duration-300 fixed bottom-6 right-6 z-50 bg-black text-white px-5 py-3.5 rounded-none shadow-2xl flex items-center gap-4 text-xs tracking-wider border border-neutral-800">
+    <div class="flex items-center gap-2">
+      <span>Item added to bag</span>
+    </div>
+    <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">View Bag</button>
   </div>
 </body>
 

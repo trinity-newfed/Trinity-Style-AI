@@ -119,6 +119,10 @@
     scale: 1;
 }
 
+.button path{
+    fill: black !important; 
+}
+
 #login-btn {
     width: 30%;
     height: 80%;
