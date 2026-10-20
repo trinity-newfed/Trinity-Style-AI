@@ -136,8 +136,7 @@
 
         <div class="p-3 border-t border-white/10 bg-[#1a1a1a] pb-safe">
             <textarea placeholder="Type a message..." rows="1" oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px';"
-                class="w-full bg-transparent border-none text-white text-sm sm:text-xs placeholder-white/30 focus:ring-0 outline-none py-2 resize-none overflow-y-auto custom-scrollbar">
-            </textarea>
+                class="w-full bg-transparent border-none text-white text-sm sm:text-xs placeholder-white/30 focus:ring-0 outline-none py-2 resize-none overflow-y-auto custom-scrollbar"></textarea>
         </div>
     </div>
 </div>
@@ -161,7 +160,7 @@
 
 const chatWindow = document.getElementById('chatWindow');
 const chatDisplay = chatWindow.querySelector('.overflow-y-auto');
-const chatInput = chatWindow.querySelector('input');
+const chatInput = chatWindow.querySelector('textarea');
 
 function addMessage(text, sender) {
     const div = document.createElement('div');
