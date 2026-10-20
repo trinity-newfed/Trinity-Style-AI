@@ -139,10 +139,21 @@ const circle = document.getElementById('progress-circle');
 const text = document.getElementById('progress-text');
 const CIRCUMFERENCE = 125.66;
 
+function resetClient() {
+    img.classList.replace("blur-[5px]", "blur-[0]");
+    progressContainer.classList.add("hidden");
+}
+
 function resetProgress() {
     img.classList.replace("blur-[0]", "blur-[5px]");
     text.innerText = "0%";
     circle.style.strokeDashoffset = 360;
+}
+
+function startProgress() {
+    progressContainer.classList.remove("hidden");
+    img.classList.add("blur-[5px]");
+    resetProgress();
 }
 
 function setProgress(percent) {  
@@ -185,20 +196,25 @@ function listenTaskProgress(taskId, onComplete) {
                 if (mainPreview && task.result_url) {
                     mainPreview.src = `../AI/static/${task.result_url}`; 
                     mainPreview.style.display = 'block';
-                    progressContainer.classList.add("hidden");
-                    img.classList.replace("blur-[5px]", "blur-[0]");
+                    
+                    resetClient();
                 }
 
                 if (onComplete) onComplete();
             }
             
             else if (task.status === 'failed' || task.status === 'db_error') {
+                resetClient();
+                
                 clearInterval(intervalId);
                 alert(`AI Generation Failed: ${task.status}`);
                 if (onComplete) onComplete();
+                
             }
 
         } catch (err) {
+            resetClient();
+
             console.error("Polling Error:", err);
             clearInterval(intervalId);
             alert("Lost connection to progress tracker."); 
@@ -212,8 +228,7 @@ if (tryonBtn) {
         const uploadInput = document.getElementById('uploadInput');
         const file = uploadInput?.files[0];
 
-        progressContainer.classList.remove("hidden");
-        img.classList.add("blur-[5px]");
+        startProgress();
         resetProgress();
 
         if (!file) {
@@ -262,6 +277,8 @@ if (tryonBtn) {
             });
 
         } catch (error) {
+            resetClient();
+            
             console.error("Tryon Error:", error);
             alert(error.message || "Something went wrong, please try again later!");
             tryonBtn.disabled = false;
