@@ -35,6 +35,7 @@ services:
       - ollama_storage:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_FLASH_ATTENTION=1
     networks:
       - trinity_net
 

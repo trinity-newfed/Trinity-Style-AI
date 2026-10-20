@@ -42,6 +42,7 @@ services:
       - OLLAMA_VULKAN=true
       - OLLAMA_IGPU_ENABLE=1
       - GGML_VK_VISIBLE_DEVICES=0
+      - OLLAMA_FLASH_ATTENTION=1
     devices: 
       - /dev/kfd:/dev/kfd  
       - /dev/dri:/dev/dri 
