@@ -368,12 +368,40 @@ def process_task(r_client, task_data):
 
         relative_result_url = f"{user_id}/{file_name}"
 
-        update_redis_status(r_client, task_id, 100, "complete", result_url=relative_result_url, message="Done!")
-
         print("==================================================")
         print(f"[✓] Done ({time.time() - start_time:.2f}s)!")
         print(f"[✓] Path: {output_path}")
         print("==================================================")
+
+        if user_id and str(user_id).isdigit() and user_id != "default_user":
+            db_conn = None
+            try:
+                import mysql.connector
+                
+                db_conn = mysql.connector.connect(
+                    host=DB_CONFIG["host"],
+                    user=DB_CONFIG["user"],
+                    password=DB_CONFIG["password"],
+                    database=DB_CONFIG["database"],
+                    connection_timeout=DB_CONFIG["connection_timeout"]
+                )
+                
+                if db_conn.is_connected():
+                    cursor = db_conn.cursor()
+                    sql = "UPDATE userdata SET user_limit_tryon_daily = GREATEST(0, user_limit_tryon_daily - 1) WHERE id = %s"
+                    cursor.execute(sql, (int(user_id),))
+                    db_conn.commit()
+                    print(f"[✓] Successfully deducted 1 trial limit for user_id: {user_id}")
+                    cursor.close()
+            except Exception as db_err:
+                print(f"[X] Failed to update user limit in MySQL for user {user_id}: {db_err}")
+            finally:
+                if db_conn and db_conn.is_connected():
+                    db_conn.close()
+        else:
+            print(f"[*] Task completed by guest/IP session ({user_id}), skipping database limit deduction.")
+
+        update_redis_status(r_client, task_id, 100, "complete", result_url=relative_result_url, message="Done!")
 
     except Exception as e:
         print(f"[X] Unexpected Error Task {task_id}: {e}")
@@ -416,9 +444,10 @@ def main():
                         process_task(r, task_data)
                         
                         processed_count += 1
-                        if processed_count % 5 == 0:
-                            print(f"[*] Processed {processed_count} requests. Resting for 10s...")
-                            time.sleep(10)
+                        print(f"[*] Done request number: {processed_count}")
+                        if processed_count % 3 == 0:
+                            print(f"[*] Processed {processed_count} requests. Resting for 6s...")
+                            time.sleep(6)
 
                     except Exception as inner_err:
                         print(f"[X] Task error {task_id}: {inner_err}")

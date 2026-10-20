@@ -53,7 +53,7 @@ if ($userId) {
 
 if (!$userId && !$authToken) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Phiên làm việc không hợp lệ hoặc đã hết hạn.']);
+    echo json_encode(['success' => false, 'message' => 'Session expired.']);
     exit;
 }
 
@@ -72,7 +72,7 @@ if ($activeTaskId) {
             http_response_code(409);
             echo json_encode([
                 'success' => false,
-                'message' => 'Bạn đang có một yêu cầu thử đồ đang xử lý. Vui lòng chờ hoàn thành trước khi thử tiếp!',
+                'message' => 'Your task is already processing, Please try again after your previous task done!',
                 'active_task_id' => $activeTaskId,
                 'status' => $status
             ]);
@@ -83,13 +83,13 @@ if ($activeTaskId) {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ.']);
+    echo json_encode(['success' => false, 'message' => 'This method is not support']);
     exit;
 }
 
 if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Vui lòng chọn hình ảnh hợp lệ để tải lên.']);
+    echo json_encode(['success' => false, 'message' => 'Please upload your image']);
     exit;
 }
 
@@ -99,13 +99,13 @@ $maxFileSize = 10 * 1024 * 1024;
 
 if (!in_array($file['type'], $allowedTypes)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Định dạng file không hỗ trợ (Chỉ chấp nhận JPG, PNG, WEBP).']);
+    echo json_encode(['success' => false, 'message' => 'File not support (JPG, PNG, WEBP only).']);
     exit;
 }
 
 if ($file['size'] > $maxFileSize) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Dung lượng ảnh vượt quá 10MB.']);
+    echo json_encode(['success' => false, 'message' => 'Image size exceed 10MB.']);
     exit;
 }
 
@@ -117,14 +117,14 @@ if ($currentRequests && $currentRequests >= $maxRequestsPerMinute) {
     http_response_code(429);
     echo json_encode([
         'success' => false, 
-        'message' => 'Bạn đã đạt giới hạn thử đồ (' . $maxRequestsPerMinute . ' lần/phút). Vui lòng đợi giây lát!'
+        'message' => 'Max tryon limit reached(' . $maxRequestsPerMinute . ' limit/30 seconds). Please try again later!'
     ]);
     exit;
 }
 
 $redis->multi();
 $redis->incr($rateKey);
-$redis->expire($rateKey, 60);
+$redis->expire($rateKey, 30);
 $redis->exec();
 
 $taskId = "task_" . bin2hex(random_bytes(16));
@@ -152,7 +152,7 @@ $redis->setex("task_status:{$taskId}", 600, json_encode([
     'status' => 'pending',
     'progress' => 0,
     'owner' => $clientIdentifier,
-    'message' => 'Đang chờ máy chủ AI tiếp nhận...'
+    'message' => 'Waiting for AI server...'
 ]));
 
 $redis->setex($userActiveKey, 300, $taskId);
