@@ -200,6 +200,8 @@ try {
     $conn->query("GRANT SELECT ON {$dbname}.products TO 'chat-agent-support'@'%'");
     $conn->query("GRANT SELECT ON {$dbname}.product_variant TO 'chat-agent-support'@'%'");
     $conn->query("GRANT SELECT ON {$dbname}.vouchers TO 'chat-agent-support'@'%'");
+    $conn->query("GRANT SELECT ON {$dbname}.orders TO 'chat-agent-support'@'%'");
+    $conn->query("GRANT SELECT ON {$dbname}.order_items TO 'chat-agent-support'@'%'");
 
     $conn->query("FLUSH PRIVILEGES");
 } catch (Exception $e) {
