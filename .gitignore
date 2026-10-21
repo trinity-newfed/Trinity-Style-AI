@@ -12,3 +12,4 @@ __pycache__/
 .DS_Store
 trinity-style-ai
 sd_service.log
+/Database/test.php
