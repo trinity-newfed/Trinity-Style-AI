@@ -62,10 +62,14 @@ if (modal) {
                 modalAddCart.disabled = true;
                 modalAddCart.style.background = "gray";
                 modalAddCart.textContent = "OUT OF STOCK";
+                modalImg.classList.add("grayscale-[80%]", "opacity-60");
+                document.querySelector(".stock").classList.remove("hidden");
             } else {
                 modalAddCart.disabled = false;
                 modalAddCart.style.background = "";
-                modalAddCart.textContent = "ADD TO CART";
+                modalAddCart.textContent = "ADD TO BAG";
+                modalImg.classList.remove("grayscale-[80%]", "opacity-60");
+                document.querySelector(".stock").classList.add("hidden");
             }
 
             //Modal info
@@ -145,10 +149,14 @@ if (modal) {
                         modalAddCart.disabled = true;
                         modalAddCart.style.background = "gray";
                         modalAddCart.textContent = "OUT OF STOCK";
+                        modalImg.classList.add("grayscale-[80%]", "opacity-60");
+                        document.querySelector(".stock").classList.remove("hidden");
                     } else {
                         modalAddCart.disabled = false;
                         modalAddCart.style.background = "";
-                        modalAddCart.textContent = "ADD TO CART";
+                        modalAddCart.textContent = "ADD TO BAG";
+                        modalImg.classList.remove("grayscale-[80%]", "opacity-60");
+                        document.querySelector(".stock").classList.add("hidden");
                     }
 
                     const vImg = this.dataset.img;

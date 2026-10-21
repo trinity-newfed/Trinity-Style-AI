@@ -10,6 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../Css/nav.css">
   <link rel="stylesheet" href="../Css/products.css">
+  <link rel="stylesheet" href="../Css/toast.css">
   <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,6 +233,9 @@
 
     <div class="modal-left w-full md:w-1/2 bg-neutral-100/70 flex items-center justify-center p-6 sm:p-8 relative min-h-[260px] sm:min-h-[340px] md:min-h-[480px]">
       <img id="modal-img" src="" alt="Product Image" class="w-full h-full max-h-[280px] sm:max-h-[360px] md:max-h-[440px] object-contain transition-transform duration-700 ease-out hover:scale-105">
+      <span class="stock absolute z-[2] bg-black/70 backdrop-blur-md text-white text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-md hidden">
+        Out of Stock
+      </span>   
     </div>
 
     <div class="modal-right w-full md:w-1/2 p-6 sm:p-8 md:p-10 flex flex-col justify-between overflow-y-auto bg-white">
@@ -267,7 +271,7 @@
       <div class="space-y-3 pt-4 border-t border-neutral-100 w-full">
         <div class="flex flex-col sm:flex-row gap-3">
           <button class="w-full sm:w-1/2 modal-add text-xs uppercase tracking-[0.2em] bg-black text-white py-3.5 hover:bg-neutral-800 transition-all font-medium active:scale-[0.99]">
-            ADD TO CART
+            ADD TO BAG
           </button>
           <button id="tryonBtn" class="w-full sm:w-1/2 modal-try text-xs uppercase tracking-[0.2em] border border-black bg-white text-black py-3.5 hover:bg-black transition-all font-medium flex items-center justify-center gap-2 active:scale-[0.99] shadow-sm">
             <span>TRY WITH AI</span>

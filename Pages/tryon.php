@@ -9,6 +9,7 @@
     <meta name="csrf-token" content="<?php echo $_SESSION['csrf_token']; ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+    <link rel="stylesheet" href="../Css/toast.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
@@ -71,6 +72,9 @@
 
                 <img id="main-preview" src="" 
                     class="absolute inset-0 w-full h-full object-cover z-[2]"/>
+                <span class="stock absolute z-[2] bg-black/70 backdrop-blur-md text-white text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-md hidden">
+                    Out of Stock
+                </span>
 
                 <img id="sub-preview" src="" 
                     class="absolute z-[1] inset-0 w-full h-full object-cover z-[1] opacity-0" /> 
@@ -156,7 +160,7 @@
 
             <div class="border-t border-zinc-800/80 pt-5 sm:pt-6 flex flex-col gap-3 pb-6 lg:pb-0">
                 <button
-                    class="w-full py-3.5 sm:py-4 bg-white text-zinc-950 font-semibold tracking-wider uppercase text-xs rounded-lg hover:bg-zinc-200 active:scale-[0.99] transition shadow-lg shadow-white/5">
+                    class="modal-add w-full py-3.5 sm:py-4 bg-white text-zinc-950 font-semibold tracking-wider uppercase text-xs rounded-lg hover:bg-zinc-200 active:scale-[0.99] transition shadow-lg shadow-white/5">
                     Add to bag
                 </button>
 
@@ -180,6 +184,13 @@
             </div>
 
         </section>
+
+        <div class="toast opacity-0 invisible translate-y-4 transition-all duration-300 fixed bottom-6 right-6 z-50 bg-black text-white px-5 py-3.5 rounded-none shadow-2xl flex items-center gap-4 text-xs tracking-wider border border-neutral-800">
+            <div class="flex items-center gap-2">
+                <span>Item added to bag</span>
+            </div>
+            <button class="underline uppercase tracking-widest hover:text-neutral-300 font-medium" onclick="window.location.href='cart.php'">View Bag</button>
+        </div>
     </main>
 
     <?php require "../component/sectionFooter.php"; ?>

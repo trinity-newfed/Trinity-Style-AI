@@ -1,5 +1,10 @@
         <?php if (!empty($product['product_img'])): ?>
-          <img id="bigImg" src="../<?= $product['product_img'] ?>">
+          <div class="relative">
+            <img id="bigImg" src="../<?= $product['product_img'] ?>">
+            <span id="stock" class="stock absolute z-[2] top-4 left-4 bg-black/70 backdrop-blur-md text-white text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-md hidden">
+              Out of Stock
+            </span>
+          </div>
         <?php endif; ?>
 
         <div class="thumb-list">
