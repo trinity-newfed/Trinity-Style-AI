@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="../Css/nav.css">
   <link rel="stylesheet" href="../Css/detail.css">
+  <link rel="stylesheet" href="../Css/toast.css">
   <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
   <title><?= strtoupper($product['product_name']) ?> - TRINITY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +68,7 @@
     </div>
 
     <div class="flex flex-col gap-5 pt-5 pb-2">
-      <button class="add-cart">ADD TO CART</button>
+      <button class="add-cart">ADD TO BAG</button>
       <button class="modal-try" type="submit">TRY WITH AI✨</button>
       <p class="short-desc font-serif"><?= $product['product_describe'] ?></p>
     </div>

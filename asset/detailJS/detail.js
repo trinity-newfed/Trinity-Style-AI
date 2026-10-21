@@ -94,10 +94,14 @@
               addCart.disabled = true;
               addCart.style.background = "gray";
               addCart.textContent = "OUT OF STOCK";
+              bigImg.classList.add("grayscale-[80%]", "opacity-60");
+              document.querySelector(".stock").classList.remove("hidden");
             }else{
               addCart.disabled = false;
               addCart.style.background = "";
-              addCart.textContent = "ADD TO CART";
+              addCart.textContent = "ADD TO BAG";
+              bigImg.classList.remove("grayscale-[80%]", "opacity-60");
+              document.querySelector(".stock").classList.add("hidden");
             } 
 
               bigImg.src = this.dataset.img;

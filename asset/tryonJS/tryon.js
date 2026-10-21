@@ -284,3 +284,79 @@ if (tryonBtn) {
         }
     });
 }
+
+//Toast
+const toastNoti = document.querySelector(".toast");
+function Toast() {
+    toastNoti.classList.add("active");
+    setTimeout(() => {
+        toastNoti.classList.remove("active");
+    }, 5000);
+}
+
+//  ADD CART
+const modalAddCart = document.querySelector(".modal-add");
+const sizeAdd = document.querySelectorAll(".sizes label");
+
+let isAddingToCart = false;
+const cartNum = document.getElementById("cartNumber");
+
+if (modalAddCart) {
+    modalAddCart.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        currentProduct = document.querySelector(".activeColor");
+        category = currentProduct.dataset.category;
+        color = currentProduct.dataset.color;
+        id = currentProduct.dataset.id;
+
+        size = "S";
+
+        fetch('../Database/add_item_to_cart.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `product_category=${category}&product_color=${color}&cart_size=${size}&product_id=${parseInt(id)}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status == "success") {
+                    Toast();
+                } else if (data.status == "failed" && data.redirect == "true") {
+                    window.location.replace(data.href);
+                } else alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error);
+            });
+    });
+}
+
+//Color Data
+const outerColorBtn = document.querySelectorAll(".variantBtn");
+
+outerColorBtn.forEach(Btn => {
+    Btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+
+        modalImg = document.querySelector("#main-preview"); 
+
+        //Stock
+        if (this.dataset.stock <= 0) {
+            modalAddCart.disabled = true;
+            modalAddCart.style.background = "gray";
+            modalAddCart.textContent = "OUT OF STOCK";
+            modalImg.classList.add("grayscale-[80%]", "opacity-60");
+            document.querySelector(".stock").classList.remove("hidden");
+        } else {
+            modalAddCart.disabled = false;
+            modalAddCart.style.background = "";
+            modalAddCart.textContent = "ADD TO BAG";
+            modalImg.classList.remove("grayscale-[80%]", "opacity-60");
+            document.querySelector(".stock").classList.add("hidden");
+        }
+
+        
+    });
+});
