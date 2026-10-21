@@ -22,11 +22,15 @@ import torch
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter
+from datetime import datetime, timedelta
 
 import torch.backends.cuda
 torch.backends.cuda.enable_flash_sdp(False)
 torch.backends.cuda.enable_mem_efficient_sdp(True)
 torch.backends.cuda.enable_math_sdp(True)
+
+now_time = datetime.now()
+next_day_time = now_time + timedelta(days=1)
 
 from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation
 from diffusers import (
@@ -388,8 +392,19 @@ def process_task(r_client, task_data):
                 
                 if db_conn.is_connected():
                     cursor = db_conn.cursor()
-                    sql = "UPDATE userdata SET user_limit_tryon_daily = GREATEST(0, user_limit_tryon_daily - 1) WHERE id = %s"
-                    cursor.execute(sql, (int(user_id),))
+
+                    sql = """ UPDATE userdata SET user_limit_tryon_daily = GREATEST(0, user_limit_tryon_daily - 1), next_limit_reset = CASE 
+                                WHEN user_limit_tryon_daily = 1 AND (next_limit_reset IS NULL OR next_limit_reset <= %s) 
+                                    THEN %s
+            
+                                WHEN user_limit_tryon_daily = 0 AND (next_limit_reset IS NULL OR next_limit_reset <= %s)
+                                    THEN %s
+            
+                                ELSE next_limit_reset 
+                                END
+                              WHERE id = %s
+                          """
+                    cursor.execute(sql, (now_time, next_day_time, now_time, next_day_time, int(user_id)))
                     db_conn.commit()
                     print(f"[✓] Successfully deducted 1 trial limit for user_id: {user_id}")
                     cursor.close()
