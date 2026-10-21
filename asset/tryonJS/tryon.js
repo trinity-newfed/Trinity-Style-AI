@@ -84,9 +84,6 @@ if (uploadInput && img) {
             subImg.classList.remove("opacity-0");
             img.src = URL.createObjectURL(file);
 
-            document.getElementById("slider-line").classList.remove("right-0");
-            document.getElementById("slider-line").classList.add("left-0");
-
             subImgStatus = true;
         }
     });
