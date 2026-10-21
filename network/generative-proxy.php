@@ -43,11 +43,24 @@ $userId = $_SESSION['user_id'] ?? null;
 $authToken = $_SERVER['HTTP_AUTHORIZATION'] ?? $_POST['token'] ?? null;
 
 if ($userId) {
-    $userLimit = $conn->execute_query("SELECT user_limit_tryon FROM userdata WHERE id = ?", [$userId])->fetch_assoc()['user_limit_tryon'];
+    $row = $conn->execute_query("SELECT next_limit_reset FROM userdata WHERE id = ?", [$userId])->fetch_assoc();
+    $userLimit = $row['next_limit_reset'] ?? null;
 
-    if ($userLimit == 0) {
-        echo json_encode(['success' => false, 'message' => 'You reached Virtual Try On for today, please try after 24 hours.']);
+    $message = "You reached Virtual Try On for today, Your limit reset at: {$userLimit}";
+    if ($userLimit !== null && strtotime($userLimit) > time()) {
+        echo json_encode([
+            'success' => false, 
+            'message' => $message
+        ]);
         exit;
+    }
+    else {
+        $limit = $conn->execute_query("SELECT user_limit_tryon FROM userdata WHERE id = ?",[$userId])->fetch_assoc();
+        $totalLimit = intval($limit['user_limit_tryon']);
+
+        if ($limit) {
+            $conn->execute_query("UPDATE userdata SET next_limit_reset = null, user_limit_tryon_daily = ? WHERE id = ?",[$totalLimit, $userId]);
+        }
     }
 }
 
