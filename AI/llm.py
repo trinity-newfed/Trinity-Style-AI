@@ -2,15 +2,15 @@ import os
 import json
 import re
 import asyncio
+import httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 import redis
+from sqlalchemy import create_engine, text
 from sqlalchemy.pool import QueuePool
-from langchain_community.utilities import SQLDatabase
-from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,7 +26,7 @@ OLLAMA_ROUTER_MODEL = os.getenv("OLLAMA_ROUTER_MODEL", "qwen2.5:3b")
 DB_HOST = os.getenv("DB_HOST", "trinity_db")
 DB_USER = os.getenv("DB_USER", "chat-agent-support")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "chatagent123")
-DB_NAME = os.getenv("DB_NAME", "tf_database")
+DB_NAME = os.getenv("DB_NAME", "TF_Database")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
 
 redis_client = redis.Redis(
@@ -86,35 +86,68 @@ TABLE_SCHEMAS = {
 
 db_uri = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-db = SQLDatabase.from_uri(
+engine = create_engine(
     db_uri, 
-    include_tables=list(TABLE_SCHEMAS.keys()),
-    sample_rows_in_table_info=0,
-    indexes_in_table_info=False, 
-    engine_args={
-        "poolclass": QueuePool,
-        "pool_size": 5,
-        "max_overflow": 10,
-        "pool_recycle": 3600
+    poolclass=QueuePool,
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=3600
+)
+
+def execute_sql(query: str):
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text(query))
+            if result.returns_rows:
+                rows = result.fetchall()
+                return str([dict(row._mapping) for row in rows])
+            return "Query executed successfully."
+    except Exception as e:
+        raise e
+
+def call_ollama(model: str, prompt: str, format_json: bool = False, temperature: float = 0, num_ctx: int = 4096):
+    url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "options": {
+            "temperature": temperature,
+            "num_ctx": num_ctx
+        },
+        "stream": False
     }
-)
+    if format_json:
+        payload["format"] = "json"
+    
+    with httpx.Client(timeout=60.0) as client:
+        response = client.post(url, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data.get("message", {}).get("content", "")
 
-llm = ChatOllama(
-    base_url=OLLAMA_BASE_URL, 
-    model=OLLAMA_MODEL, 
-    temperature=0,
-    num_ctx=4096,
-    streaming=True
-)
-
-router_llm = ChatOllama(
-    base_url=OLLAMA_BASE_URL,
-    model=OLLAMA_ROUTER_MODEL,
-    temperature=0,
-    format="json",
-    num_ctx=1024,
-    streaming=False
-)
+async def stream_ollama(model: str, prompt: str, temperature: float = 0, num_ctx: int = 4096):
+    url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "options": {
+            "temperature": temperature,
+            "num_ctx": num_ctx
+        },
+        "stream": True
+    }
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        async with client.stream("POST", url, json=payload) as response:
+            response.raise_for_status()
+            async for line in response.aiter_lines():
+                if line.strip():
+                    try:
+                        chunk_data = json.loads(line)
+                        content = chunk_data.get("message", {}).get("content", "")
+                        if content:
+                            yield content
+                    except json.JSONDecodeError:
+                        pass
 
 def expand_dependent_tables(tables: list) -> list:
     expanded = set(tables)
@@ -141,7 +174,7 @@ def is_greeting(text: str) -> bool:
 async def lifespan(app: FastAPI):
     print(f"[*] Initializing Pipeline: Main ({OLLAMA_MODEL}) & Router ({OLLAMA_ROUTER_MODEL})...")
     try:
-        await run_in_threadpool(router_llm.invoke, '{"tables": ["products"], "reason": "warmup"}')
+        await run_in_threadpool(call_ollama, OLLAMA_ROUTER_MODEL, '{"tables": ["products"], "requires_user_context": false, "reason": "warmup"}', format_json=True)
         
         warmup_schema = "\n\n".join([TABLE_SCHEMAS["products"], TABLE_SCHEMAS["product_variant"]])
         warmup_prompt = f"""You are an expert SQL generator for "Trinity-Style" store. 
@@ -151,14 +184,14 @@ RELEVANT DATABASE SCHEMA:
 {warmup_schema}
 
 RULES:
-1. Write a query to answer the user question using ONLY the provided tables above.
+1. Write a select ONLY query to answer the user question using ONLY the provided tables above.
 2. If `products` and `product_variant` are present, JOIN them on `products.id = product_variant.product_id`.
 3. Filter active items: `product_variant.product_is_delete = 0 AND product_variant.product_state = 'active'` (if applicable).
 4. ALWAYS apply `LIMIT 10`.
 
 User Question: Find black summer shirt"""
         
-        await run_in_threadpool(llm.invoke, warmup_prompt)
+        await run_in_threadpool(call_ollama, OLLAMA_MODEL, warmup_prompt)
         print("[+] Warm-up completed successfully. KV Cache is fully primed in VRAM!")
     except Exception as e:
         print(f"[!] Warm-up warning: {e}")
@@ -218,27 +251,47 @@ async def stream_ai(
 - Use [products, product_variant] for searching clothes, items, prices, colors, sizes, stock.
 - Use [vouchers] for discount codes, promos.
 - Use [orders, order_items] ONLY if the user asks about their past purchases, order history, or tracking their orders.
+- Set "requires_user_context" to true ONLY IF [orders] or [order_items] are included in tables. Otherwise false.
+
 User Query: "{message}"
 Return strict JSON format:
-{{"tables": ["table_name_1"], "reason": "short explanation"}}"""
+{{"tables": ["table_name_1"], "requires_user_context": false, "reason": "short explanation"}}"""
 
         try:
-            router_res = await run_in_threadpool(router_llm.invoke, router_prompt)
-            routing_data = json.loads(router_res.content)
+            router_res = await run_in_threadpool(call_ollama, OLLAMA_ROUTER_MODEL, router_prompt, format_json=True)
+            print(f"[-] Router Raw Response: {router_res}")
+            routing_data = json.loads(router_res)
             raw_tables = routing_data.get("tables", [])
+            requires_user_context = routing_data.get("requires_user_context", False)
             
+            if not raw_tables:
+                msg_lower = message.lower()
+                if any(kw in msg_lower for kw in ["order", "orders", "history", "bought", "purchase", "đơn hàng", "lịch sử"]):
+                    raw_tables = ["orders", "order_items"]
+                    requires_user_context = True
+                    print("[!] Router left 'tables' empty. Fallback triggered for orders.")
+
             if not raw_tables or not isinstance(raw_tables, list):
-                refusal_msg = "I'm sorry, but I cannot assist with this request due to security and store policy guidelines. I can only help you search for products, check inventory, or view vouchers."
+                refusal_msg = "I'm sorry, but I cannot assist with this request due to security and store policy guidelines."
                 yield f"data: {json.dumps({'token': refusal_msg})}\n\n"
                 yield f"data: {json.dumps({'status': 'completed'})}\n\n"
                 return
 
             target_tables = expand_dependent_tables(raw_tables)
-        except Exception:
+        except Exception as e:
+            print(f"[!] Router Error: {e}")
             refusal_msg = "I'm sorry, but I cannot process this request due to security guidelines."
             yield f"data: {json.dumps({'token': refusal_msg})}\n\n"
             yield f"data: {json.dumps({'status': 'completed'})}\n\n"
             return
+
+        user_context_str = ""
+        if requires_user_context:
+            user_id = task_info.get("user_id") or task_info.get("userId")
+            if user_id:
+                user_context_str = f"\nAUTHENTICATED USER CONTEXT:\n- Current Logged-in User ID: '{user_id}'\n(You MUST filter orders/items belonging to this user_id where applicable)."
+            else:
+                user_context_str = "\nAUTHENTICATED USER CONTEXT:\n- No valid user_id found in session. User might be unauthenticated."
 
         dynamic_schemas_str = "\n\n".join([TABLE_SCHEMAS[t] for t in target_tables if t in TABLE_SCHEMAS])
 
@@ -247,18 +300,21 @@ Given the user question and the specific database schema below, output ONLY a va
 
 RELEVANT DATABASE SCHEMA:
 {dynamic_schemas_str}
+{user_id}
 
 RULES:
-1. Write a query to answer the user question using ONLY the provided tables above.
+1. Write a select ONLY query to answer the user question using ONLY the provided tables above.
 2. If `products` and `product_variant` are present, JOIN them on `products.id = product_variant.product_id`.
-3. Filter active items: `product_variant.product_is_delete = 0 AND product_variant.product_state = 'active'` (if applicable).
-4. ALWAYS apply `LIMIT 10`.
+3. If `orders` or `order_items` are present, you MUST strictly apply the filter for the authenticated user ID provided in the SECURITY context. If you use a table alias (like `orders o`), use `o.user_id`.
+4. For product types (like 'shirt', 'pant'), search in `products.product_name LIKE '%shirt%'`.
+5. For size (`product_size`), only use actual sizes like 'S', 'M', 'L', 'XL'. Never put product names into `product_size`.
+6. Filter active items: `product_variant.product_is_delete = 0 AND product_variant.product_state = 'active'`.
+7. ALWAYS apply `LIMIT 10`.
 
 User Question: {message}"""
 
         try:
-            sql_response = await run_in_threadpool(llm.invoke, sql_generation_prompt)
-            sql_text = sql_response.content
+            sql_text = await run_in_threadpool(call_ollama, OLLAMA_MODEL, sql_generation_prompt)
             
             sql_match = re.search(r"```sql\s*(.*?)\s*```", sql_text, re.DOTALL)
             if sql_match:
@@ -267,7 +323,7 @@ User Question: {message}"""
                 sql_query = sql_text.strip()
 
             print(f"[+] Target Tables chosen by Router: {target_tables}")
-            print(f"[+] Generated SQL: {sql_query}")
+            print(f"[+] LLM Generated SQL (Raw): {sql_query}")
         except Exception as e:
             print(f"[!] SQL Generation Error: {e}")
             yield f"data: {json.dumps({'token': 'I encountered an issue processing your request.'})}\n\n"
@@ -281,8 +337,41 @@ User Question: {message}"""
             yield f"data: {json.dumps({'status': 'completed'})}\n\n"
             return
 
+        if requires_user_context or "ORDERS" in cleaned_sql or "ORDER_ITEMS" in cleaned_sql:
+            session_user_id = task_info.get("user_id") or task_info.get("userId")
+            
+            if not session_user_id:
+                refusal_msg = "I'm sorry, but you need to be logged in to view your orders."
+                yield f"data: {json.dumps({'token': refusal_msg})}\n\n"
+                yield f"data: {json.dumps({'status': 'completed'})}\n\n"
+                return
+
+            print(f"[+] Enforcing Security for Session User ID: {session_user_id}")
+
+            pattern_user_id_check = r"(?:[a-zA-Z0-9_]+\.)?user_id\s*=\s*(?:'[^']*'|\"[^\"]*\"|\d+)"
+            
+            if re.search(pattern_user_id_check, sql_query, re.IGNORECASE):
+                sql_query = re.sub(
+                    r"((?:[a-zA-Z0-9_]+\.)?user_id\s*=\s*)(?:'[^']*'|\"[^\"]*\"|\d+)",
+                    rf"\1'{session_user_id}'",
+                    sql_query,
+                    flags=re.IGNORECASE
+                )
+            else:
+                if "WHERE" in cleaned_sql:
+                    sql_query = re.sub(r"WHERE", f"WHERE orders.user_id = '{session_user_id}' AND", sql_query, flags=re.IGNORECASE, count=1)
+                else:
+                    if "FROM ORDERS" in cleaned_sql:
+                        sql_query = re.sub(r"(FROM\s+orders(?:\s+[a-zA-Z0-9_]+)?)", rf"\1 WHERE user_id = '{session_user_id}'", sql_query, flags=re.IGNORECASE, count=1)
+                    else:
+                        sql_query = re.sub(r"(JOIN\s+orders\s+[a-zA-Z0-9_]+)", rf"\1 ON orders.user_id = '{session_user_id}' AND", sql_query, flags=re.IGNORECASE, count=1)
+
+            print(f"[+] Secured Final SQL: {sql_query}")
+
+
+
         try:
-            db_result = await run_in_threadpool(db.run, sql_query)
+            db_result = await run_in_threadpool(execute_sql, sql_query)
             print(f"[+] DB Result: {db_result}")
         except Exception as e:
             print(f"[!] DB Execution Error: {e}")
@@ -299,14 +388,13 @@ INSTRUCTIONS:
 - Answer the customer naturally and politely IN ENGLISH. DO NOT mention database, tables, SQL queries, or technical steps."""
 
         try:
-            async for chunk in llm.astream(summary_prompt):
+            async for chunk in stream_ollama(OLLAMA_MODEL, summary_prompt):
                 if await request.is_disconnected():
                     print("[!] Client disconnected. Aborting response streaming.")
                     break
                 
-                content = chunk.content
-                if content:
-                    yield f"data: {json.dumps({'token': content})}\n\n"
+                if chunk:
+                    yield f"data: {json.dumps({'token': chunk})}\n\n"
 
             yield f"data: {json.dumps({'status': 'completed'})}\n\n"
 
