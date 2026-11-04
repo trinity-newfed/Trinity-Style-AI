@@ -227,35 +227,6 @@ try {
     $totalSpent =$orderData['total_spent'] ?? 0;
     $tierStmt->close();
 
-    $newTier = '1';
-    if (($totalOrdersCount >= 40 &&$totalSpent >= 2500) || $totalSpent >= 5000) {
-        $newTier = '4';
-        $newLimit = $conn->execute_query("UPDATE userdata SET user_limit_tryon = '100' WHERE id = ?",[$userID]);
-    }
-    elseif (($totalOrdersCount >= 25 &&$totalSpent >= 1000) || $totalSpent >= 2000) {
-        $newTier = '3';
-        $newLimit = $conn->execute_query("UPDATE userdata SET user_limit_tryon = '50' WHERE id = ?",[$userID]);
-    }
-    elseif (($totalOrdersCount >= 10 &&$totalSpent >= 200) || $totalSpent >= 500) {
-        $newTier = '2';
-        $newLimit = $conn->execute_query("UPDATE userdata SET user_limit_tryon = '30' WHERE id = ?",[$userID]);
-    }
-
-    $newLimit = 10;
-    if (($totalOrdersCount >= 40 &&$totalSpent >= 2500) || $totalSpent >= 5000) {$newLimit = 100;
-    } elseif (($totalOrdersCount >= 25 &&$totalSpent >= 1000) || $totalSpent >= 2000) {$newLimit = 50;
-    } elseif (($totalOrdersCount >= 10 &&$totalSpent >= 200) || $totalSpent >= 500) {$newLimit = 30;
-    }
-
-    if ($newTier !== '1') {
-        $tierUpdate =$conn->prepare("UPDATE userdata SET user_tier = ? WHERE id = ?");
-        $tierUpdate->bind_param("si", $newTier,$userID);
-        $tierUpdate->execute();$tierUpdate->close();
-    }
-
-    if ($newLimit !== 10) {$conn->execute_query("UPDATE userdata SET user_limit_tryon_daily = ? WHERE id = ?", [$newLimit,$userID]);
-    }
-
     $conn->commit();
 
     unset($_SESSION['checkout_cart_ids']);
