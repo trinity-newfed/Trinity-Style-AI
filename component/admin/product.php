@@ -57,7 +57,7 @@
                             </form>
                         <?php endif; ?>
 
-                        <span onclick="window.location.href='update.php?id=<?= $p['id'] ?>'" class="flex-1 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-xl text-center cursor-pointer transition-colors select-none">
+                        <span onclick="window.location.href='update.php?id=<?= $p['id'] ?>&color=<?= $p['product_color'] ?>'" class="flex-1 py-2 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-xl text-center cursor-pointer transition-colors select-none">
                             Update
                         </span>
                     </div>
