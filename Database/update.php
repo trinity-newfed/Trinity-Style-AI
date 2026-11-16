@@ -12,7 +12,28 @@ if((!isset($_SESSION['role']) && $_SESSION['role'] != "adminTan") || (!isset($_S
 }
 
 $id = $_GET['id'];
-$products = $conn->query("SELECT * FROM products WHERE id = $id")
+$color = $_GET['color'];
+$product = $conn
+    ->execute_query("SELECT 
+                products.id AS id,
+                products.product_name, 
+                products.product_is_delete,
+                products.product_state,
+                products.product_describe,
+                products.product_type,
+
+                product_variant.id AS variant_id,
+                product_variant.product_img as product_img,
+                product_variant.product_price, 
+                product_variant.product_color,
+                product_variant.product_size,
+                product_variant.product_stock
+
+             FROM products
+             INNER JOIN product_variant ON products.id = product_variant.product_id
+             WHERE products.id = ?
+             AND product_variant.product_color = ?",[$id, $color])
+    ->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -116,7 +137,7 @@ button:hover {
 <body>
 <div class="container">
 
-<?php foreach ($products as $row): ?>
+<?php foreach ($product as $row): ?>
 <form action="update_admin.php" method="post" enctype="multipart/form-data">
 
 <div class="card">
@@ -178,7 +199,7 @@ button:hover {
 </form>
 <?php endforeach; ?>
 
-<?php foreach ($products as $row): ?>
+<?php foreach ($product as $row): ?>
 <form action="update_employee_img.php" method="post">
     <div class="form-group">
         <label>New Image</label>
