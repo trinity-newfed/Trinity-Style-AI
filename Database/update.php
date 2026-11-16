@@ -42,11 +42,33 @@ $product = $conn
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Update Admin</title>
 <link rel="icon" type="image/png" href="../Pictures/Banners/logo.png">
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
+@layer utilities {
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #252525;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #252525;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #252525;
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #585858 #ffffff;
+        }
+    }
+
 body {
     font-family: Arial, sans-serif;
     background: #f4f6f8;
     padding: 40px;
+    position: relative;
 }
 
 .container {
@@ -164,10 +186,6 @@ button:hover {
         </div>
 
         <div class="form-group">
-            <label>Product Describe</label>
-            <input type="text" name="product_describe" value="<?= $row['product_describe'] ?>">
-        </div>
-        <div class="form-group">
             <label>Product State</label>
             <?php if($row['product_state'] == "active"): ?>
                 <select name="product_state">
@@ -186,29 +204,58 @@ button:hover {
             <label>Product Color</label>
             <input type="text" name="product_color" value="<?= $row['product_color'] ?>">
         </div>
+
         <div class="form-group">
             <label>Stocks</label>
             <input type="text" name="product_stock" value="<?= $row['product_stock'] ?>">
         </div>
-        <div class="avatar">
-            <img src="../<?= $row['product_img'] ?>">
-        </div>
+
+        <div class="form-group">
+            <label>Product Describe</label>
+            <textarea class="w-full custom-scrollbar auto-expand overflow-hidden transition-all duration-150 resize-none py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600" name="product_describe"><?= $row['product_describe'] ?></textarea>
     </div>
-    <button type="submit">Update</button>
+    <button class="absolute bottom-3 p-2 py-3 border border-bg-black bg-black text-white w-[10rem]" type="submit">Update</button>
 </div>
 </form>
 <?php endforeach; ?>
 
 <?php foreach ($product as $row): ?>
-<form action="update_employee_img.php" method="post">
-    <div class="form-group">
-        <label>New Image</label>
-        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-        <input type="file" placeholder="Ảnh" name="img" value="img3.jpg">
+
+<div class="flex items-start py-4 gap-x-5">
+    <form action="update_employee_img.php" method="post">
+        <div class="form-group">
+            <input type="hidden" name="id" value="<?= $row['id'] ?>">
+            <label for="file" class="w-[110px] h-[110px] border-dashed border-2 rounded cursor-pointer hover:border-black flex items-center justify-center text-center">
+                <span>Choose New Image</span>
+                <input class="hidden" id="file" type="file" placeholder="Ảnh" name="img" value="">
+            </label>
+        </div>
+        <button class="relative mt-3 p-2 bg-black text-white hover:cursor-pointer" type="submit">Update Image</button>
+    </form>
+
+    <div class="avatar flex flex-col gap-x-1">
+        <img src="../<?= $row['product_img'] ?>">
+        <span class="text-xs">Current Image</span>
     </div>
-    <button style="left: 10px; position: relative;" type="submit">Update Image</button>
-</form>
+</div>
+
 <?php endforeach; ?>
 </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const textareas = document.querySelectorAll('textarea.auto-expand');
+
+        textareas.forEach(textarea => {
+            function adjustHeight() {
+                textarea.style.height = 'auto'; 
+                textarea.style.height = textarea.scrollHeight + 'px'; 
+            }
+
+            adjustHeight();
+
+            textarea.addEventListener('input', adjustHeight);
+        });
+    });
+</script>
 </html>
