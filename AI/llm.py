@@ -289,9 +289,9 @@ Return strict JSON format:
         if requires_user_context:
             user_id = task_info.get("user_id") or task_info.get("userId")
             if user_id:
-                user_context_str = f"\nAUTHENTICATED USER CONTEXT:\n- Current Logged-in User ID: '{user_id}'\n(You MUST filter orders/items belonging to this user_id where applicable)."
+                user_context_str = f"\nAUTHENTICATED USER CONTEXT:\nCurrent Logged-in User ID: '{user_id}'\n(You MUST filter orders/items belonging to this user_id where applicable)."
             else:
-                user_context_str = "\nAUTHENTICATED USER CONTEXT:\n- No valid user_id found in session. User might be unauthenticated."
+                user_context_str = "\nAUTHENTICATED USER CONTEXT:\nNo valid user_id found in session. User might be unauthenticated."
 
         dynamic_schemas_str = "\n\n".join([TABLE_SCHEMAS[t] for t in target_tables if t in TABLE_SCHEMAS])
 
@@ -300,7 +300,7 @@ Given the user question and the specific database schema below, output ONLY a va
 
 RELEVANT DATABASE SCHEMA:
 {dynamic_schemas_str}
-{user_id}
+{user_context_str}
 
 RULES:
 1. Write a select ONLY query to answer the user question using ONLY the provided tables above.
