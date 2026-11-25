@@ -89,9 +89,9 @@ $conn->query("CREATE TABLE IF NOT EXISTS orders(
 //Order Tracking
 $conn->query("CREATE TABLE IF NOT EXISTS order_tracking(
     id INT(10) AUTO_INCREMENT PRIMARY KEY,
+    order_id VARCHAR(100),
     user_id VARCHAR(100),
-    order_name VARCHAR(100),
-    status_detail TEXT,
+    order_state TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 

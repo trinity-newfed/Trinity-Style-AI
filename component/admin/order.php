@@ -16,7 +16,7 @@
                 default => 'bg-gray-50 text-gray-700 border-gray-200',
             };
         ?>
-            <div class="items order max-h-[fit-content] bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md cursor-pointer transition-all duration-300 p-4 flex flex-col justify-between group">
+            <div class="items order max-h-[fit-content] bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md cursor-pointer transition-all duration-300 p-4 flex flex-col justify-between group" onclick="window.location.href='orderpage.php?id=<?=$o['order_id']?>'">
                 
                 <div class="flex items-center gap-4">
                     <div class="relative w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">

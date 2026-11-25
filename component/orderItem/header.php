@@ -58,10 +58,7 @@ foreach ($rows as $r) {
     $count = $count + $r['quantity'];
 }
 
-$order_name = $conn->execute_query("SELECT order_name FROM orders WHERE id = ? AND user_id = ?", [$id, $userID])
-    ->fetch_assoc();
-
-$status = $conn->execute_query("SELECT * FROM order_tracking WHERE user_id = ? AND order_name = ?", [$userID, $order_name['order_name']])
+$status = $conn->execute_query("SELECT * FROM order_tracking WHERE user_id = ? AND order_id = ?", [$userID, $id])
     ->fetch_all(MYSQLI_ASSOC);
 
 //Cart fetch
