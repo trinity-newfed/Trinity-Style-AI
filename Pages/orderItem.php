@@ -75,28 +75,14 @@
               </td>
             </tr>
           </tbody>
-
-          <thead>
-            <tr>
-              <th colspan="2"
-                class="text-left font-semibold pb-2 pt-6 border-none bg-transparent px-0 text-base text-black cursor-default">
-                Status Detail</th>
-            </tr>
-            <tr class="border-b border-gray-200">
-              <th class="cursor-default text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2">Time
-              </th>
-              <th class="cursor-default text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2">State
-              </th>
-            </tr>
-          </thead>
           <tbody class="divide-y divide-gray-100">
             <?php foreach ($status as $key => $value): ?>
               <tr>
                 <td class="cursor-default py-3 text-sm text-gray-500 align-top">
-                  <?= date('j-n', strtotime($value['created_at'])) ?>
+                  <?= $value['created_at'] ?>
                 </td>
                 <td class="cursor-default font-light text-sm text-gray-600 py-3 break-words pr-2">
-                  <?= $value['status_detail'] ?>
+                  <?= $value['order_state'] ?>
                 </td>
               </tr>
             <?php endforeach; ?>
